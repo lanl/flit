@@ -1,0 +1,67 @@
+
+# ==============================================================================
+# Path settings
+
+#export intelroot=$HOME/intel
+#export PATH=$intelroot/bin:$PATH
+#export PATH=$intelroot/include:$PATH
+#export PATH=$intelroot/include/intel64:$PATH
+#export LD_LIBRARY_PATH=$intelroot/lib:$LD_LIBRARY_PATH
+#export PATH=$intelroot/mkl/include:$PATH
+#export PATH=$intelroot/mkl/include/intel64/lp64:$PATH
+#export LD_LIBRARY_PATH=$intelroot/mkl/lib:$LD_LIBRARY_PATH
+#export mpiroot=$HOME/intel/mpi
+#export PATH=$mpiroot/include:$mpiroot/bin:$mpiroot/lib:$PATH
+#export LD_LIBRARY_PATH=$mpiroot/lib:$LD_LIBRARY_PATH
+
+# ==============================================================================
+# Compilation settings
+
+fc = mpiifort
+cc = icx
+cxx = icpx
+ll = ar
+
+intelroot = $(HOME)/intel
+mklroot = $(intelroot)/mkl
+mpiroot = $(intelroot)/mpi
+
+base_inc = \
+	-I$(intelroot)/include \
+	-I$(intelroot)/include/intel64 \
+	-I$(mklroot)/include \
+	-I$(mklroot)/include/fftw \
+	-I$(mklroot)/include/intel64/lp64 \
+	-I$(mpiroot)/include
+
+base_lflags = \
+	-qmkl -qopenmp -lstdc++ -lstdc++fs -liomp5 -lpthread -lm \
+	-L$(intelroot)/lib \
+	-L$(mklroot)/lib \
+	-L$(mpiroot)/lib \
+	-L$(mpiroot)/lib/release \
+	$(mklroot)/lib/libmkl_core.a \
+	$(mklroot)/lib/libmkl_intel_thread.a \
+	$(mklroot)/lib/libmkl_intel_lp64.a \
+	$(mklroot)/lib/libmkl_blas95_lp64.a \
+	$(mklroot)/lib/libmkl_lapack95_lp64.a
+
+base_fflags = \
+	-O3 -fpp -traceback -warn unused -module $(moddir) -qmkl \
+	-assume byterecl -assume buffered_io -qopenmp -heap-arrays \
+	-gen-interfaces \
+	#	-align all -falign-loops -xHost \
+	#	-O0 -g -check bounds
+
+base_cflags = \
+	-O3 -w -qopenmp -std=c17 \
+	-Wno-implicit-function-declaration \
+	-Wno-implicit-int \
+	-Wno-pointer-to-int-cast
+	#	-U__STRICT_ANSI__
+
+base_cxxflags = \
+	-O3 -w -qopenmp -std=c++20 -lstdc++fs
+
+
+

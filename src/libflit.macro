@@ -1,0 +1,74 @@
+
+! The paths and order searched for the INCLUDE statement are not the same as
+! those searched for the preprocessor #include directive, described under -I
+! in the Fortran User's Guide.
+! Files included by the preprocessor #include directive can contain #defines and the like;
+! files included with the compiler INCLUDE statement must contain only FORTRAN statements.
+
+! Macros to simplify array definitions
+#define array1_int          integer, allocatable, dimension(:)
+#define array1_real         real, allocatable, dimension(:)
+#define array1_double       double precision, allocatable, dimension(:)
+#define array1_complex      complex, allocatable, dimension(:)
+#define array1_dcomplex     double complex, allocatable, dimension(:)
+#define array1_logical      logical, allocatable, dimension(:)
+#define array1_string       character(len=256), allocatable, dimension(:)
+
+#define array2_int          integer, allocatable, dimension(:, :)
+#define array2_real         real, allocatable, dimension(:, :)
+#define array2_double       double precision, allocatable, dimension(:, :)
+#define array2_complex      complex, allocatable, dimension(:, :)
+#define array2_dcomplex     double complex, allocatable, dimension(:, :)
+#define array2_logical      logical, allocatable, dimension(:, :)
+#define array2_string       character(len=256), allocatable, dimension(:, :)
+
+#define array3_int          integer, allocatable, dimension(:, :, :)
+#define array3_real         real, allocatable, dimension(:, :, :)
+#define array3_double       double precision, allocatable, dimension(:, :, :)
+#define array3_complex      complex, allocatable, dimension(:, :, :)
+#define array3_dcomplex     double complex, allocatable, dimension(:, :, :)
+#define array3_logical      logical, allocatable, dimension(:, :, :)
+#define array3_string       character(len=256), allocatable, dimension(:, :, :)
+
+#define array4_int          integer, allocatable, dimension(:, :, :, :)
+#define array4_real         real, allocatable, dimension(:, :, :, :)
+#define array4_double       double precision, allocatable, dimension(:, :, :, :)
+#define array4_complex      complex, allocatable, dimension(:, :, :, :)
+#define array4_dcomplex     double complex, allocatable, dimension(:, :, :, :)
+#define array4_logical      logical, allocatable, dimension(:, :, :, :)
+#define array4_string       character(len=256), allocatable, dimension(:, :, :, :)
+
+#define array5_int          integer, allocatable, dimension(:, :, :, :, :)
+#define array5_real         real, allocatable, dimension(:, :, :, :, :)
+#define array5_double       double precision, allocatable, dimension(:, :, :, :, :)
+#define array5_complex      complex, allocatable, dimension(:, :, :, :, :)
+#define array5_dcomplex     double complex, allocatable, dimension(:, :, :, :, :)
+#define array5_logical      logical, allocatable, dimension(:, :, :, :, :)
+#define array5_string       character(len=256), allocatable, dimension(:, :, :, :, :)
+
+! Some macros for convenience
+#define free(array) \
+    if (allocated(array)) then; \
+        deallocate(array); \
+    end if;
+
+#define alloc1(array, a, b) \
+    if (allocated(array)) then; \
+        deallocate (array); \
+    end if; \
+    allocate (array(a:b));
+#define alloc2(array, a, b, c, d)   \
+    if (allocated(array)) then; \
+        deallocate (array); \
+    end if; \
+    allocate (array(a:b, c:d));
+#define alloc3(array, a, b, c, d, e, f) \
+    if (allocated(array)) then; \
+        deallocate (array); \
+    end if; \
+    allocate (array(a:b, c:d, e:f));
+#define alloc4(array, a, b, c, d, e, f, g, h) \
+    if (allocated(array)) then; \
+        deallocate (array); \
+    end if; \
+    allocate (array(a:b, c:d, e:f, g:h));
