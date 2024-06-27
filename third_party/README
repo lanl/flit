@@ -1,0 +1,19 @@
+
+* The codes in this directory are selected/reformatted/modified from the orginal codes.
+	- Licenses associated with these codes are in respective directories.
+	- convexhull/convhull_2d.h is modified based on the original code. Unfortunately, I lost the link to the original code. 
+	- filesystem codes are selected from the original "fortran filesystem" package, except in f_filesystem.f90 the two APIs (touch, copy_file) are commented out to avoid conflict; filesystem is not the lastest version of "fortran filesystem", but the codes suffice our purpose. 
+	- hdbscan codes are selected from the original package; the hdbscan/Runner/hdbscanRunner.hpp has been modified to add MinkowskiDistance function; the distance functions have been moved to this file as well. Accordingly, hdbscan/Runner/hdbscanRunner.hpp have been modified to include MinkowskiDistance. 
+	- heap/mheap.f90 is modified based on the original code for the purpose of generic programming; the modifications are on function/subroutine names, not on algorithms. 
+	- spline codes are not up-to-date, but we did not observe bugs and they suffice our purpose.
+	- All C/C++ header and source codes have been reformatted with A-style for clarity. 
+
+* GitHub repository links to the original codes:
+	- convexhull (3D): https://github.com/leomccormack/convhull_3d
+	- filesystem: https://github.com/scivision/fortran-filesystem
+	- heap: https://github.com/trifling/mheap
+	- hdbscan: https://github.com/rohanmohapatra/hdbscan-cpp
+	- iir: https://github.com/berndporr/iir1
+	- multilevel_bspline: https://github.com/ddemidov/mba/tree/master
+	- pcg_random: https://github.com/imneme/pcg-cpp
+	- spline: https://github.com/ebertolazzi/Splines
