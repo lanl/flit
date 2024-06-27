@@ -1,0 +1,31 @@
+
+# Test readpar integer
+ipar1 = 1234
+ipar2 = 0:0, 10:1, 11~20:2
+ipar3 = 2, 3, 4, 5, 6
+
+# Test readpar float
+par1 = 0.12345
+par2 = 0:0, 10:1, 11~20:2
+par3 = 1.2, 2.3, 3.4
+
+par1 = 0.2222
+par2 = 0:0, 10:1, 11~20:2
+par3 = 1.2, 2.3, 3.4
+
+# Test readpar complex
+zcpar1 = 0.12345 + 0.1i
+zcpar2 = 0~3:0.0, 10:2.0 + 3.0i
+zcpar3 = 1.2, 2.3 + 1.0i, 3.4 - 4.0i
+
+# Parameter name mistach (case-insensitive) will not be read
+zcpar1r = 10 + 1i
+
+# The resulting value is the last match
+zcpar1 = 2i + 1
+
+# Anything below exit will not be read
+exit
+
+par1 = 10
+zcpar1 = 1 + 2i
