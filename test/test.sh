@@ -3,7 +3,6 @@
 \rm -rf test*.txt select*.txt cluster*.txt
 \rm -rf exec* *.bin *.png
 
-exit
 #
 # The following tests only cover some of the functionalities provided by FLIT.
 #
