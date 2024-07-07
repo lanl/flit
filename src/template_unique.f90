@@ -1,15 +1,15 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -87,22 +87,25 @@ function unique_2d_(w, cols) result(wr)
         ! If the row has not been checked to be unique
         if (q(i)) then
 
-            ! For each row, assume the row is unique
-            duplicate = .false.
-
             ! Check duplication with all previous unique rows
             check_duplicate: do j = 1, l - 1
+
+                ! For each row, assume the row is unique
+                duplicate = .false.
+
                 ! Check duplication of each column
                 do k = 1, size(cl)
                     if (w(i, cl(k)) == wr(j, cl(k))) then
                         duplicate(k) = .true.
                     end if
                 end do
+
                 ! If all elements are the same with some previous row, then this
                 ! row is a duplicate row and there is no need to further check
                 if (all(duplicate)) then
                     exit check_duplicate
                 end if
+
             end do check_duplicate
 
             ! If a unique row, then add to unique list
