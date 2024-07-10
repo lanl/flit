@@ -1560,7 +1560,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
         if (mod(iter, max(nint(niter/10.0), 1)) == 0 .or. iter == 1) then
             bsum = sum((u - pu)**2)
             call warn(' >> TGpV iteration '//num2str(iter, '(i)') &
-                //' of '//num2str(niter, '(i)')//' relative l2-norm difference = '//num2str(sqrt(tmp), '(es)'))
+                //' of '//num2str(niter, '(i)')//' relative l2-norm difference = '//num2str(sqrt(bsum), '(es)'))
         end if
 
     end do
