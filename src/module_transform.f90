@@ -1,15 +1,15 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -1023,7 +1023,7 @@ contains
         real, dimension(:), intent(in) :: w
         complex, allocatable, dimension(:) :: wf
 
-        wf = cmplx(w, 0.0)
+        wf = cmplx(w)
         call fourier1_complex_to_complex(wf)
 
     end function fft1_float_to_complex
@@ -1045,7 +1045,7 @@ contains
         integer, intent(in) :: n
         complex, allocatable, dimension(:) :: wf
 
-        wf = adjust(cmplx(w, 0.0), n)
+        wf = adjust(cmplx(w), n)
         call fourier1_complex_to_complex(wf)
 
     end function fft1_pad_float_to_complex
@@ -1122,7 +1122,7 @@ contains
         double precision, dimension(:), intent(in) :: w
         double complex, allocatable, dimension(:) :: wf
 
-        allocate (wf(1:size(w)), source=dcmplx(w, 0.0))
+        allocate (wf(1:size(w)), source=dcmplx(w))
         call fourier1_dcomplex_to_dcomplex(wf)
 
     end function fft1_double_to_dcomplex
@@ -1144,7 +1144,7 @@ contains
         integer, intent(in) :: n
         double complex, allocatable, dimension(:) :: wf
 
-        wf = adjust(dcmplx(w, 0.0), n)
+        wf = adjust(dcmplx(w), n)
         call fourier1_dcomplex_to_dcomplex(wf)
 
     end function fft1_pad_double_to_dcomplex
@@ -1245,7 +1245,7 @@ contains
 
         integer :: i
 
-        wf = cmplx(w, 0.0)
+        wf = cmplx(w)
 
         if (present(along)) then
             select case (along)
@@ -1309,7 +1309,7 @@ contains
 
         integer :: i
 
-        wf = adjust(cmplx(w, 0.0), n)
+        wf = adjust(cmplx(w), n)
 
         if (present(along)) then
             select case (along)
@@ -1371,7 +1371,7 @@ contains
 
         integer :: i
 
-        wf = dcmplx(w, 0.0)
+        wf = dcmplx(w)
 
         if (present(along)) then
             select case (along)
@@ -1435,7 +1435,7 @@ contains
 
         integer :: i
 
-        wf = adjust(dcmplx(w, 0.0), n)
+        wf = adjust(dcmplx(w), n)
 
         if (present(along)) then
             select case (along)
@@ -1785,7 +1785,7 @@ contains
 
         integer :: i, j
 
-        wf = cmplx(w, 0.0)
+        wf = cmplx(w)
 
         if (present(along)) then
             select case (along)
@@ -1873,7 +1873,7 @@ contains
 
         integer :: i, j
 
-        wf = adjust(cmplx(w, 0.0), n)
+        wf = adjust(cmplx(w), n)
 
         if (present(along)) then
             select case (along)
@@ -2145,7 +2145,7 @@ contains
 
         integer :: i, j
 
-        wf = dcmplx(w, 0.0)
+        wf = dcmplx(w)
 
         if (present(along)) then
             select case (along)
@@ -2233,7 +2233,7 @@ contains
 
         integer :: i, j
 
-        wf = adjust(dcmplx(w, 0.0), n)
+        wf = adjust(dcmplx(w), n)
 
         if (present(along)) then
             select case (along)
