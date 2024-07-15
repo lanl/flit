@@ -148,7 +148,7 @@ function rand_array_1d_(n1, dist, seed, range, mu, sigma, a, b, mean, lambda, sp
     ! Exponential distribution -- lambda
     TTT, optional :: lambda
     ! Minimum distance
-    TTT, optional :: spacing
+    TT, optional :: spacing
     ! Output
     TT, allocatable, dimension(:) :: r
 
@@ -298,7 +298,7 @@ function rand_array_2d_(n1, n2, dist, seed, range, mu, sigma, a, b, mean, lambda
     ! Exponential distribution -- lambda
     TTT, optional :: lambda
     ! Minimum distance
-    TTT, optional :: spacing
+    TT, optional :: spacing
     ! Output
     TT, allocatable, dimension(:, :) :: r
 
@@ -371,7 +371,7 @@ function rand_array_2d_(n1, n2, dist, seed, range, mu, sigma, a, b, mean, lambda
     end if
 
     random_value = rand_array_1d_(n1*n2, distribution, rs, nTT(value_range), normal_mu, normal_sigma, &
-        cauchy_a, cauchy_b, poisson_mean, exponential_lambda)
+        cauchy_a, cauchy_b, poisson_mean, exponential_lambda, nTT(random_spacing))
 
     r = nTT(reshape(random_value, [n1, n2]))
 
@@ -398,7 +398,7 @@ function rand_array_3d_(n1, n2, n3, dist, seed, range, mu, sigma, a, b, mean, la
     ! Exponential distribution -- lambda
     TTT, optional :: lambda
     ! Minimum distance
-    TTT, optional :: spacing
+    TT, optional :: spacing
     ! Output
     TT, allocatable, dimension(:, :, :) :: r
 
@@ -471,7 +471,7 @@ function rand_array_3d_(n1, n2, n3, dist, seed, range, mu, sigma, a, b, mean, la
     end if
 
     random_value = rand_array_1d_(n1*n2*n3, distribution, rs, nTT(value_range), normal_mu, normal_sigma, &
-        cauchy_a, cauchy_b, poisson_mean, exponential_lambda)
+        cauchy_a, cauchy_b, poisson_mean, exponential_lambda, nTT(random_spacing))
 
     r = nTT(reshape(random_value, [n1, n2, n3]))
 
