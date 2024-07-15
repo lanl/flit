@@ -64,7 +64,7 @@ subroutine readpar_(filename, parname, par, default_value, required)
     close (funit)
 
     if (npar == 0) then
-        ! if not exists then set to default
+        ! if does not exist then set to default
         if (present(required)) then
             if (required) then
                 ! if required then stop
@@ -122,7 +122,7 @@ subroutine readnpar_(filename, parname, par, default_value, required, separator)
     close (funit)
 
     if (npar == 0) then
-        ! if not exists then set to default
+        ! if does not exist then set to default
         if (present(required)) then
             if (required) then
                 ! if required then stop
@@ -251,7 +251,7 @@ subroutine readxpar_(filename, parname, par, default_value, var, required)
         end if
 
     else
-        ! if not exists then set to default
+        ! if does not exist then set to default
         if (present(required)) then
             if (required) then
                 ! if required then stop
@@ -305,14 +305,23 @@ subroutine getpar_(parname, par, default_value, required)
 
     end do
 
-    if (present(required) .and. required .and. (.not. getpar_success)) then
-        write (error_unit, *) ' Error: Parameter ', trim(parname), ' is required but not set. '
-        stop
-    end if
+    if (.not.getpar_success) then
 
-    if ((.not. present(required) .or. (present(required) .and. (.not. required))) &
-            .and. (.not. getpar_success)) then
-        par = default_value
+        ! if does not exist then set to default
+        if (present(required)) then
+            if (required) then
+                ! if required then stop
+                call warn(' Error: Parameter '//tidy(parname)//' is required but not set. ')
+                stop
+            else
+                ! if not required then set to default
+                par = default_value
+            end if
+        else
+            ! if not required then set to default value
+            par = default_value
+        end if
+
     end if
 
 end subroutine getpar_
@@ -359,19 +368,23 @@ subroutine getnpar_(parname, par, default_value, separator, required)
 
     end do
 
-    if (present(required) .and. required .and. (.not. getpar_success)) then
-        write (error_unit, *) ' Error: Parameter ', trim(parname), ' is required but not set. '
-        stop
-    end if
+    if (.not.getpar_success) then
 
-    if ((.not. present(required) .or. (present(required) .and. (.not. required))) &
-            .and. (.not. getpar_success)) then
-        i = size(default_value, 1)
-        if (allocated(par)) then
-            deallocate (par)
+        ! if does not exist then set to default
+        if (present(required)) then
+            if (required) then
+                ! if required then stop
+                call warn(' Error: Parameter '//tidy(parname)//' is required but not set. ')
+                stop
+            else
+                ! if not required then set to default
+                par = default_value
+            end if
+        else
+            ! if not required then set to default value
+            par = default_value
         end if
-        allocate (par(1:i))
-        par = default_value
+
     end if
 
 end subroutine getnpar_
@@ -485,12 +498,18 @@ subroutine getxpar_(parname, par, default_value, var, required)
 
     else
 
-        if (present(required) .and. required) then
-            write (error_unit, *) ' Error: Parameter ', trim(parname), ' is required but not set. '
-            stop
-        end if
-
-        if (.not. present(required) .or. (present(required) .and. (.not. required))) then
+        ! if does not exist then set to default
+        if (present(required)) then
+            if (required) then
+                ! if required then stop
+                call warn(' Error: Parameter '//tidy(parname)//' is required but not set. ')
+                stop
+            else
+                ! if not required then set to default
+                par = default_value
+            end if
+        else
+            ! if not required then set to default value
             par = default_value
         end if
 
@@ -532,14 +551,23 @@ subroutine parsepar_(source, parname, par, default_value, required)
 
     end do
 
-    if (present(required) .and. required .and. (.not. parsepar_success)) then
-        write (error_unit, *) ' Error: Parameter ', trim(parname), ' is required but not set. '
-        stop
-    end if
+    if (.not. parsepar_success) then
 
-    if ((.not. present(required) .or. (present(required) .and. (.not. required))) &
-            .and. (.not. parsepar_success)) then
-        par = default_value
+        ! if does not exist then set to default
+        if (present(required)) then
+            if (required) then
+                ! if required then stop
+                call warn(' Error: Parameter '//tidy(parname)//' is required but not set. ')
+                stop
+            else
+                ! if not required then set to default
+                par = default_value
+            end if
+        else
+            ! if not required then set to default value
+            par = default_value
+        end if
+
     end if
 
 end subroutine parsepar_
@@ -585,19 +613,23 @@ subroutine parsenpar_(source, parname, par, default_value, separator, required)
 
     end do
 
-    if (present(required) .and. required .and. (.not. parsepar_success)) then
-        write (error_unit, *) ' Error: Parameter ', trim(parname), ' is required but not set. '
-        stop
-    end if
+    if (.not. parsepar_success) then
 
-    if ((.not. present(required) .or. (present(required) .and. (.not. required))) &
-            .and. (.not. parsepar_success)) then
-        i = size(default_value, 1)
-        if (allocated(par)) then
-            deallocate (par)
+        ! if does not exist then set to default
+        if (present(required)) then
+            if (required) then
+                ! if required then stop
+                call warn(' Error: Parameter '//tidy(parname)//' is required but not set. ')
+                stop
+            else
+                ! if not required then set to default
+                par = default_value
+            end if
+        else
+            ! if not required then set to default value
+            par = default_value
         end if
-        allocate (par(1:i))
-        par = default_value
+
     end if
 
 end subroutine parsenpar_
@@ -710,12 +742,18 @@ subroutine parsexpar_(source, parname, par, default_value, var, required)
 
     else
 
-        if (present(required) .and. required) then
-            write (error_unit, *) ' Error: Parameter ', trim(parname), ' is required but not set. '
-            stop
-        end if
-
-        if (.not. present(required) .or. (present(required) .and. (.not. required))) then
+        ! if does not exist then set to default
+        if (present(required)) then
+            if (required) then
+                ! if required then stop
+                call warn(' Error: Parameter '//tidy(parname)//' is required but not set. ')
+                stop
+            else
+                ! if not required then set to default
+                par = default_value
+            end if
+        else
+            ! if not required then set to default value
             par = default_value
         end if
 

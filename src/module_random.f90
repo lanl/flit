@@ -1,15 +1,15 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -31,123 +31,174 @@ module libflit_random
     interface
 
         ! random number following uniform distribution
-        subroutine uniform_rand_int(w, nw, lb, ub) bind(c, name='uniform_rand_int')
-            use iso_c_binding, only: c_int
-            integer(kind=c_int), dimension(*) :: w
+        subroutine uniform_rand_int(w, nw, lb, ub) bind(c, name='uniform_rand')
+            use iso_c_binding, only: c_int, c_int
+            real(kind=c_int), dimension(*) :: w
             integer(kind=c_int), value :: nw
-            integer(kind=c_int), value :: lb, ub
+            real(kind=c_int), value :: lb, ub
         end subroutine uniform_rand_int
 
         ! random number following uniform distribution, given seed
-        subroutine uniform_rand_seed_int(w, nw, lb, ub, seed) bind(c, name='uniform_rand_seed_int')
-            use iso_c_binding, only: c_int
-            integer(kind=c_int), dimension(*) :: w
+        subroutine uniform_rand_seed_int(w, nw, lb, ub, seed) bind(c, name='uniform_rand_seed')
+            use iso_c_binding, only: c_int, c_int
+            real(kind=c_int), dimension(*) :: w
             integer(kind=c_int), value :: nw
-            integer(kind=c_int), value :: lb, ub
+            real(kind=c_int), value :: lb, ub
             integer(kind=c_int), value :: seed
         end subroutine uniform_rand_seed_int
 
         ! random number following normal distribution
-        subroutine normal_rand_int(w, nw, mu, sigma) bind(c, name='normal_rand_int')
-            use iso_c_binding, only: c_float, c_int
-            integer(kind=c_int), dimension(*) :: w
+        subroutine normal_rand_int(w, nw, mu, sigma) bind(c, name='normal_rand')
+            use iso_c_binding, only: c_int, c_int
+            real(kind=c_int), dimension(*) :: w
             integer(kind=c_int), value :: nw
-            real(kind=c_float), value :: mu, sigma
+            real(kind=c_int), value :: mu, sigma
         end subroutine normal_rand_int
 
         ! random number following normal distribution, given seed
-        subroutine normal_rand_seed_int(w, nw, mu, sigma, seed) bind(c, name='normal_rand_seed_int')
-            use iso_c_binding, only: c_float, c_int
-            integer(kind=c_int), dimension(*) :: w
+        subroutine normal_rand_seed_int(w, nw, mu, sigma, seed) bind(c, name='normal_rand_seed')
+            use iso_c_binding, only: c_int, c_int
+            real(kind=c_int), dimension(*) :: w
             integer(kind=c_int), value :: nw
-            real(kind=c_float), value :: mu, sigma
+            real(kind=c_int), value :: mu, sigma
             integer(kind=c_int), value :: seed
         end subroutine normal_rand_seed_int
 
-        ! random number following uniform distribution
-        subroutine uniform_rand(w, nw, lb, ub) bind(c, name='uniform_rand')
-            use iso_c_binding, only: c_float, c_int
-            real(kind=c_float), dimension(*) :: w
-            integer(kind=c_int), value :: nw
-            real(kind=c_float), value :: lb, ub
-        end subroutine uniform_rand
-
-        ! random number following uniform distribution, given seed
-        subroutine uniform_rand_seed(w, nw, lb, ub, seed) bind(c, name='uniform_rand_seed')
-            use iso_c_binding, only: c_float, c_int
-            real(kind=c_float), dimension(*) :: w
-            integer(kind=c_int), value :: nw
-            real(kind=c_float), value :: lb, ub
-            integer(kind=c_int), value :: seed
-        end subroutine uniform_rand_seed
-
-        ! random number following normal distribution
-        subroutine normal_rand(w, nw, mu, sigma) bind(c, name='normal_rand')
-            use iso_c_binding, only: c_float, c_int
-            real(kind=c_float), dimension(*) :: w
-            integer(kind=c_int), value :: nw
-            real(kind=c_float), value :: mu, sigma
-        end subroutine normal_rand
-
-        ! random number following normal distribution, given seed
-        subroutine normal_rand_seed(w, nw, mu, sigma, seed) bind(c, name='normal_rand_seed')
-            use iso_c_binding, only: c_float, c_int
-            real(kind=c_float), dimension(*) :: w
-            integer(kind=c_int), value :: nw
-            real(kind=c_float), value :: mu, sigma
-            integer(kind=c_int), value :: seed
-        end subroutine normal_rand_seed
-
         ! random number following Cauchy distribution
-        subroutine cauchy_rand(w, nw, a, b) bind(c, name='cauchy_rand')
-            use iso_c_binding, only: c_float, c_int
-            real(kind=c_float), dimension(*) :: w
+        subroutine cauchy_rand_int(w, nw, a, b) bind(c, name='cauchy_rand')
+            use iso_c_binding, only: c_int, c_int
+            real(kind=c_int), dimension(*) :: w
             integer(kind=c_int), value :: nw
-            real(kind=c_float), value :: a, b
-        end subroutine cauchy_rand
+            real(kind=c_int), value :: a, b
+        end subroutine cauchy_rand_int
 
         ! random number following Cauchy distribution, given seed
-        subroutine cauchy_rand_seed(w, nw, a, b, seed) bind(c, name='cauchy_rand_seed')
+        subroutine cauchy_rand_seed_int(w, nw, a, b, seed) bind(c, name='cauchy_rand_seed')
+            use iso_c_binding, only: c_int, c_int
+            real(kind=c_int), dimension(*) :: w
+            integer(kind=c_int), value :: nw
+            real(kind=c_int), value :: a, b
+            integer(kind=c_int), value :: seed
+        end subroutine cauchy_rand_seed_int
+
+        ! random number following Poisson distribution
+        subroutine poisson_rand_int(w, nw, mean) bind(c, name='poisson_rand')
+            use iso_c_binding, only: c_int, c_int
+            real(kind=c_int), dimension(*) :: w
+            integer(kind=c_int), value :: nw
+            real(kind=c_int), value :: mean
+        end subroutine poisson_rand_int
+
+        ! random number following Poisson distribution, given seed
+        subroutine poisson_rand_seed_int(w, nw, mean, seed) bind(c, name='poisson_rand_seed')
+            use iso_c_binding, only: c_int, c_int
+            real(kind=c_int), dimension(*) :: w
+            integer(kind=c_int), value :: nw
+            real(kind=c_int), value :: mean
+            integer(kind=c_int), value :: seed
+        end subroutine poisson_rand_seed_int
+
+        ! random number following exponential distribution
+        subroutine exponential_rand_int(w, nw, lambda) bind(c, name='exponential_rand')
+            use iso_c_binding, only: c_int, c_int
+            real(kind=c_int), dimension(*) :: w
+            integer(kind=c_int), value :: nw
+            real(kind=c_int), value :: lambda
+        end subroutine exponential_rand_int
+
+        ! random number following exponential distribution, given seed
+        subroutine exponential_rand_seed_int(w, nw, lambda, seed) bind(c, name='exponential_rand_seed')
+            use iso_c_binding, only: c_int, c_int
+            real(kind=c_int), dimension(*) :: w
+            integer(kind=c_int), value :: nw
+            real(kind=c_int), value :: lambda
+            integer(kind=c_int), value :: seed
+        end subroutine exponential_rand_seed_int
+
+        ! random number following uniform distribution
+        subroutine uniform_rand_float(w, nw, lb, ub) bind(c, name='uniform_rand')
+            use iso_c_binding, only: c_float, c_int
+            real(kind=c_float), dimension(*) :: w
+            integer(kind=c_int), value :: nw
+            real(kind=c_float), value :: lb, ub
+        end subroutine uniform_rand_float
+
+        ! random number following uniform distribution, given seed
+        subroutine uniform_rand_seed_float(w, nw, lb, ub, seed) bind(c, name='uniform_rand_seed')
+            use iso_c_binding, only: c_float, c_int
+            real(kind=c_float), dimension(*) :: w
+            integer(kind=c_int), value :: nw
+            real(kind=c_float), value :: lb, ub
+            integer(kind=c_int), value :: seed
+        end subroutine uniform_rand_seed_float
+
+        ! random number following normal distribution
+        subroutine normal_rand_float(w, nw, mu, sigma) bind(c, name='normal_rand')
+            use iso_c_binding, only: c_float, c_int
+            real(kind=c_float), dimension(*) :: w
+            integer(kind=c_int), value :: nw
+            real(kind=c_float), value :: mu, sigma
+        end subroutine normal_rand_float
+
+        ! random number following normal distribution, given seed
+        subroutine normal_rand_seed_float(w, nw, mu, sigma, seed) bind(c, name='normal_rand_seed')
+            use iso_c_binding, only: c_float, c_int
+            real(kind=c_float), dimension(*) :: w
+            integer(kind=c_int), value :: nw
+            real(kind=c_float), value :: mu, sigma
+            integer(kind=c_int), value :: seed
+        end subroutine normal_rand_seed_float
+
+        ! random number following Cauchy distribution
+        subroutine cauchy_rand_float(w, nw, a, b) bind(c, name='cauchy_rand')
+            use iso_c_binding, only: c_float, c_int
+            real(kind=c_float), dimension(*) :: w
+            integer(kind=c_int), value :: nw
+            real(kind=c_float), value :: a, b
+        end subroutine cauchy_rand_float
+
+        ! random number following Cauchy distribution, given seed
+        subroutine cauchy_rand_seed_float(w, nw, a, b, seed) bind(c, name='cauchy_rand_seed')
             use iso_c_binding, only: c_float, c_int
             real(kind=c_float), dimension(*) :: w
             integer(kind=c_int), value :: nw
             real(kind=c_float), value :: a, b
             integer(kind=c_int), value :: seed
-        end subroutine cauchy_rand_seed
+        end subroutine cauchy_rand_seed_float
 
         ! random number following Poisson distribution
-        subroutine poisson_rand(w, nw, mean) bind(c, name='poisson_rand')
+        subroutine poisson_rand_float(w, nw, mean) bind(c, name='poisson_rand')
             use iso_c_binding, only: c_float, c_int
             real(kind=c_float), dimension(*) :: w
             integer(kind=c_int), value :: nw
             real(kind=c_float), value :: mean
-        end subroutine poisson_rand
+        end subroutine poisson_rand_float
 
         ! random number following Poisson distribution, given seed
-        subroutine poisson_rand_seed(w, nw, mean, seed) bind(c, name='poisson_rand_seed')
+        subroutine poisson_rand_seed_float(w, nw, mean, seed) bind(c, name='poisson_rand_seed')
             use iso_c_binding, only: c_float, c_int
             real(kind=c_float), dimension(*) :: w
             integer(kind=c_int), value :: nw
             real(kind=c_float), value :: mean
             integer(kind=c_int), value :: seed
-        end subroutine poisson_rand_seed
+        end subroutine poisson_rand_seed_float
 
         ! random number following exponential distribution
-        subroutine exponential_rand(w, nw, lambda) bind(c, name='exponential_rand')
+        subroutine exponential_rand_float(w, nw, lambda) bind(c, name='exponential_rand')
             use iso_c_binding, only: c_float, c_int
             real(kind=c_float), dimension(*) :: w
             integer(kind=c_int), value :: nw
             real(kind=c_float), value :: lambda
-        end subroutine exponential_rand
+        end subroutine exponential_rand_float
 
         ! random number following exponential distribution, given seed
-        subroutine exponential_rand_seed(w, nw, lambda, seed) bind(c, name='exponential_rand_seed')
+        subroutine exponential_rand_seed_float(w, nw, lambda, seed) bind(c, name='exponential_rand_seed')
             use iso_c_binding, only: c_float, c_int
             real(kind=c_float), dimension(*) :: w
             integer(kind=c_int), value :: nw
             real(kind=c_float), value :: lambda
             integer(kind=c_int), value :: seed
-        end subroutine exponential_rand_seed
+        end subroutine exponential_rand_seed_float
 
         ! random number following uniform distribution
         subroutine uniform_rand_double(w, nw, lb, ub) bind(c, name='uniform_rand_double')
@@ -236,32 +287,38 @@ module libflit_random
 
     end interface
 
+    interface irand
+        module procedure :: rand_int
+    end interface irand
+
+    interface rand
+        module procedure :: rand_float
+    end interface
+
+    interface drand
+        module procedure :: rand_double
+    end interface
+
     interface irandom
-        module procedure :: irand
+        module procedure :: rand_int
         module procedure :: rand_array_1d_int
         module procedure :: rand_array_2d_int
         module procedure :: rand_array_3d_int
     end interface irandom
 
     interface random
-        module procedure :: rand
+        module procedure :: rand_float
         module procedure :: rand_array_1d_float
         module procedure :: rand_array_2d_float
         module procedure :: rand_array_3d_float
     end interface random
 
     interface drandom
-        module procedure :: drand
+        module procedure :: rand_double
         module procedure :: rand_array_1d_double
         module procedure :: rand_array_2d_double
         module procedure :: rand_array_3d_double
     end interface drandom
-
-    interface randomize
-        module procedure :: randomize_1d_float
-        module procedure :: randomize_2d_float
-        module procedure :: randomize_3d_float
-    end interface randomize
 
     interface random_permute
         module procedure :: random_permute_int
@@ -281,7 +338,6 @@ module libflit_random
     private
     public :: irand, rand, drand
     public :: irandom, random, drandom
-    public :: randomize
     public :: random_order
     public :: random_string
     public :: random_permute
@@ -289,1898 +345,23 @@ module libflit_random
 
 contains
 
-    !
-    !> Return a random integer
-    !
-    function irand(dist, seed, range, mu, sigma, a, b, mean, lambda) result(r)
-
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        integer, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        real, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        real, optional :: a, b
-        ! Possion distribution -- mean
-        real, optional :: mean
-        ! Exponential distribution -- lambda
-        real, optional :: lambda
-        ! Output
-        integer :: r
-
-        integer, dimension(1:1) :: random_value
-        integer, dimension(1:2) :: value_range
-        real :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        real :: exponential_lambda
-        character(len=32) :: distribution
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0, 9]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_seed_int(random_value, 1, value_range(1), value_range(2), seed)
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed_int(random_value, 1, normal_mu, normal_sigma, seed)
-                    !                case ('cauchy', 'Cauchy')
-                    !                    call cauchy_rand_seed(random_value, 1, cauchy_a, cauchy_b, seed)
-                    !                case ('poisson', 'Poisson')
-                    !                    call poisson_rand_seed(random_value, 1, poisson_mean, seed)
-                    !                case ('exp', 'exponential')
-                    !                    call exponential_rand_seed(random_value, 1, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_int(random_value, 1, value_range(1), value_range(2))
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_int(random_value, 1, normal_mu, normal_sigma)
-                    !                case ('cauchy', 'Cauchy')
-                    !                    call cauchy_rand(random_value, 1, cauchy_a, cauchy_b)
-                    !                case ('poisson', 'Poisson')
-                    !                    call poisson_rand(random_value, 1, poisson_mean)
-                    !                case ('exp', 'exponential')
-                    !                    call exponential_rand(random_value, 1, exponential_lambda)
-            end select
-        end if
-
-        r = random_value(1)
-
-    end function irand
-
-    !
-    !> Return a 1D array of random integers
-    !
-    function rand_array_1d_int(n1, dist, seed, range, mu, sigma, a, b, mean, lambda) result(r)
-
-        integer :: n1
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        integer, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        real, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        real, optional :: a, b
-        ! Possion distribution -- mean
-        real, optional :: mean
-        ! Exponential distribution -- lambda
-        real, optional :: lambda
-        ! Minimum distance
-        !        integer, optional :: spacing
-        ! Output
-        integer, allocatable, dimension(:) :: r
-
-        integer, allocatable, dimension(:) :: random_value
-        integer, dimension(1:2) :: value_range
-        real :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        real :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n
-        !        integer :: random_spacing
-        !        integer :: empty_space
-        !        integer, allocatable, dimension(:) :: index
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0, 9]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        !                if (present(spacing)) then
-        !            random_spacing = spacing
-        !        else
-        !            random_spacing = 0
-        !        end if
-
-        n = n1
-        !        if (present(spacing)) then
-        !            empty_space = value_range(2) - value_range(1) - (n - 1)*random_spacing
-        !            call assert(empty_space >= 0, ' <rand_array_1d> Error: The expected minimum spacing is too big. ')
-        !        end if
-
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_seed_int(random_value, n, value_range(1), value_range(2), seed)
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed_int(random_value, n, normal_mu, normal_sigma, seed)
-                    !                case ('cauchy', 'Cauchy')
-                    !                    call cauchy_rand_seed(random_value, n, cauchy_a, cauchy_b, seed)
-                    !                case ('poisson', 'Poisson')
-                    !                    call poisson_rand_seed(random_value, n, poisson_mean, seed)
-                    !                case ('exp', 'exponential')
-                    !                    call exponential_rand_seed(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_int(random_value, n, value_range(1), value_range(2))
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_int(random_value, n, normal_mu, normal_sigma)
-                    !                case ('cauchy', 'Cauchy')
-                    !                    call cauchy_rand(random_value, n, cauchy_a, cauchy_b)
-                    !                case ('poisson', 'Poisson')
-                    !                    call poisson_rand(random_value, n, poisson_mean)
-                    !                case ('exp', 'exponential')
-                    !                    call exponential_rand(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        r = random_value
-
-    end function rand_array_1d_int
-
-    !
-    !> Return a 2D array of random floats
-    !
-    function rand_array_2d_int(n1, n2, dist, seed, range, mu, sigma, a, b, mean, lambda) result(r)
-
-        integer :: n1, n2
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        real, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        real, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        real, optional :: a, b
-        ! Possion distribution -- mean
-        real, optional :: mean
-        ! Exponential distribution -- lambda
-        real, optional :: lambda
-        ! Output
-        integer, allocatable, dimension(:, :) :: r
-
-        integer, allocatable, dimension(:) :: random_value
-        integer, dimension(1:2) :: value_range
-        real :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        real :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n
-        !        integer :: random_spacing
-        !        integer :: empty_space
-        !        integer, allocatable, dimension(:) :: index
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0.0, 1.0]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        n = n1*n2
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_seed_int(random_value, n, value_range(1), value_range(2), seed)
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed_int(random_value, n, normal_mu, normal_sigma, seed)
-                    !                case ('cauchy', 'Cauchy')
-                    !                    call cauchy_rand_seed(random_value, n, cauchy_a, cauchy_b, seed)
-                    !                case ('poisson', 'Poisson')
-                    !                    call poisson_rand_seed(random_value, n, poisson_mean, seed)
-                    !                case ('exp', 'exponential')
-                    !                    call exponential_rand_seed(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_int(random_value, n, value_range(1), value_range(2))
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_int(random_value, n, normal_mu, normal_sigma)
-                    !                case ('cauchy', 'Cauchy')
-                    !                    call cauchy_rand(random_value, n, cauchy_a, cauchy_b)
-                    !                case ('poisson', 'Poisson')
-                    !                    call poisson_rand(random_value, n, poisson_mean)
-                    !                case ('exp', 'exponential')
-                    !                    call exponential_rand(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        r = reshape(random_value, [n1, n2])
-
-    end function rand_array_2d_int
-
-    !
-    !> Return a 3D array of random floats
-    !
-    function rand_array_3d_int(n1, n2, n3, dist, seed, range, mu, sigma, a, b, mean, lambda) result(r)
-
-        integer :: n1, n2, n3
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        real, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        real, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        real, optional :: a, b
-        ! Possion distribution -- mean
-        real, optional :: mean
-        ! Exponential distribution -- lambda
-        real, optional :: lambda
-        ! Output
-        integer, allocatable, dimension(:, :, :) :: r
-
-        integer, allocatable, dimension(:) :: random_value
-        integer, dimension(1:2) :: value_range
-        real :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        real :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n
-        !        integer :: random_spacing
-        !        integer :: empty_space
-        !        integer, allocatable, dimension(:) :: index
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0.0, 1.0]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        n = n1*n2*n3
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_seed_int(random_value, n, value_range(1), value_range(2), seed)
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed_int(random_value, n, normal_mu, normal_sigma, seed)
-                    !                case ('cauchy', 'Cauchy')
-                    !                    call cauchy_rand_seed(random_value, n, cauchy_a, cauchy_b, seed)
-                    !                case ('poisson', 'Poisson')
-                    !                    call poisson_rand_seed(random_value, n, poisson_mean, seed)
-                    !                case ('exp', 'exponential')
-                    !                    call exponential_rand_seed(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_int(random_value, n, value_range(1), value_range(2))
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_int(random_value, n, normal_mu, normal_sigma)
-                    !                case ('cauchy', 'Cauchy')
-                    !                    call cauchy_rand(random_value, n, cauchy_a, cauchy_b)
-                    !                case ('poisson', 'Poisson')
-                    !                    call poisson_rand(random_value, n, poisson_mean)
-                    !                case ('exp', 'exponential')
-                    !                    call exponential_rand(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        !        allocate (r(1:n1, 1:n2, 1:n3), source=reshape(random_value, [n1, n2, n3]))
-        r = reshape(random_value, [n1, n2, n3])
-
-    end function rand_array_3d_int
-
-
-    !
-    !> Return a random float
-    !
-    function rand(dist, seed, range, mu, sigma, a, b, mean, lambda) result(r)
-
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        real, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        real, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        real, optional :: a, b
-        ! Possion distribution -- mean
-        real, optional :: mean
-        ! Exponential distribution -- lambda
-        real, optional :: lambda
-        ! Output
-        real :: r
-
-        real, dimension(1:1) :: random_value
-        real, dimension(1:2) :: value_range
-        real :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        real :: exponential_lambda
-        character(len=32) :: distribution
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0.0, 1.0]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_seed(random_value, 1, value_range(1), value_range(2), seed)
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed(random_value, 1, normal_mu, normal_sigma, seed)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_seed(random_value, 1, cauchy_a, cauchy_b, seed)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_seed(random_value, 1, poisson_mean, seed)
-                case ('exp', 'exponential')
-                    call exponential_rand_seed(random_value, 1, exponential_lambda, seed)
-            end select
-        else
-            ! When seed = -1, the random generator uses null seed
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand(random_value, 1, value_range(1), value_range(2))
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand(random_value, 1, normal_mu, normal_sigma)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand(random_value, 1, cauchy_a, cauchy_b)
-                case ('poisson', 'Poisson')
-                    call poisson_rand(random_value, 1, poisson_mean)
-                case ('exp', 'exponential')
-                    call exponential_rand(random_value, 1, exponential_lambda)
-            end select
-        end if
-
-        r = random_value(1)
-
-    end function rand
-
-    !
-    !> Return a 1D array of random floats
-    !
-    function rand_array_1d_float(n1, dist, seed, range, mu, sigma, a, b, mean, lambda, spacing) result(r)
-
-        integer :: n1
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        real, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        real, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        real, optional :: a, b
-        ! Possion distribution -- mean
-        real, optional :: mean
-        ! Exponential distribution -- lambda
-        real, optional :: lambda
-        ! Minimum distance
-        real, optional :: spacing
-        ! Output
-        real, allocatable, dimension(:) :: r
-
-        real, allocatable, dimension(:) :: random_value
-        real, dimension(1:2) :: value_range
-        real :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        real :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n
-        real :: random_spacing
-        real :: empty_space
-        integer, allocatable, dimension(:) :: index
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0.0, 1.0]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        if (present(spacing)) then
-            random_spacing = spacing
-        else
-            random_spacing = 0.0
-        end if
-
-        n = n1
-        if (present(spacing)) then
-            empty_space = value_range(2) - value_range(1) - (n - 1.0)*random_spacing
-            call assert(empty_space >= 0.0, ' <rand_array_1d> Error: The expected minimum spacing is too big. ')
-        end if
-
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand_seed(random_value, n, 0.0, 1.0, seed)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand_seed(random_value, n, value_range(1), value_range(2), seed)
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed(random_value, n, normal_mu, normal_sigma, seed)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_seed(random_value, n, cauchy_a, cauchy_b, seed)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_seed(random_value, n, poisson_mean, seed)
-                case ('exp', 'exponential')
-                    call exponential_rand_seed(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand(random_value, n, 0.0, 1.0)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand(random_value, n, value_range(1), value_range(2))
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand(random_value, n, normal_mu, normal_sigma)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand(random_value, n, cauchy_a, cauchy_b)
-                case ('poisson', 'Poisson')
-                    call poisson_rand(random_value, n, poisson_mean)
-                case ('exp', 'exponential')
-                    call exponential_rand(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        r = random_value
-
-    end function rand_array_1d_float
-
-    !
-    !> Return a 2D array of random floats
-    !
-    function rand_array_2d_float(n1, n2, dist, seed, range, mu, sigma, a, b, mean, lambda, spacing) result(r)
-
-        integer :: n1, n2
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        real, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        real, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        real, optional :: a, b
-        ! Possion distribution -- mean
-        real, optional :: mean
-        ! Exponential distribution -- lambda
-        real, optional :: lambda
-        ! Minimum distance
-        real, optional :: spacing
-        ! Output
-        real, allocatable, dimension(:, :) :: r
-
-        real, allocatable, dimension(:) :: random_value
-        real, dimension(1:2) :: value_range
-        real :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        real :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n
-        real :: random_spacing
-        real :: empty_space
-        integer, allocatable, dimension(:) :: index
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0.0, 1.0]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        if (present(spacing)) then
-            random_spacing = spacing
-        else
-            random_spacing = 0.0
-        end if
-
-        n = n1*n2
-        if (present(spacing)) then
-            empty_space = value_range(2) - value_range(1) - (n - 1.0)*random_spacing
-            call assert(empty_space >= 0.0, ' <rand_array_1d> Error: The expected minimum spacing is too big. ')
-        end if
-
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand_seed(random_value, n, 0.0, 1.0, seed)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand_seed(random_value, n, value_range(1), value_range(2), seed)
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed(random_value, n, normal_mu, normal_sigma, seed)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_seed(random_value, n, cauchy_a, cauchy_b, seed)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_seed(random_value, n, poisson_mean, seed)
-                case ('exp', 'exponential')
-                    call exponential_rand_seed(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand(random_value, n, 0.0, 1.0)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand(random_value, n, value_range(1), value_range(2))
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand(random_value, n, normal_mu, normal_sigma)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand(random_value, n, cauchy_a, cauchy_b)
-                case ('poisson', 'Poisson')
-                    call poisson_rand(random_value, n, poisson_mean)
-                case ('exp', 'exponential')
-                    call exponential_rand(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        r = reshape(random_value, [n1, n2])
-
-    end function rand_array_2d_float
-
-    !
-    !> Return a 3D array of random floats
-    !
-    function rand_array_3d_float(n1, n2, n3, dist, seed, range, mu, sigma, a, b, mean, lambda, spacing) result(r)
-
-        integer :: n1, n2, n3
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        real, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        real, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        real, optional :: a, b
-        ! Possion distribution -- mean
-        real, optional :: mean
-        ! Exponential distribution -- lambda
-        real, optional :: lambda
-        ! Output
-        real, allocatable, dimension(:, :, :) :: r
-        ! Minimum distance
-        real, optional :: spacing
-
-        real, allocatable, dimension(:) :: random_value
-        real, dimension(1:2) :: value_range
-        real :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        real :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n
-        real :: random_spacing
-        real :: empty_space
-        integer, allocatable, dimension(:) :: index
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0.0, 1.0]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        if (present(spacing)) then
-            random_spacing = spacing
-        else
-            random_spacing = 0.0
-        end if
-
-        n = n1*n2*n3
-        if (present(spacing)) then
-            empty_space = value_range(2) - value_range(1) - (n - 1.0)*random_spacing
-            call assert(empty_space >= 0.0, ' <rand_array_1d> Error: The expected minimum spacing is too big. ')
-        end if
-
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand_seed(random_value, n, 0.0, 1.0, seed)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand_seed(random_value, n, value_range(1), value_range(2), seed)
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed(random_value, n, normal_mu, normal_sigma, seed)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_seed(random_value, n, cauchy_a, cauchy_b, seed)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_seed(random_value, n, poisson_mean, seed)
-                case ('exp', 'exponential')
-                    call exponential_rand_seed(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand(random_value, n, 0.0, 1.0)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand(random_value, n, value_range(1), value_range(2))
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand(random_value, n, normal_mu, normal_sigma)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand(random_value, n, cauchy_a, cauchy_b)
-                case ('poisson', 'Poisson')
-                    call poisson_rand(random_value, n, poisson_mean)
-                case ('exp', 'exponential')
-                    call exponential_rand(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        r = reshape(random_value, [n1, n2, n3])
-
-    end function rand_array_3d_float
-
-    !
-    !> Return a random integer
-    !
-    function drand(dist, seed, range, mu, sigma, a, b, mean, lambda) result(r)
-
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        integer, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        double precision, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        double precision, optional :: a, b
-        ! Possion distribution -- mean
-        double precision, optional :: mean
-        ! Exponential distribution -- lambda
-        double precision, optional :: lambda
-        ! Output
-        double precision :: r
-
-        double precision, dimension(1:1) :: random_value
-        double precision, dimension(1:2) :: value_range
-        double precision :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        double precision :: exponential_lambda
-        character(len=32) :: distribution
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0, 9]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_seed_double(random_value, 1, value_range(1), value_range(2), seed)
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed_double(random_value, 1, normal_mu, normal_sigma, seed)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_seed_double(random_value, 1, cauchy_a, cauchy_b, seed)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_seed_double(random_value, 1, poisson_mean, seed)
-                case ('exp', 'exponential')
-                    call exponential_rand_seed_double(random_value, 1, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_double(random_value, 1, value_range(1), value_range(2))
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_double(random_value, 1, normal_mu, normal_sigma)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_double(random_value, 1, cauchy_a, cauchy_b)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_double(random_value, 1, poisson_mean)
-                case ('exp', 'exponential')
-                    call exponential_rand_double(random_value, 1, exponential_lambda)
-            end select
-        end if
-
-        r = random_value(1)
-
-    end function drand
-
-    !
-    !> Return a 1D array of random integers
-    !
-    function rand_array_1d_double(n1, dist, seed, range, mu, sigma, a, b, mean, lambda, spacing) result(r)
-
-        integer :: n1
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        integer, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        double precision, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        double precision, optional :: a, b
-        ! Possion distribution -- mean
-        double precision, optional :: mean
-        ! Exponential distribution -- lambda
-        double precision, optional :: lambda
-        ! Minimum distance
-        double precision, optional :: spacing
-        ! Output
-        double precision, allocatable, dimension(:) :: r
-
-        double precision, allocatable, dimension(:) :: random_value
-        double precision, dimension(1:2) :: value_range
-        double precision :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        double precision :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n
-        real :: random_spacing
-        real :: empty_space
-        integer, allocatable, dimension(:) :: index
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0, 9]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        if (present(spacing)) then
-            random_spacing = spacing
-        else
-            random_spacing = 0.0
-        end if
-
-        n = n1
-        if (present(spacing)) then
-            empty_space = value_range(2) - value_range(1) - (n - 1.0)*random_spacing
-            call assert(empty_space >= 0.0, ' <rand_array_1d> Error: The expected minimum spacing is too big. ')
-        end if
-
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand_seed_double(random_value, n, 0.0d0, 1.0d0, seed)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand_seed_double(random_value, n, value_range(1), value_range(2), seed)
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed_double(random_value, n, normal_mu, normal_sigma, seed)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_seed_double(random_value, n, cauchy_a, cauchy_b, seed)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_seed_double(random_value, n, poisson_mean, seed)
-                case ('exp', 'exponential')
-                    call exponential_rand_seed_double(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand_double(random_value, n, 0.0d0, 1.0d0)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand_double(random_value, n, value_range(1), value_range(2))
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_double(random_value, n, normal_mu, normal_sigma)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_double(random_value, n, cauchy_a, cauchy_b)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_double(random_value, n, poisson_mean)
-                case ('exp', 'exponential')
-                    call exponential_rand_double(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        r = random_value
-
-    end function rand_array_1d_double
-
-    !
-    !> Return a 2D array of random floats
-    !
-    function rand_array_2d_double(n1, n2, dist, seed, range, mu, sigma, a, b, mean, lambda, spacing) result(r)
-
-        integer :: n1, n2
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        double precision, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        double precision, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        double precision, optional :: a, b
-        ! Possion distribution -- mean
-        double precision, optional :: mean
-        ! Exponential distribution -- lambda
-        double precision, optional :: lambda
-        ! Minimum distance
-        double precision, optional :: spacing
-        ! Output
-        double precision, allocatable, dimension(:, :) :: r
-
-        double precision, allocatable, dimension(:) :: random_value
-        double precision, dimension(1:2) :: value_range
-        double precision :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        double precision :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n
-        real :: random_spacing
-        real :: empty_space
-        integer, allocatable, dimension(:) :: index
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0.0, 1.0]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        if (present(spacing)) then
-            random_spacing = spacing
-        else
-            random_spacing = 0.0
-        end if
-
-        n = n1*n2
-        if (present(spacing)) then
-            empty_space = value_range(2) - value_range(1) - (n - 1.0)*random_spacing
-            call assert(empty_space >= 0.0, ' <rand_array_1d> Error: The expected minimum spacing is too big. ')
-        end if
-
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand_seed_double(random_value, n, 0.0d0, 1.0d0, seed)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand_seed_double(random_value, n, value_range(1), value_range(2), seed)
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed_double(random_value, n, normal_mu, normal_sigma, seed)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_seed_double(random_value, n, cauchy_a, cauchy_b, seed)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_seed_double(random_value, n, poisson_mean, seed)
-                case ('exp', 'exponential')
-                    call exponential_rand_seed_double(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand_double(random_value, n, 0.0d0, 1.0d0)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand_double(random_value, n, value_range(1), value_range(2))
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_double(random_value, n, normal_mu, normal_sigma)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_double(random_value, n, cauchy_a, cauchy_b)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_double(random_value, n, poisson_mean)
-                case ('exp', 'exponential')
-                    call exponential_rand_double(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        r = reshape(random_value, [n1, n2])
-
-    end function rand_array_2d_double
-
-    !
-    !> Return a 3D array of random floats
-    !
-    function rand_array_3d_double(n1, n2, n3, dist, seed, range, mu, sigma, a, b, mean, lambda, spacing) result(r)
-
-        integer :: n1, n2, n3
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        double precision, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        double precision, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        double precision, optional :: a, b
-        ! Possion distribution -- mean
-        double precision, optional :: mean
-        ! Exponential distribution -- lambda
-        double precision, optional :: lambda
-        ! Minimum distance
-        double precision, optional :: spacing
-        ! Output
-        double precision, allocatable, dimension(:, :, :) :: r
-
-        double precision, allocatable, dimension(:) :: random_value
-        double precision, dimension(1:2) :: value_range
-        double precision :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        double precision :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n
-        real :: random_spacing
-        real :: empty_space
-        integer, allocatable, dimension(:) :: index
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0.0, 1.0]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        if (present(spacing)) then
-            random_spacing = spacing
-        else
-            random_spacing = 0.0
-        end if
-
-        n = n1*n2*n3
-        if (present(spacing)) then
-            empty_space = value_range(2) - value_range(1) - (n - 1.0)*random_spacing
-            call assert(empty_space >= 0.0, ' <rand_array_1d> Error: The expected minimum spacing is too big. ')
-        end if
-
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand_seed_double(random_value, n, 0.0d0, 1.0d0, seed)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand_seed_double(random_value, n, value_range(1), value_range(2), seed)
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed_double(random_value, n, normal_mu, normal_sigma, seed)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_seed_double(random_value, n, cauchy_a, cauchy_b, seed)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_seed_double(random_value, n, poisson_mean, seed)
-                case ('exp', 'exponential')
-                    call exponential_rand_seed_double(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    if (present(spacing)) then
-                        call uniform_rand_double(random_value, n, 0.0d0, 1.0d0)
-                        call sort_index(random_value, index)
-                        random_value = empty_space*random_value + value_range(1) + random_spacing*linspace(0.0, n - 1.0, n)
-                        random_value = random_value(index)
-                    else
-                        call uniform_rand_double(random_value, n, value_range(1), value_range(2))
-                    end if
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_double(random_value, n, normal_mu, normal_sigma)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_double(random_value, n, cauchy_a, cauchy_b)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_double(random_value, n, poisson_mean)
-                case ('exp', 'exponential')
-                    call exponential_rand_double(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        r = reshape(random_value, [n1, n2, n3])
-
-    end function rand_array_3d_double
-
-
-    !
-    !> Randomize a 1D float array
-    !
-    subroutine randomize_1d_float(r, dist, seed, range, mu, sigma, a, b, mean, lambda)
-
-        real, dimension(:), intent(inout) :: r
-
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        real, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        real, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        real, optional :: a, b
-        ! Possion distribution -- mean
-        real, optional :: mean
-        ! Exponential distribution -- lambda
-        real, optional :: lambda
-        ! Output
-        real, allocatable, dimension(:) :: random_value
-
-        real, dimension(1:2) :: value_range
-        real :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        real :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n, n1
-
-        n1 = size(r)
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0.0, 1.0]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        n = n1
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_seed(random_value, n, value_range(1), value_range(2), seed)
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed(random_value, n, normal_mu, normal_sigma, seed)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_seed(random_value, n, cauchy_a, cauchy_b, seed)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_seed(random_value, n, poisson_mean, seed)
-                case ('exp', 'exponential')
-                    call exponential_rand_seed(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand(random_value, n, value_range(1), value_range(2))
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand(random_value, n, normal_mu, normal_sigma)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand(random_value, n, cauchy_a, cauchy_b)
-                case ('poisson', 'Poisson')
-                    call poisson_rand(random_value, n, poisson_mean)
-                case ('exp', 'exponential')
-                    call exponential_rand(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        r = random_value
-
-    end subroutine randomize_1d_float
-
-    !
-    !> Randomize a 2D float array
-    !
-    subroutine randomize_2d_float(r, dist, seed, range, mu, sigma, a, b, mean, lambda)
-
-        real, dimension(:, :), intent(inout) :: r
-
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        real, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        real, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        real, optional :: a, b
-        ! Possion distribution -- mean
-        real, optional :: mean
-        ! Exponential distribution -- lambda
-        real, optional :: lambda
-        ! Output
-        real, allocatable, dimension(:) :: random_value
-
-        real, dimension(1:2) :: value_range
-        real :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        real :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n, n1, n2
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0.0, 1.0]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        n1 = size(r, 1)
-        n2 = size(r, 2)
-        n = n1*n2
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_seed(random_value, n, value_range(1), value_range(2), seed)
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed(random_value, n, normal_mu, normal_sigma, seed)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_seed(random_value, n, cauchy_a, cauchy_b, seed)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_seed(random_value, n, poisson_mean, seed)
-                case ('exp', 'exponential')
-                    call exponential_rand_seed(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand(random_value, n, value_range(1), value_range(2))
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand(random_value, n, normal_mu, normal_sigma)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand(random_value, n, cauchy_a, cauchy_b)
-                case ('poisson', 'Poisson')
-                    call poisson_rand(random_value, n, poisson_mean)
-                case ('exp', 'exponential')
-                    call exponential_rand(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        r = reshape(random_value, [n1, n2])
-
-    end subroutine randomize_2d_float
-
-    !
-    !> Randomize a 3D float array
-    !
-    subroutine randomize_3d_float(r, dist, seed, range, mu, sigma, a, b, mean, lambda)
-
-        real, dimension(:, :, :), intent(inout) :: r
-
-        ! Given seed or not
-        integer, optional :: seed
-        ! Distribution
-        character(len=*), optional :: dist
-        ! Uniform distribution -- value range
-        real, dimension(:), optional :: range
-        ! Gaussian distribution -- mean and standard deviation
-        real, optional :: mu, sigma
-        ! Cauchy distribution -- parameters a and b
-        real, optional :: a, b
-        ! Possion distribution -- mean
-        real, optional :: mean
-        ! Exponential distribution -- lambda
-        real, optional :: lambda
-        ! Output
-        real, allocatable, dimension(:) :: random_value
-
-        real, dimension(1:2) :: value_range
-        real :: normal_mu, normal_sigma, cauchy_a, cauchy_b, poisson_mean
-        real :: exponential_lambda
-        character(len=32) :: distribution
-        integer :: n, n1, n2, n3
-
-        if (present(dist)) then
-            distribution = trim(adjustl(dist))
-        else
-            distribution = 'uniform'
-        end if
-
-        if (present(range)) then
-            value_range = range
-        else
-            value_range = [0.0, 1.0]
-        end if
-
-        if (present(mu)) then
-            normal_mu = mu
-        else
-            normal_mu = 0.0
-        end if
-
-        if (present(sigma)) then
-            normal_sigma = sigma
-        else
-            normal_sigma = 1.0
-        end if
-
-        if (present(a)) then
-            cauchy_a = a
-        else
-            cauchy_a = 0.0
-        end if
-
-        if (present(b)) then
-            cauchy_b = b
-        else
-            cauchy_b = 1.0
-        end if
-
-        if (present(mean)) then
-            poisson_mean = mean
-        else
-            poisson_mean = 0.0
-        end if
-
-        if (present(lambda)) then
-            exponential_lambda = lambda
-        else
-            exponential_lambda = 1.0
-        end if
-
-        n1 = size(r, 1)
-        n2 = size(r, 2)
-        n3 = size(r, 3)
-        n = n1*n2*n3
-        allocate (random_value(1:n))
-
-        if (present(seed) .and. seed > 0) then
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand_seed(random_value, n, value_range(1), value_range(2), seed)
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand_seed(random_value, n, normal_mu, normal_sigma, seed)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand_seed(random_value, n, cauchy_a, cauchy_b, seed)
-                case ('poisson', 'Poisson')
-                    call poisson_rand_seed(random_value, n, poisson_mean, seed)
-                case ('exp', 'exponential')
-                    call exponential_rand_seed(random_value, n, exponential_lambda, seed)
-            end select
-        else
-            select case (distribution)
-                case ('uniform')
-                    call uniform_rand(random_value, n, value_range(1), value_range(2))
-                case ('normal', 'gaussian', 'Gaussian')
-                    call normal_rand(random_value, n, normal_mu, normal_sigma)
-                case ('cauchy', 'Cauchy')
-                    call cauchy_rand(random_value, n, cauchy_a, cauchy_b)
-                case ('poisson', 'Poisson')
-                    call poisson_rand(random_value, n, poisson_mean)
-                case ('exp', 'exponential')
-                    call exponential_rand(random_value, n, exponential_lambda)
-            end select
-        end if
-
-        r = reshape(random_value, [n1, n2, n3])
-
-    end subroutine randomize_3d_float
+#define T int
+#define TT integer
+#define TTT real
+#define nTT nint
+#include "template_random.f90"
+
+#define T float
+#define TT real
+#define TTT real
+#define nTT
+#include "template_random.f90"
+
+#define T double
+#define TT double precision
+#define TTT double precision
+#define nTT
+#include "template_random.f90"
 
     !
     !> Generate a random ordering of the integers 1 ... n.
@@ -2231,13 +412,14 @@ contains
     !
     !> Generate random string of A-Z, a-z, 0-9
     !
-    function random_string(nc) result(str)
+    function random_string(nc, seed) result(str)
 
-        integer, optional :: nc
+        integer, optional :: nc, seed
 
         integer :: nchar, i
         character(len=1), dimension(1:72) :: pool
         character(len=:), allocatable :: str
+        integer, allocatable, dimension(:) :: ri
 
         if (present(nc)) then
             nchar = max(1, nc)
@@ -2255,13 +437,21 @@ contains
             ]
 
         allocate (character(len=nchar)::str)
+        if (present(seed)) then
+            ri = irandom(nchar, range=[1, 72], seed=seed)
+        else
+            ri = irandom(nchar, range=[1, 72])
+        end if
+
         do i = 1, nchar
-            str(i:i) = pool(nint(rand(range=[1.0, 72.0])))
+            str(i:i) = pool(ri(i))
         end do
 
     end function random_string
 
-
+    !
+    !> Generate random mask
+    !
     function random_mask_1d_float(m, n, seed) result(mm)
 
         real, dimension(:), intent(in) :: m
@@ -2363,7 +553,7 @@ contains
     end function random_mask_3d_float
 
     !
-    !> Random pertutation of a 1D array of integers
+    !> Random permute an array
     !
 #define T int
 #define TT integer
