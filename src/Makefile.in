@@ -17,7 +17,7 @@
 # ==============================================================================
 # Compilation settings
 
-fc = mpiifort
+fc = mpiifx
 cc = icx
 cxx = icpx
 ll = ar
@@ -27,12 +27,12 @@ mklroot = $(intelroot)/mkl
 mpiroot = $(intelroot)/mpi
 
 base_inc = \
-	-I$(intelroot)/include \
-	-I$(intelroot)/include/intel64 \
 	-I$(mklroot)/include \
 	-I$(mklroot)/include/fftw \
 	-I$(mklroot)/include/intel64/lp64 \
 	-I$(mpiroot)/include
+	#	-I$(intelroot)/include \
+	#	-I$(intelroot)/include/intel64 \
 
 base_lflags = \
 	-qmkl -qopenmp -lstdc++ -lstdc++fs -liomp5 -lpthread -lm \
@@ -49,7 +49,7 @@ base_lflags = \
 base_fflags = \
 	-O3 -fpp -traceback -warn unused -module $(moddir) -qmkl \
 	-assume byterecl -assume buffered_io -qopenmp -heap-arrays \
-	-gen-interfaces \
+	-gen-interfaces
 	#	-align all -falign-loops -xHost \
 	#	-O0 -g -check bounds
 

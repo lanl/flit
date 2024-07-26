@@ -182,63 +182,81 @@ subroutine split_(a, low, high, mid, indices)
     integer ::   left, right
     TT ::  pivot, swap
     integer :: ipivot, iswap
+    integer :: n
 
     left = low
     right = high
     pivot = a(low)
     ipivot = indices(low)
+    n = size(a)
 
-    ! repeat the following while left and right haven't met
+    ! Repeat the following while left and right haven't met
     do
-        if (left >= right) exit
+        if (left >= right) then
+            exit
+        endif
 
-        ! scan right to left to find element < pivot
-        do
-            if (left >= right .or. a(right) < pivot) exit
+        ! Scan right to left to find element < pivot
+        do while (right >= 1)
+            if (left >= right .or. a(right) < pivot) then
+                exit
+            end if
             right = right - 1
         end do
 
-        ! scan left to right to find element > pivot
-        do
-            if (a(left) > pivot) exit
+        ! Scan left to right to find element > pivot
+        do while (left <= n)
+            if (a(left) > pivot) then
+                exit
+            end if
             left = left + 1
         end do
 
-        ! if left and right haven't met, exchange the as
+        ! If left and right haven't met, then exchange the element and index
         if (left < right) then
-            swap = a(left) ! exchange the array as
+
+            swap = a(left)
             a(left) = a(right)
             a(right) = swap
 
-            iswap = indices(left) ! exchange the indices as
+            iswap = indices(left)
             indices(left) = indices(right)
             indices(right) = iswap
+
         end if
 
     end do
 
-    ! switch element in split position with pivot
-    a(low) = a(right) ! switch array elems
+    ! Switch element and index in split position with pivot
+    a(low) = a(right)
     a(right) = pivot
     mid = right
 
-    indices(low) = indices(right) ! switch array elems
+    indices(low) = indices(right)
     indices(right) = ipivot
 
 end subroutine split_
 
 recursive subroutine quick_sort_index_(a, first, last, indices)
 
-    TT, dimension(:), intent(inout) :: a ! array of values
+    TT, dimension(:), intent(inout) :: a
     integer, intent(in)   :: first, last
     integer, dimension(:), intent(inout) :: indices
 
     integer :: mid
 
-    if (first < last) then ! if list size >= 2
-        call split_(a, first, last, mid, indices) ! split it
-        call quick_sort_index_(a, first, mid - 1, indices) ! sort left  half
-        call quick_sort_index_(a, mid + 1, last, indices) ! sort right half
+    ! If list size >= 2
+    if (first < last) then
+
+        ! Split it
+        call split_(a, first, last, mid, indices)
+
+        ! Sort left half
+        call quick_sort_index_(a, first, mid - 1, indices)
+
+        ! Sort right half
+        call quick_sort_index_(a, mid + 1, last, indices)
+
     end if
 
 end subroutine quick_sort_index_
@@ -253,6 +271,8 @@ subroutine qksort_index_(a, indices, order)
 
     indices = [(i, i=1, size(a))]
     call quick_sort_index_(a, 1, size(a), indices)
+
+    ! The default order is ascending
     if (present(order)) then
         if (order == -1) then
             a = a(size(a):1:-1)
@@ -303,8 +323,6 @@ function qksort_2d_(a, col, order) result(asort)
     do i = 1, n
         asort(i, :) = a(indices(i), :)
     end do
-
-    deallocate (b, indices)
 
 end function qksort_2d_
 

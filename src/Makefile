@@ -121,6 +121,7 @@ all: mkdir $(lib) copy clean_genmod
 
 # Compile options
 include $(PWD)/Makefile.in
+
 inc = $(base_inc) \
 	-I$(PWD) \
 	-I$(PWD)/../third_party/pcg_random \
