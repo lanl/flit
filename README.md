@@ -11,7 +11,7 @@ The work is under LANL open source approval reference O4767.
 Please refer to the document [LA-UR-24-26315](doc/doc_libflit.pdf) for details. 
 
 # Requirement
-Currently, `FLIT` only supports Intel's compiler suite (ifort, ifx, icx, icpx, mpiifort, and mpiifx) on Linux platform. We tested `FLIT` with ifort 2021.10, icx 2023.2, and icpx 2023.2, as well as ifx 2024.2, icx 2024.2, and icpx 2024.2. The default compilers set by the [Makefile.in](src/Makefile.in) is ifx-icx-icpx 2024.2 (the newest version of the compiler suite). Note that Per Intel's announcement, [ifort will be deprecated starting from late 2024](https://www.intel.com/content/www/us/en/developer/articles/guide/porting-guide-for-ifort-to-ifx.html), but some functionalities within the new ifx may not be optimal compared with ifort. 
+Currently, `FLIT` only supports Intel's compiler suite (ifort, ifx, icx, icpx, mpiifort, and mpiifx) on Linux platform. We tested `FLIT` with ifort 2021.10, icx 2023.2, and icpx 2023.2, as well as ifx 2024.2, icx 2024.2, and icpx 2024.2. The default compilers set by the [Makefile.in](src/Makefile.in) is ifx-icx-icpx 2024.2 (the newest version of the compiler suite). Note that per Intel's announcement, [ifort will be deprecated starting from late 2024](https://www.intel.com/content/www/us/en/developer/articles/guide/porting-guide-for-ifort-to-ifx.html). 
 
 At this moment, we do not have a clear timeline to make it fully compatible with GNU's compiler suite due to a number of nontrivial differences in these two compiler suites. 
 
