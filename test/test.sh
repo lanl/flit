@@ -74,6 +74,14 @@ make clean
 make
 ./exec_$mod
 
+# sort
+touch program_name
+mod="sort"
+echo "program_name="$mod > program_name
+make clean
+make
+./exec_$mod
+
 # geometry
 touch program_name
 mod="geometry"
