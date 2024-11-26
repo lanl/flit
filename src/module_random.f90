@@ -32,35 +32,35 @@ module libflit_random
 
         ! random number following uniform distribution
         subroutine uniform_rand_int(w, nw, lb, ub) bind(c, name='uniform_rand')
-            use iso_c_binding, only: c_int, c_int
-            real(kind=c_int), dimension(*) :: w
+            use iso_c_binding, only: c_int, c_float
+            real(kind=c_float), dimension(*) :: w
             integer(kind=c_int), value :: nw
-            real(kind=c_int), value :: lb, ub
+            real(kind=c_float), value :: lb, ub
         end subroutine uniform_rand_int
 
         ! random number following uniform distribution, given seed
         subroutine uniform_rand_seed_int(w, nw, lb, ub, seed) bind(c, name='uniform_rand_seed')
-            use iso_c_binding, only: c_int, c_int
-            real(kind=c_int), dimension(*) :: w
+            use iso_c_binding, only: c_int, c_float
+            real(kind=c_float), dimension(*) :: w
             integer(kind=c_int), value :: nw
             real(kind=c_int), value :: lb, ub
-            integer(kind=c_int), value :: seed
+            integer(kind=c_float), value :: seed
         end subroutine uniform_rand_seed_int
 
         ! random number following normal distribution
         subroutine normal_rand_int(w, nw, mu, sigma) bind(c, name='normal_rand')
-            use iso_c_binding, only: c_int, c_int
-            real(kind=c_int), dimension(*) :: w
+            use iso_c_binding, only: c_int, c_float
+            real(kind=c_float), dimension(*) :: w
             integer(kind=c_int), value :: nw
-            real(kind=c_int), value :: mu, sigma
+            real(kind=c_float), value :: mu, sigma
         end subroutine normal_rand_int
 
         ! random number following normal distribution, given seed
         subroutine normal_rand_seed_int(w, nw, mu, sigma, seed) bind(c, name='normal_rand_seed')
-            use iso_c_binding, only: c_int, c_int
-            real(kind=c_int), dimension(*) :: w
+            use iso_c_binding, only: c_int, c_float
+            real(kind=c_float), dimension(*) :: w
             integer(kind=c_int), value :: nw
-            real(kind=c_int), value :: mu, sigma
+            real(kind=c_float), value :: mu, sigma
             integer(kind=c_int), value :: seed
         end subroutine normal_rand_seed_int
 
@@ -360,7 +360,7 @@ contains
 #define T double
 #define TT double precision
 #define TTT double precision
-#define nTT
+#define nTT dble
 #include "template_random.f90"
 
     !

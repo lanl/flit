@@ -1,15 +1,15 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -41,8 +41,18 @@ module libflit_domain_decomposition
         module procedure :: cut_pwconst
     end interface
 
+    interface split_list
+        module procedure :: split_list_int
+        module procedure :: split_list_float
+        module procedure :: split_list_double
+        module procedure :: split_list_complex
+        module procedure :: split_list_dcomplex
+        module procedure :: split_list_logical
+    end interface split_list
+
     public :: divide_domain
     public :: cut
+    public :: split_list
 
 contains
 
@@ -340,5 +350,31 @@ contains
         end do
 
     end subroutine cut_pwconst
+
+    ! Split list into chuncks
+#define T int
+#define TT integer
+#define TTT integer
+#include "template_split_list.f90"
+
+#define T float
+#define TT real
+#include "template_split_list.f90"
+
+#define T double
+#define TT double precision
+#include "template_split_list.f90"
+
+#define T complex
+#define TT complex
+#include "template_split_list.f90"
+
+#define T dcomplex
+#define TT double complex
+#include "template_split_list.f90"
+
+#define T logical
+#define TT logical
+#include "template_split_list.f90"
 
 end module libflit_domain_decomposition
