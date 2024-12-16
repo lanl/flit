@@ -1,15 +1,15 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -236,7 +236,24 @@ module libflit_interp
         module procedure :: meshgrid_3d_double
     end interface meshgrid
 
+    interface point_interp_linear
+        module procedure :: point_interp_linear_1d_float
+        module procedure :: point_interp_linear_2d_float
+        module procedure :: point_interp_linear_3d_float
+        module procedure :: point_interp_linear_1d_double
+        module procedure :: point_interp_linear_2d_double
+        module procedure :: point_interp_linear_3d_double
+    end interface point_interp_linear
+
+    interface point_interp_barycentric
+        module procedure :: point_interp_barycentric_2d_float
+        module procedure :: point_interp_barycentric_3d_float
+        module procedure :: point_interp_barycentric_2d_double
+        module procedure :: point_interp_barycentric_3d_double
+    end interface point_interp_barycentric
+
     private
+
     public :: interp
     public :: resample
     public :: interp_to
@@ -244,6 +261,8 @@ module libflit_interp
     public :: ginterp
     public :: meshgrid
     public :: inpaint
+    public :: point_interp_linear
+    public :: point_interp_barycentric
 
 contains
 

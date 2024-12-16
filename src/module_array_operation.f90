@@ -1,15 +1,15 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -186,39 +186,39 @@ module libflit_array_operation
     end interface flip
 
     ! If-then-else ternary operation, including scalar and array
-    interface ifthen
-        module procedure :: ifthen_int
-        module procedure :: ifthen_float
-        module procedure :: ifthen_double
-        module procedure :: ifthen_complex
-        module procedure :: ifthen_dcomplex
-        module procedure :: ifthen_logical
-        module procedure :: ifthen_1d_int
-        module procedure :: ifthen_2d_int
-        module procedure :: ifthen_3d_int
-        module procedure :: ifthen_4d_int
-        module procedure :: ifthen_1d_float
-        module procedure :: ifthen_2d_float
-        module procedure :: ifthen_3d_float
-        module procedure :: ifthen_4d_float
-        module procedure :: ifthen_1d_double
-        module procedure :: ifthen_2d_double
-        module procedure :: ifthen_3d_double
-        module procedure :: ifthen_4d_double
-        module procedure :: ifthen_1d_complex
-        module procedure :: ifthen_2d_complex
-        module procedure :: ifthen_3d_complex
-        module procedure :: ifthen_4d_complex
-        module procedure :: ifthen_1d_dcomplex
-        module procedure :: ifthen_2d_dcomplex
-        module procedure :: ifthen_3d_dcomplex
-        module procedure :: ifthen_4d_dcomplex
-        module procedure :: ifthen_1d_logical
-        module procedure :: ifthen_2d_logical
-        module procedure :: ifthen_3d_logical
-        module procedure :: ifthen_4d_logical
-        module procedure :: ifthen_string
-    end interface ifthen
+    interface ifelse
+        module procedure :: ifelse_int
+        module procedure :: ifelse_float
+        module procedure :: ifelse_double
+        module procedure :: ifelse_complex
+        module procedure :: ifelse_dcomplex
+        module procedure :: ifelse_logical
+        module procedure :: ifelse_1d_int
+        module procedure :: ifelse_2d_int
+        module procedure :: ifelse_3d_int
+        module procedure :: ifelse_4d_int
+        module procedure :: ifelse_1d_float
+        module procedure :: ifelse_2d_float
+        module procedure :: ifelse_3d_float
+        module procedure :: ifelse_4d_float
+        module procedure :: ifelse_1d_double
+        module procedure :: ifelse_2d_double
+        module procedure :: ifelse_3d_double
+        module procedure :: ifelse_4d_double
+        module procedure :: ifelse_1d_complex
+        module procedure :: ifelse_2d_complex
+        module procedure :: ifelse_3d_complex
+        module procedure :: ifelse_4d_complex
+        module procedure :: ifelse_1d_dcomplex
+        module procedure :: ifelse_2d_dcomplex
+        module procedure :: ifelse_3d_dcomplex
+        module procedure :: ifelse_4d_dcomplex
+        module procedure :: ifelse_1d_logical
+        module procedure :: ifelse_2d_logical
+        module procedure :: ifelse_3d_logical
+        module procedure :: ifelse_4d_logical
+        module procedure :: ifelse_string
+    end interface ifelse
 
     ! Mask an array
     interface mask
@@ -467,7 +467,7 @@ module libflit_array_operation
     public :: cross
     public :: flatten
     public :: flip
-    public :: ifthen
+    public :: ifelse
     public :: mask
     public :: pad_array
     public :: pad
@@ -642,30 +642,30 @@ contains
     ! If-then-else ternary operation for scalar and array
 #define T int
 #define TT integer
-#include "template_ifthen.f90"
+#include "template_ifelse.f90"
 
 #define T float
 #define TT real
-#include "template_ifthen.f90"
+#include "template_ifelse.f90"
 
 #define T double
 #define TT double precision
-#include "template_ifthen.f90"
+#include "template_ifelse.f90"
 
 #define T complex
 #define TT complex
-#include "template_ifthen.f90"
+#include "template_ifelse.f90"
 
 #define T dcomplex
 #define TT double complex
-#include "template_ifthen.f90"
+#include "template_ifelse.f90"
 
 #define T logical
 #define TT logical
-#include "template_ifthen.f90"
+#include "template_ifelse.f90"
 
     ! String requires special routine
-    function ifthen_string(condition, a, b) result(c)
+    function ifelse_string(condition, a, b) result(c)
 
         logical :: condition
         character(len=*) :: a, b
@@ -677,7 +677,7 @@ contains
             c = b
         end if
 
-    end function ifthen_string
+    end function ifelse_string
 
     !================================================================
     ! Mask array

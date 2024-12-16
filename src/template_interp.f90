@@ -1,21 +1,20 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
 !    Kai Gao, kaigao@lanl.gov
 !
-
 
 #define PASTE(X)            X
 #define PASTE2(X)           PASTE(X)_
@@ -56,6 +55,12 @@
 #define inpaint_1d_     CONCAT(inpaint_1d, T)
 #define inpaint_2d_     CONCAT(inpaint_2d, T)
 #define inpaint_3d_     CONCAT(inpaint_3d, T)
+
+#define point_interp_linear_1d_     CONCAT(point_interp_linear_1d, T)
+#define point_interp_linear_2d_     CONCAT(point_interp_linear_2d, T)
+#define point_interp_linear_3d_     CONCAT(point_interp_linear_3d, T)
+#define point_interp_barycentric_2d_     CONCAT(point_interp_barycentric_2d, T)
+#define point_interp_barycentric_3d_     CONCAT(point_interp_barycentric_3d, T)
 
 ! external
 #define interp_cspline_1d_     CONCAT(interp_cspline_1d, T)
@@ -1708,6 +1713,149 @@ function inpaint_3d_(w, method) result(ww)
 
 end function inpaint_3d_
 
+function point_interp_linear_1d_(x, f, xx) result(ff)
+
+    TT, dimension(:) :: x
+    TT, dimension(:) :: f
+    TT :: xx, ff
+
+    TT, dimension(1:2) :: w
+    integer :: i
+
+    do i = 1, 2
+        w(i) = abs(x(3 - i) - xx)/(x(2) - x(1))
+    end do
+
+    ff = sum(w*f)
+
+end function point_interp_linear_1d_
+
+function point_interp_linear_2d_(x, y, f, xx, yy) result(ff)
+
+    TT, dimension(:) :: x, y
+    TT, dimension(:, :) :: f
+    TT :: xx, yy, ff
+
+    TT, dimension(1:2, 1:2) :: w
+    integer :: i, j
+
+    do i = 1, 2
+        do j = 1, 2
+            w(i, j) = abs((x(3 - i) - xx)*(y(3 - j) - yy))/((x(2) - x(1))*(y(2) - y(1)))
+        end do
+    end do
+
+    ff = sum(w*f)
+
+end function point_interp_linear_2d_
+
+function point_interp_linear_3d_(x, y, z, f, xx, yy, zz) result(ff)
+
+    TT, dimension(:) :: x, y, z
+    TT, dimension(:, :, :) :: f
+    TT :: xx, yy, zz, ff
+
+    TT, dimension(1:2, 1:2, 1:2) :: w
+    integer :: i, j, k
+
+    do i = 1, 2
+        do j = 1, 2
+            do k = 1, 2
+                w(i, j, k) = abs((x(3 - i) - xx)*(y(3 - j) - yy)*(z(3 - k) - zz)) &
+                    /((x(2) - x(1))*(y(2) - y(1))*(z(2) - z(1)))
+            end do
+        end do
+    end do
+
+    ff = sum(w*f)
+
+end function point_interp_linear_3d_
+
+function point_interp_barycentric_2d_(v1, v2, v3, f, p) result(ff)
+
+    TT, dimension(:) :: v1, v2, v3, f, p
+    TT :: ff
+
+    TT, dimension(1:3) :: w
+    TT :: a123
+
+    a123 = area(v1, v2, v3)
+
+    if (abs(a123) < 1e-6) then
+        print *, ' <point_interp_barycentric_2d> Error: The points form a degenerate triangle! '
+        stop
+    end if
+
+    ! Note the circulant order
+    w(1) = area(p, v2, v3)/a123
+    w(2) = area(v1, p, v3)/a123
+    w(3) = area(v1, v2, p)/a123
+
+    if (any(w < 0)) then
+        !        print *, ' <point_interp_barycentric_2d> Warning: The point is outside of the triangle! '
+        ff = 0
+        return
+    end if
+
+    ff = sum(w*f)
+
+contains
+
+    function area(v1, v2, v3) result(a)
+
+        TT, dimension(:) :: v1, v2, v3
+        TT :: a
+
+        a = det(transpose(reshape([v2 - v1, v3 - v1], [2, 2])))
+
+    end function area
+
+end function point_interp_barycentric_2d_
+
+function point_interp_barycentric_3d_(v1, v2, v3, v4, f, p) result(ff)
+
+    TT, dimension(:) :: v1, v2, v3, v4, f, p
+    TT :: ff
+
+    TT, dimension(1:4) :: w
+    TT :: vol1234
+
+    ! Calculate the determinant for the tetrahedron volume
+    vol1234 = vol(v1, v2, v3, v4)
+
+    if (abs(vol1234) < 1e-6) then
+        print *, ' <point_interp_barycentric_3d> Error: The points form a degenerate tetrahedron. '
+        stop
+    end if
+
+    ! Calculate the determinants for sub-tetrahedra
+    ! Note the circulant order
+    w(1) = vol(p, v2, v3, v4)/vol1234
+    w(2) = vol(v1, p, v3, v4)/vol1234
+    w(3) = vol(v1, v2, p, v4)/vol1234
+    w(4) = vol(v1, v2, v3, p)/vol1234
+
+    if (any(w < 0)) then
+        !        print *, ' <point_interp_barycentric_3d> Warning: The point is outside of the tetrahedron! '
+        ff = 0
+        return
+    end if
+
+    ff = sum(w*f)
+
+contains
+
+    function vol(v1, v2, v3, v4) result(v)
+
+        TT, dimension(:) :: v1, v2, v3, v4
+        TT :: v
+
+        v = det(transpose(reshape([v2 - v1, v3 - v1, v4 - v1], [3, 3])))
+
+    end function vol
+
+end function point_interp_barycentric_3d_
+
 #undef T
 #undef TT
 #undef TTT
@@ -1753,6 +1901,12 @@ end function inpaint_3d_
 #undef inpaint_1d_
 #undef inpaint_2d_
 #undef inpaint_3d_
+
+#undef point_interp_linear_1d_
+#undef point_interp_linear_2d_
+#undef point_interp_linear_3d_
+#undef point_interp_barycentric_2d_
+#undef point_interp_barycentric_3d_
 
 ! external
 #undef interp_cspline_1d_
