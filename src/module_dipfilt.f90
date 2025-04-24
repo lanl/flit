@@ -112,7 +112,6 @@ contains
     !
     !> Estimate 3D local dip using general structural tensor
     !
-    !
     subroutine gst_localdip3(w, dp1, dp2, k1, k2, k3)
 
         ! arguments

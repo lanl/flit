@@ -1,15 +1,15 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -57,7 +57,7 @@ module libflit_mpicomm
         module procedure :: commute_array_1d_global_complex
         module procedure :: commute_array_2d_global_complex
         module procedure :: commute_array_3d_global_complex
-    end interface commute_array
+    end interface
 
     interface allreduce
         ! Scalar
@@ -91,7 +91,7 @@ module libflit_mpicomm
         module procedure :: gather_distribute_large_array_1d_global_float
         module procedure :: gather_distribute_large_array_1d_global_complex
         module procedure :: gather_distribute_large_array_1d_global_dcomplex
-    end interface allreduce_array
+    end interface
 
     interface reduce
         module procedure :: gather_global_int
@@ -99,7 +99,7 @@ module libflit_mpicomm
         module procedure :: gather_global_float
         module procedure :: gather_global_complex
         module procedure :: gather_global_dcomplex
-    end interface reduce
+    end interface
 
     interface reduce_array
         module procedure :: gather_array_1d_global_int
@@ -117,12 +117,12 @@ module libflit_mpicomm
         module procedure :: gather_array_1d_global_dcomplex
         module procedure :: gather_array_2d_global_dcomplex
         module procedure :: gather_array_3d_global_dcomplex
-    end interface reduce_array
+    end interface
 
     interface domain_decomp_regular
         module procedure :: domain_decomp_regular_2d
         module procedure :: domain_decomp_regular_3d
-    end interface domain_decomp_regular
+    end interface
 
     !    interface mpi_global_min
     !        module procedure :: mpi_global_min_1d_int
@@ -134,11 +134,9 @@ module libflit_mpicomm
     integer, public :: block_x1left, block_x1right
     integer, public :: block_x2left, block_x2right
     integer, public :: block_x3left, block_x3right
-    integer, public :: groupid
     integer, public :: rankid
     integer, public :: blockid
     integer, public :: nrank
-    integer, public :: ngroup
     type(mpi_status), public :: mpi_stats
     integer, public :: mpi_ierr
 

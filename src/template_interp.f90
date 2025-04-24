@@ -1047,6 +1047,7 @@ function interp_to_1d_(f, nn, method) result(g)
 
     character(len=24) :: interp_method
     integer :: n
+    TT :: dd
 
     if (present(method)) then
         interp_method = method
@@ -1056,8 +1057,14 @@ function interp_to_1d_(f, nn, method) result(g)
 
     n = size(f)
 
+    if (n == 1 .or. nn == 1) then
+        dd = nTT(1.0)
+    else
+        dd = nTT((n - 1.0)/(nn - 1.0))
+    end if
+
     g = reg_to_reg_interp_1d_(f, n, nTT(1.0), nTT(0.0), &
-        nn, nTT((n - 1.0)/(nn - 1.0)), nTT(0.0), interp_method)
+        nn, dd, nTT(0.0), interp_method)
 
 end function interp_to_1d_
 
@@ -1070,6 +1077,7 @@ function interp_to_2d_(f, nn, method) result(g)
 
     character(len=24), dimension(1:2) :: interp_method
     integer, dimension(1:2) :: n
+    TT, dimension(1:2) :: dd
 
     if (present(method)) then
         interp_method = method
@@ -1079,8 +1087,13 @@ function interp_to_2d_(f, nn, method) result(g)
 
     n = shape(f)
 
+    dd = nTT((n - 1.0)/(nn - 1.0))
+    where (n == 1 .or. nn == 1)
+        dd = nTT(1.0)
+    end where
+
     g = reg_to_reg_interp_2d_(f, n, nTT([1.0, 1.0]), nTT([0.0, 0.0]), &
-        nn, nTT((n - 1.0)/(nn - 1.0)), nTT([0.0, 0.0]), interp_method)
+        nn, dd, nTT([0.0, 0.0]), interp_method)
 
 end function interp_to_2d_
 
@@ -1093,6 +1106,7 @@ function interp_to_3d_(f, nn, method) result(g)
 
     character(len=24), dimension(1:3) :: interp_method
     integer, dimension(1:3) :: n
+    TT, dimension(1:3) :: dd
 
     if (present(method)) then
         interp_method = method
@@ -1102,8 +1116,13 @@ function interp_to_3d_(f, nn, method) result(g)
 
     n = shape(f)
 
+    dd = nTT((n - 1.0)/(nn - 1.0))
+    where (n == 1 .or. nn == 1)
+        dd = nTT(1.0)
+    end where
+
     g = reg_to_reg_interp_3d_(f, n, nTT([1.0, 1.0, 1.0]), nTT([0.0, 0.0, 0.0]), &
-        nn, nTT((n - 1.0)/(nn - 1.0)), nTT([0.0, 0.0, 0.0]), interp_method)
+        nn, dd, nTT([0.0, 0.0, 0.0]), interp_method)
 
 end function interp_to_3d_
 

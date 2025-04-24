@@ -103,6 +103,7 @@ object_libflit = \
 	module_fourierfilt.o \
 	module_domain_decomposition.o \
 	module_mpicomm.o \
+	module_mpicomm_group.o \
 	module_andffilt.o \
 	module_dipfilt.o \
 	module_tvfilt.o \

@@ -133,13 +133,21 @@ module libflit_array_operation
     end interface crop
 
     ! Cross product of 1D vectors
-    interface cross
-        module procedure :: cross_product_1d_int
-        module procedure :: cross_product_1d_float
-        module procedure :: cross_product_1d_double
-        module procedure :: cross_product_1d_complex
-        module procedure :: cross_product_1d_dcomplex
-    end interface cross
+    interface cross2
+        module procedure :: cross_product_2d_int
+        module procedure :: cross_product_2d_float
+        module procedure :: cross_product_2d_double
+        module procedure :: cross_product_2d_complex
+        module procedure :: cross_product_2d_dcomplex
+    end interface cross2
+
+    interface cross3
+        module procedure :: cross_product_3d_int
+        module procedure :: cross_product_3d_float
+        module procedure :: cross_product_3d_double
+        module procedure :: cross_product_3d_complex
+        module procedure :: cross_product_3d_dcomplex
+    end interface cross3
 
     ! Flatten an n-dimensional array to 1D
     interface flatten
@@ -464,7 +472,7 @@ module libflit_array_operation
     public :: as_scalar
     public :: crop_array
     public :: crop
-    public :: cross
+    public :: cross2, cross3
     public :: flatten
     public :: flip
     public :: ifelse

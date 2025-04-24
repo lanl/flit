@@ -2457,14 +2457,16 @@ contains
     !
     !> Compute frequencies corresponding to FFT
     !
-    function fft_omega(n, dx) result(k)
+    function fft_omega(n, dx, s) result(k)
 
         integer, intent(in) :: n
         real, intent(in), optional :: dx
+        real, intent(in), optional :: s
         real, allocatable, dimension(:) :: k
 
         integer :: i, nq
         real :: dk
+        real :: ss
 
         if (present(dx)) then
             dk = (2.0*const_pi)/n/dx
@@ -2472,9 +2474,15 @@ contains
             dk = (2.0*const_pi)/n
         end if
 
+        if (present(s)) then
+            ss = s
+        else
+            ss = 0.0
+        end if
+
         allocate (k(1:n))
         do i = 1, n
-            k(i) = (i - 1)*dk
+            k(i) = (i - 1 - ss)*dk
         end do
 
         nq = nint(n/2.0)

@@ -1,21 +1,20 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
 !    Kai Gao, kaigao@lanl.gov
 !
-
 
 module libflit_spectrum
 
@@ -38,35 +37,44 @@ module libflit_spectrum
 
 contains
 
-    subroutine c_gst(nt, w, lambda, p, dt, fmin, fmax, ns, stran) bind(c, name='gst')
+    !
+    !> Compute the instaneous phase of a signal using the method developed by
+    !>
+    !> E. Poggiagliolmi, A. Vesnaver,
+    !> Instantaneous phase and frequency derived without user-defined parameters,
+    !> Geophysical Journal International, Volume 199, Issue 3, December 2014, Pages 1544–1553,
+    !> https://doi.org/10.1093/gji/ggu352
+    !
+    function instant_phase(w) result(wr)
 
-        use iso_c_binding, only: c_float, c_int
+        real, dimension(:), intent(in) :: w
 
-        integer(kind=c_int), value :: nt, ns
-        real(kind=c_float), dimension(0:nt - 1), intent(in) :: w
-        real(kind=c_float), value, intent(in) :: lambda, p, dt, fmin, fmax
-        real(kind=c_float), dimension(0:ns - 1), intent(out) :: stran
+        complex, allocatable, dimension(:) :: v
+        real, allocatable, dimension(:) :: wr, env
+        integer :: nt
 
-        real, allocatable, dimension(:) :: wt
-        complex, allocatable, dimension(:, :) :: spec
-        integer :: n
+        nt = size(w)
 
-        ! print *, lambda, p, dt, fmin, fmax
+        call alloc_array(v, [1, nt])
+        call alloc_array(env, [1, nt])
 
-        ! Do padding for FFT
-        n = next_power_235(nt)
-        call alloc_array(wt, [1, n])
-        wt(1:nt) = w(:)
+        v = cmplx(w, hilbert(w))
+        env = abs(v)
+        v = v/env
+        where (env < 1.0e-3*maxval(env))
+            v = 0
+        end where
 
-        ! Compute generalized s-transform
-        spec = gst(wt, lambda, p, dt, fmin, fmax)
+        wr = real(integ(conjg(v)*deriv(v)*(-const_i)))
 
-        ! Output
-        stran = flatten(abs(spec(1:nt, :)))
+        deallocate (v, env)
 
-    end subroutine c_gst
+    end function
 
-
+    !
+    !> Generalized s-transform using adaptive Gaussian window
+    !> lambda = 1, p = 1 --> short-time Fourier transform
+    !
     function gst(w, lambda, p, dt, fmin, fmax, df) result(stran)
 
         real, dimension(:), intent(in) :: w
@@ -132,6 +140,9 @@ contains
         do iw = ifmin, ifmax, dif
             do i = 1, nt
                 e(i) = exp(-2*const_pi**2*((i - nf0))**2/(lambda*(iw - 1)**p)**2)
+                ! An alternative windows function is
+                ! e(i) = exp(-2*const_pi**2*((i - nf0))**2/(f0 - a*log(2*f0/((iw - 1)*gst_df + float_tiny) - 1.0))**2)
+                ! where a is a hyperparameter, and f0 = 0.5/gst_dt
             end do
             ! fortran's cshift is a reverse version of matlab's circshift
             e = cshift(e, -(nt - nf0 + 1))
@@ -144,21 +155,16 @@ contains
             stran(:, 1) = cmplx(mean(w), 0.0)
         end if
 
-        !        ! Interpolate to make exact
-        !        nf = clip(ceiling((gst_fmax - gst_fmin)/gst_df), 1, int(nt/2.0))
-        !        !$omp parallel do private(i)
-        !        do i = 1, nt
-        !            stran(i, :) = cmplx( &
-            !                interp(real(stran(i, :)), size(stran, 2), dif*1.0, (ifmin - 1.0)*default_df, &
-            !                nf, gst_df/default_df, gst_fmin, 'cubic'), )
-
-        write(error_unit, *) ' Actual fmin, fmax, nf, df = ', &
+        write (error_unit, *) ' Actual fmin, fmax, nf, df = ', &
             num2str((ifmin - 1)*default_df, '(es)'), ' ', &
             num2str((ifmax - 1)*default_df, '(es)'), ' ', &
             num2str(nf), ' ', num2str(dif*default_df, '(es)')
 
-    end function gst
+    end function
 
+    !
+    !> Inverse generalized s-transform
+    !
     function igst(stran, dt, fmin, fmax, df) result(w)
 
         complex, dimension(:, :), intent(in) :: stran
@@ -220,7 +226,7 @@ contains
             !$omp parallel do private(i) reduction(+: w)
             do i = 1, nt
                 ww(ifmin:ifmax) = ww(ifmin:ifmax) + 2*cmplx( &
-                    interp(real(stran(i, :)), nf, dif*1.0, 0.0, ifmax - ifmin + 1, 1.0, 0.0, 'sinc'),  &
+                    interp(real(stran(i, :)), nf, dif*1.0, 0.0, ifmax - ifmin + 1, 1.0, 0.0, 'sinc'), &
                     interp(imag(stran(i, :)), nf, dif*1.0, 0.0, ifmax - ifmin + 1, 1.0, 0.0, 'sinc'))
             end do
             !$omp end parallel do
@@ -228,130 +234,13 @@ contains
 
         w = ifft(ww, real=.true.)
 
-    end function igst
+    end function
 
-
-
-    function instant_phase(w) result(wr)
-
-        real, dimension(:), intent(in) :: w
-
-        complex, allocatable, dimension(:) :: v
-        real, allocatable, dimension(:) :: wr, env
-        integer :: nt
-
-        nt = size(w)
-
-        call alloc_array(v, [1, nt])
-        call alloc_array(env, [1, nt])
-
-        v = cmplx(w, hilbert(w))
-        env = abs(v)
-        v = v/env
-        where (env < 1.0e-3*maxval(env))
-            v = 0
-        end where
-
-        wr = real(integ(conjg(v)*deriv(v)*(-const_i)))
-
-        deallocate (v, env)
-
-    end function instant_phase
-
-
-    function logst(w, a, dt, fmin, fmax, df) result(stran)
-
-        real, dimension(:), intent(in) :: w
-        real, intent(in) :: a
-        real, intent(in), optional :: dt, fmin, fmax, df
-        complex, allocatable, dimension(:, :) :: stran
-
-        complex, allocatable, dimension(:) :: ww, e
-        integer :: nt, nf, iw, i, ifmin, ifmax, nf0
-        real :: gst_dt, gst_fmin, gst_fmax, gst_df
-        integer :: dif
-        real :: default_df, f0
-
-        nt = size(w)
-        nf0 = nint(nt/2.0)
-
-        if (present(dt)) then
-            gst_dt = dt
-        else
-            gst_dt = 1.0
-        end if
-
-        if (present(fmin)) then
-            gst_fmin = fmin
-        else
-            gst_fmin = 0.0
-        end if
-
-        if (present(fmax)) then
-            gst_fmax = fmax
-        else
-            gst_fmax = 0.5/gst_dt
-        end if
-
-        default_df = 1.0/gst_dt/nt
-
-        if (present(df)) then
-            gst_df = df
-        else
-            gst_df = default_df
-        end if
-
-        f0 = 0.5/gst_dt
-
-        ! Determine the integer location of min, max frequencies in the Fourier domain
-        ifmin = floor(gst_fmin/default_df) + 1
-        ifmax = clip(ceiling(gst_fmax/default_df) + 1, ifmin, int(nt/2.0))
-        dif = clip(floor(gst_df/default_df), 1, ifmax - ifmin)
-        nf = clip(nint((ifmax - ifmin + 0.0)/dif) + 1, 1, int(nt/2.0))
-
-        stran = zeros(nt, nf)
-        ww = zeros(2*nt)
-        e = zeros(nt)
-
-        ! Fourier representation of the signal
-        ww(1:nt) = fft(w)
-        ww(nt + 1:2*nt) = ww(1:nt)
-
-        ! For each frequency, multiply corresponding generalized Gaussian window
-        ! and do inverse Fourier transform
-        !$omp parallel do private(iw, i, e)
-        do iw = ifmin, ifmax, dif
-            do i = 1, nt
-                e(i) = exp(-2*const_pi**2*((i - nf0))**2/(f0 - a*log(2*f0/((iw - 1)*gst_df + float_tiny) - 1.0))**2)
-            end do
-            ! fortran's cshift is a reverse version of matlab's circshift
-            e = cshift(e, -(nt - nf0 + 1))
-            stran(:, (iw - ifmin)/dif + 1) = ifft(ww(iw:iw + nt - 1)*e)
-        end do
-        !$omp end parallel do
-
-        ! f = 0 is the mean of the signal
-        if (ifmin == 1) then
-            stran(:, 1) = cmplx(mean(w), 0.0)
-        end if
-
-        !        ! Interpolate to make exact
-        !        nf = clip(ceiling((gst_fmax - gst_fmin)/gst_df), 1, int(nt/2.0))
-        !        !$omp parallel do private(i)
-        !        do i = 1, nt
-        !            stran(i, :) = cmplx( &
-            !                interp(real(stran(i, :)), size(stran, 2), dif*1.0, (ifmin - 1.0)*default_df, &
-            !                nf, gst_df/default_df, gst_fmin, 'cubic'), )
-
-        write(error_unit, *) ' Actual fmin, fmax, nf, df = ', &
-            num2str((ifmin - 1)*default_df, '(es)'), ' ', &
-            num2str((ifmax - 1)*default_df, '(es)'), ' ', &
-            num2str(nf), ' ', num2str(dif*default_df, '(es)')
-
-    end function logst
-
-
-
+    !
+    !> Gabor transform
+    !>
+    !> The parameter sigma is like the fraction of the entire time series length (fraction of 1)
+    !
     function gabor(w, sigma, dt, fmin, fmax, df) result(stran)
 
         real, dimension(:), intent(in) :: w
@@ -417,7 +306,6 @@ contains
             do i = 1, nt
                 ! e(i) = exp(-2*const_pi**2*((i - nf0)*gabor_dt)**2/(1.0*(sigma**2)**(-0.5d0))**2)
                 e(i) = exp(-2*const_pi**2*((i - nf0))**2*sigma**2)
-                ! Here, sigma is like the fraction of the entire time series length (1)
             end do
             ! fortran's cshift is a reverse version of matlab's circshift
             e = cshift(e, -(nt - nf0 + 1))
@@ -430,13 +318,16 @@ contains
             stran(:, 1) = cmplx(mean(w), 0.0)
         end if
 
-        write(error_unit, *) ' Actual fmin, fmax, nf, df = ', &
+        write (error_unit, *) ' Actual fmin, fmax, nf, df = ', &
             num2str((ifmin - 1)*default_df, '(es)'), ' ', &
             num2str((ifmax - 1)*default_df, '(es)'), ' ', &
             num2str(nf), ' ', num2str(dif*default_df, '(es)')
 
-    end function gabor
+    end function
 
+    !
+    !> Inverse Gabor transform
+    !
     function igabor(stran, dt, fmin, fmax, df) result(w)
 
         complex, dimension(:, :), intent(in) :: stran
@@ -498,7 +389,7 @@ contains
             !$omp parallel do private(i) reduction(+: w)
             do i = 1, nt
                 ww(ifmin:ifmax) = ww(ifmin:ifmax) + 2*cmplx( &
-                    interp(real(stran(i, :)), nf, dif*1.0, 0.0, ifmax - ifmin + 1, 1.0, 0.0, 'sinc'),  &
+                    interp(real(stran(i, :)), nf, dif*1.0, 0.0, ifmax - ifmin + 1, 1.0, 0.0, 'sinc'), &
                     interp(imag(stran(i, :)), nf, dif*1.0, 0.0, ifmax - ifmin + 1, 1.0, 0.0, 'sinc'))
             end do
             !$omp end parallel do
@@ -506,9 +397,124 @@ contains
 
         w = ifft(ww, real=.true.)
 
-    end function igabor
+    end function
 
+    !
+    !> Generalized s-transform
+    !>
+    !> A simple version that assume dt = 1 and the other parameters are default values
+    !> derived based on the input sigmal length and dt = 1
+    !
+    function gst_simple(w, lambda, p) result(stran)
 
+        real, dimension(:), intent(in) :: w
+        real, intent(in) :: lambda, p
+        complex, allocatable, dimension(:, :) :: stran
+
+        complex, allocatable, dimension(:) :: ww, e
+        real, allocatable, dimension(:) :: ff
+        integer :: nt, iw, i
+
+        nt = size(w)
+        nf0 = nint(nt/2.0)
+        stran = zeros(nt, nt)
+        ww = zeros(2*nt)
+        e = zeros(nt)
+
+        ! Fourier representation of the signal
+        ww(1:nt) = fft(w)
+        ww(nt + 1:2*nt) = ww(1:nt)
+
+        ff = fft_omega(nt)/(2*const_pi)*nt
+        !$omp parallel do private(iw, i, e)
+        do iw = 1, nt
+            do i = 1, nt
+                e(i) = exp(-2*const_pi**2*((i - nf0))**2/(lambda*abs(ff(iw))**p)**2)
+            end do
+            ! fortran's cshift is a reverse version of matlab's circshift
+            e = cshift(e, -(nt - nf0 + 1))
+            stran(:, iw) = ifft(ww(iw:iw + nt - 1)*e)
+        end do
+        !$omp end parallel do
+
+        ! f = 0 is the mean of the signal
+        stran(:, 1) = cmplx(mean(w), 0.0)
+
+    end function
+
+    !
+    !> Inverse generalized s-transform
+    !>
+    !> A simple version that assume dt = 1 and the other parameters are default values
+    !> derived based on the input sigmal length and dt = 1
+    !
+    function igst_simple(stran) result(w)
+
+        complex, allocatable, dimension(:, :), intent(in) :: stran
+        real, allocatable, dimension(:) :: w
+
+        w = ifft(sum(stran, dim=1), real=.true.)
+
+    end function
+
+    !
+    !> Gabor transform
+    !>
+    !> A simple version that assume dt = 1 and the other parameters are default values
+    !> derived based on the input sigmal length and dt = 1
+    !
+    function gabor_simple(w, sigma) result(stran)
+
+        real, dimension(:), intent(in) :: w
+        real, intent(in) :: sigma
+        complex, allocatable, dimension(:, :) :: stran
+
+        complex, allocatable, dimension(:) :: ww, e
+        integer :: nt, iw, i
+
+        nt = size(w)
+        nf0 = nint(nt/2.0)
+        stran = zeros(nt, nt)
+        ww = zeros(2*nt)
+        e = zeros(nt)
+
+        ! Fourier representation of the signal
+        ww(1:nt) = fft(w)
+        ww(nt + 1:2*nt) = ww(1:nt)
+
+        !$omp parallel do private(iw, i, e)
+        do iw = 1, nt
+            do i = 1, nt
+                e(i) = exp(-2*const_pi**2*((i - nf0))**2*sigma**2)
+            end do
+            e = cshift(e, -(nt - nf0 + 1))
+            stran(:, iw) = ifft(ww(iw:iw + nt - 1)*e)
+        end do
+        !$omp end parallel do
+
+    end function
+
+    !
+    !> Inverse Gabor transform
+    !>
+    !> A simple version that assume dt = 1 and the other parameters are default values
+    !> derived based on the input sigmal length and dt = 1
+    !
+    function igabor2(stran) result(w)
+
+        complex, allocatable, dimension(:, :), intent(in) :: stran
+        real, allocatable, dimension(:) :: w
+
+        w = ifft(sum(stran, dim=1), real=.true.)
+
+    end function igabor2
+
+    !
+    !> Compute time-frequency spectrum of a 1D signal using GST or Gabor transform
+    !>
+    !> In contrast to GST/Gabor, this only returns a time-frequency spectrum
+    !> (a real-valued 2D array) rather than complex-valued 2D array
+    !
     function tfspec(w, dt, fmin, fmax, df, window, overlap, lambda, p, sigma, method) result(spec)
 
         real, dimension(:), intent(in) :: w
@@ -592,7 +598,7 @@ contains
         overlap_nt = nint(spec_overlap/spec_dt) + 1
 
         it = 1
-        do while(it <= nt)
+        do while (it <= nt)
 
             ! Select signal within a window
             ww = w(it:min(it + window_nt - 1, nt))
@@ -603,7 +609,7 @@ contains
             end if
 
             ! GST
-            select case(spec_method)
+            select case (spec_method)
                 case ('gst')
                     s = gst(ww, spec_lambda, spec_p, spec_dt, spec_fmin, spec_fmax, spec_df)
                 case ('gabor')
@@ -627,107 +633,11 @@ contains
             end if
 
             ! Roll forward
-            write(error_unit, *) date_time_compact()//' >> Sample = '//num2str(it)
+            write (error_unit, *) date_time_compact()//' >> Sample = '//num2str(it)
             it = it + window_nt - overlap_nt
 
         end do
 
     end function tfspec
-
-
-
-    function gst2(w, lambda, p) result(stran)
-
-        real, dimension(:), intent(in) :: w
-        real, intent(in) :: lambda, p
-        complex, allocatable, dimension(:, :) :: stran
-
-        complex, allocatable, dimension(:) :: ww, e
-        real, allocatable, dimension(:) :: ff
-        integer :: nt, iw, i
-
-        nt = size(w)
-        nf0 = nint(nt/2.0)
-        stran = zeros(nt, nt)
-        ww = zeros(2*nt)
-        e = zeros(nt)
-
-        ! Fourier representation of the signal
-        ww(1:nt) = fft(w)
-        ww(nt + 1:2*nt) = ww(1:nt)
-
-        ff = fft_omega(nt)/(2*const_pi)*nt
-        !$omp parallel do private(iw, i, e)
-        do iw = 1, nt
-            do i = 1, nt
-                e(i) = exp(-2*const_pi**2*((i - nf0))**2/(lambda*abs(ff(iw))**p)**2)
-            end do
-            ! fortran's cshift is a reverse version of matlab's circshift
-            e = cshift(e, -(nt - nf0 + 1))
-            stran(:, iw) = ifft(ww(iw:iw + nt - 1)*e)
-        end do
-        !$omp end parallel do
-
-        ! f = 0 is the mean of the signal
-        stran(:, 1) = cmplx(mean(w), 0.0)
-
-    end function gst2
-
-    function igst2(stran) result(w)
-
-        complex, allocatable, dimension(:, :), intent(in) :: stran
-        real, allocatable, dimension(:) :: w
-
-        w = ifft(sum(stran, dim=1), real=.true.)
-
-    end function igst2
-
-
-
-    function gabor2(w, sigma) result(stran)
-
-        real, dimension(:), intent(in) :: w
-        real, intent(in) :: sigma
-        complex, allocatable, dimension(:, :) :: stran
-
-        complex, allocatable, dimension(:) :: ww, e
-        !        real, allocatable, dimension(:) :: ff
-        integer :: nt, iw, i
-
-        nt = size(w)
-        nf0 = nint(nt/2.0)
-        stran = zeros(nt, nt)
-        ww = zeros(2*nt)
-        e = zeros(nt)
-
-        ! Fourier representation of the signal
-        ww(1:nt) = fft(w)
-        ww(nt + 1:2*nt) = ww(1:nt)
-
-        !        ff = fft_omega(nt)/(2*const_pi)*nt
-        !$omp parallel do private(iw, i, e)
-        do iw = 1, nt
-            do i = 1, nt
-                e(i) = exp(-2*const_pi**2*((i - nf0))**2*sigma**2)
-            end do
-            ! fortran's cshift is a reverse version of matlab's circshift
-            e = cshift(e, -(nt - nf0 + 1))
-            stran(:, iw) = ifft(ww(iw:iw + nt - 1)*e)
-        end do
-        !$omp end parallel do
-
-        !        ! f = 0 is the mean of the signal
-        !        stran(:, 1) = cmplx(mean(w), 0.0)
-
-    end function gabor2
-
-    function igabor2(stran) result(w)
-
-        complex, allocatable, dimension(:, :), intent(in) :: stran
-        real, allocatable, dimension(:) :: w
-
-        w = ifft(sum(stran, dim=1), real=.true.)
-
-    end function igabor2
 
 end module libflit_spectrum
