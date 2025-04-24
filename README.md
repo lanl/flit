@@ -11,9 +11,7 @@ The work is under LANL open source approval reference O4767.
 Please refer to the document [LA-UR-24-26315](doc/doc_libflit.pdf) for details. 
 
 # Requirement
-Currently, `FLIT` only supports Intel's compiler suite (ifort, ifx, icx, icpx, mpiifort, and mpiifx) on Linux platform. We tested `FLIT` with ifort 2021.10, icx 2023.2, and icpx 2023.2, as well as ifx 2024.2, icx 2024.2, and icpx 2024.2. The default compilers set by the [Makefile.in](src/Makefile.in) is ifx-icx-icpx 2024.2 (the newest version of the compiler suite). Note that per Intel's announcement, [ifort will be deprecated starting from late 2024](https://www.intel.com/content/www/us/en/developer/articles/guide/porting-guide-for-ifort-to-ifx.html). 
-
-At this moment, we do not have a clear timeline to make it fully compatible with GNU's compiler suite due to a number of nontrivial differences in these two compiler suites. 
+Currently, `FLIT` can only be compiled with Intel's compiler suite (ifx, icx, icpx, and mpiifx) on Linux platform. We tested `FLIT` with Intel's compiler suite 2024.2, but newer version of Intel's compiler suite should also work. The default compilers set by the [Makefile.in](src/Makefile.in) are ifx-icx-icpx-mpiifx 2024.2. Note that the classic Intel Fortran compiler [ifort is deprecated](https://www.intel.com/content/www/us/en/developer/articles/guide/porting-guide-for-ifort-to-ifx.html), and therefore we don't provide compatibility support based on ifort anymore. Also, currently `FLIT` cannot be compiled with GNU's compiler suite (gcc and gfortran) due to a number of nontrivial differences in these two compiler suites. 
 
 You need to have an installation of Intel's compiler suite freely available at [Intel oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit.html#gs.bed72v) and [Intel HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit.html#gs.bed5op), and set the paths using the script [set_intel_paths.sh](set_intel_paths.sh). 
 

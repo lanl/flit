@@ -16,6 +16,8 @@
 !    Kai Gao, kaigao@lanl.gov
 !
 
+! The following is a copy-and-paste of template_mpicomm
+! with slight modifications to group domain
 
 #define PASTE(X)            X
 #define PASTE2(X)           PASTE(X)_

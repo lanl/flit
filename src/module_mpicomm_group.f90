@@ -30,6 +30,9 @@ module libflit_mpicomm_group
 
     implicit none
 
+    ! The module is a copy-and-paste of module_mpicomm
+    ! with slight modifications to group domain
+
     interface bcast_array_group
         module procedure :: bcast_array_1d_group_string
         module procedure :: bcast_array_1d_group_int
