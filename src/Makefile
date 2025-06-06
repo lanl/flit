@@ -89,6 +89,7 @@ object_libflit = \
 	external_mba.o \
 	module_interp.o \
 	module_fit.o \
+	module_random_extra.o \
 	external_convexhull.o \
 	module_readpar.o \
 	module_transform.o \

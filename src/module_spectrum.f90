@@ -38,12 +38,11 @@ module libflit_spectrum
 contains
 
     !
-    !> Compute the instaneous phase of a signal using the method developed by
+    !> Compute the instaneous phase of a 1D signal based on the method developed by
     !>
-    !> E. Poggiagliolmi, A. Vesnaver,
+    !> E. Poggiagliolmi, A. Vesnaver, 2014, 
     !> Instantaneous phase and frequency derived without user-defined parameters,
-    !> Geophysical Journal International, Volume 199, Issue 3, December 2014, Pages 1544–1553,
-    !> https://doi.org/10.1093/gji/ggu352
+    !> Geophysical Journal International, doi: 10.1093/gji/ggu352
     !
     function instant_phase(w) result(wr)
 
@@ -66,8 +65,6 @@ contains
         end where
 
         wr = real(integ(conjg(v)*deriv(v)*(-const_i)))
-
-        deallocate (v, env)
 
     end function
 
@@ -132,10 +129,10 @@ contains
         ww(nt + 1:2*nt) = ww(1:nt)
 
         ! For each frequency, multiply corresponding generalized Gaussian window
-        ! and do inverse Fourier transform
-        ! See equation (5) of Liu et al.:
-        ! Self-Adaptive Generalized S-Transform and Its Application in Seismic Time-Frequency Analysis
-        ! 10.1109/TGRS.2019.2916792
+        ! 	and do inverse Fourier transform
+        ! 	See equation (5) of Liu et al., 2019, 
+        ! 	Self-Adaptive Generalized S-Transform and Its Application in Seismic Time-Frequency Analysis, 
+        !   IEEE-TGRS, 10.1109/TGRS.2019.2916792
         !$omp parallel do private(iw, i, e)
         do iw = ifmin, ifmax, dif
             do i = 1, nt
@@ -507,7 +504,7 @@ contains
 
         w = ifft(sum(stran, dim=1), real=.true.)
 
-    end function igabor2
+    end function 
 
     !
     !> Compute time-frequency spectrum of a 1D signal using GST or Gabor transform
@@ -638,6 +635,6 @@ contains
 
         end do
 
-    end function tfspec
+    end function
 
 end module libflit_spectrum

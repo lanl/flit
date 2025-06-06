@@ -1,15 +1,15 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -54,10 +54,26 @@ module libflit_calculus
         module procedure :: integrate_3d_dcomplex
     end interface integ
 
+    interface cumsum
+        module procedure :: cumsum_1d_float
+        module procedure :: cumsum_2d_float
+        module procedure :: cumsum_3d_float
+        module procedure :: cumsum_1d_double
+        module procedure :: cumsum_2d_double
+        module procedure :: cumsum_3d_double
+        module procedure :: cumsum_1d_complex
+        module procedure :: cumsum_2d_complex
+        module procedure :: cumsum_3d_complex
+        module procedure :: cumsum_1d_dcomplex
+        module procedure :: cumsum_2d_dcomplex
+        module procedure :: cumsum_3d_dcomplex
+    end interface cumsum
+
     private
     public :: taylor_fd_coefs
     public :: deriv
     public :: integ
+    public :: cumsum
 
     ! Center finite-difference coefficients
     double precision, dimension(1:3), parameter, public :: &

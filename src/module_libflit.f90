@@ -49,6 +49,7 @@ module libflit
     use libflit_mpicomm
     use libflit_mpicomm_group
     use libflit_random
+    use libflit_random_extra
     use libflit_readpar
     use libflit_sort
     use libflit_specialfunc

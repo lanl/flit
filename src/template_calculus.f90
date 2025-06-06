@@ -1,15 +1,15 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -27,6 +27,9 @@
 #define integrate_1d_      CONCAT(integrate_1d, T)
 #define integrate_2d_      CONCAT(integrate_2d, T)
 #define integrate_3d_      CONCAT(integrate_3d, T)
+#define cumsum_1d_      CONCAT(cumsum_1d, T)
+#define cumsum_2d_      CONCAT(cumsum_2d, T)
+#define cumsum_3d_      CONCAT(cumsum_3d, T)
 
 !
 !> Differentiate 1D array using finite difference
@@ -627,9 +630,125 @@ function differentiate_3d_(w, dim, order, method, accuracy) result(wt)
 end function differentiate_3d_
 
 !
-!> Integrate 1D array using cumulative summation
+!> Integrate 1D array using cumulative trapezoidal rule
 !
 function integrate_1d_(w) result(wt)
+
+    TT, dimension(:) :: w
+    TT, allocatable, dimension(:) :: wt
+
+    integer :: i, n
+
+    n = size(w)
+    allocate (wt(1:n))
+
+    wt(1) = 0
+    do i = 2, n
+        wt(i) = wt(i - 1) + 0.5d0*(w(i - 1) + w(i))
+    end do
+
+end function integrate_1d_
+
+!
+!> Integrate 2D array using cumulative trapezoidal rule
+!
+function integrate_2d_(w, dim) result(wt)
+
+    TT, dimension(:, :) :: w
+    integer, optional :: dim
+    TT, allocatable, dimension(:, :) :: wt
+
+    integer :: along, n1, n2, i, j
+
+    if (present(dim)) then
+        along = dim
+    else
+        along = 1
+    end if
+
+    n1 = size(w, 1)
+    n2 = size(w, 2)
+    allocate (wt(1:n1, 1:n2))
+
+    select case (along)
+
+        case (1)
+            !$omp parallel do private(j)
+            do j = 1, n2
+                wt(:, j) = integrate_1d_(w(:, j))
+            end do
+            !$omp end parallel do
+
+        case (2)
+            !$omp parallel do private(i)
+            do i = 1, n1
+                wt(i, :) = integrate_1d_(w(i, :))
+            end do
+            !$omp end parallel do
+
+    end select
+
+end function integrate_2d_
+
+!
+!> Integrate 3D array using cumulative trapezoidal rule
+!
+function integrate_3d_(w, dim) result(wt)
+
+    TT, dimension(:, :, :) :: w
+    integer, optional :: dim
+    TT, allocatable, dimension(:, :, :) :: wt
+
+    integer :: along, n1, n2, n3, i, j, k
+
+    if (present(dim)) then
+        along = dim
+    else
+        along = 1
+    end if
+
+    n1 = size(w, 1)
+    n2 = size(w, 2)
+    n3 = size(w, 3)
+    allocate (wt(1:n1, 1:n2, 1:n3))
+
+    select case (along)
+
+        case (1)
+            !$omp parallel do private(j, k)
+            do k = 1, n3
+                do j = 1, n2
+                    wt(:, j, k) = integrate_1d_(w(:, j, k))
+                end do
+            end do
+            !$omp end parallel do
+
+        case (2)
+            !$omp parallel do private(i, k)
+            do k = 1, n3
+                do i = 1, n1
+                    wt(i, :, k) = integrate_1d_(w(i, :, k))
+                end do
+            end do
+            !$omp end parallel do
+
+        case (3)
+            !$omp parallel do private(i, j)
+            do j = 1, n2
+                do i = 1, n1
+                    wt(i, j, :) = integrate_1d_(w(i, j, :))
+                end do
+            end do
+            !$omp end parallel do
+
+    end select
+
+end function integrate_3d_
+
+!
+!> Integrate 1D array using cumulative summation
+!
+function cumsum_1d_(w) result(wt)
 
     TT, dimension(:) :: w
     TT, allocatable, dimension(:) :: wt
@@ -644,12 +763,12 @@ function integrate_1d_(w) result(wt)
         wt(i) = wt(i - 1) + w(i)
     end do
 
-end function integrate_1d_
+end function cumsum_1d_
 
 !
 !> Integrate 2D array using cumulative summation
 !
-function integrate_2d_(w, dim) result(wt)
+function cumsum_2d_(w, dim) result(wt)
 
     TT, dimension(:, :) :: w
     integer, optional :: dim
@@ -684,12 +803,12 @@ function integrate_2d_(w, dim) result(wt)
             !$omp end parallel do
     end select
 
-end function integrate_2d_
+end function cumsum_2d_
 
 !
 !> Integrate 3D array using cumulative summation
 !
-function integrate_3d_(w, dim) result(wt)
+function cumsum_3d_(w, dim) result(wt)
 
     TT, dimension(:, :, :) :: w
     integer, optional :: dim
@@ -732,7 +851,7 @@ function integrate_3d_(w, dim) result(wt)
             !$omp end parallel do
     end select
 
-end function integrate_3d_
+end function cumsum_3d_
 
 #undef T
 #undef TT
@@ -748,3 +867,6 @@ end function integrate_3d_
 #undef integrate_1d_
 #undef integrate_2d_
 #undef integrate_3d_
+#undef cumsum_1d_
+#undef cumsum_2d_
+#undef cumsum_3d_
