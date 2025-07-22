@@ -11,9 +11,9 @@ The work is under LANL open source approval reference O4767.
 Please refer to the document [LA-UR-24-26315](doc/doc_libflit.pdf) for details. 
 
 # Requirement
-Currently, `FLIT` can only be compiled with Intel's compiler suite (ifx, icx, icpx, and mpiifx) on Linux platform. We tested `FLIT` with Intel's compiler suite 2024.2, but newer version of Intel's compiler suite should also work. The default compilers set by the [Makefile.in](src/Makefile.in) are ifx-icx-icpx-mpiifx 2024.2. Note that the classic Intel Fortran compiler [ifort is deprecated](https://www.intel.com/content/www/us/en/developer/articles/guide/porting-guide-for-ifort-to-ifx.html), and therefore we don't provide compatibility support based on ifort anymore. Also, currently `FLIT` cannot be compiled with GNU's compiler suite (gcc and gfortran) due to a number of nontrivial differences in these two compiler suites. 
+Currently, `FLIT` can only be compiled with Intel's compiler suite (ifx, icx, icpx, and mpiifx) on Linux platform. We tested `FLIT` with Intel's oneAPI HPC Toolkit 2024.2/2025.2. Note that the classic Intel Fortran compiler [ifort is deprecated](https://www.intel.com/content/www/us/en/developer/articles/guide/porting-guide-for-ifort-to-ifx.html), and therefore we don't provide compatibility support based on ifort anymore. Also, currently `FLIT` cannot be compiled with GNU's compiler suite (gcc and gfortran) due to a number of nontrivial differences in these two compiler suites. 
 
-You need to have an installation of Intel's compiler suite freely available at [Intel oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit.html#gs.bed72v) and [Intel HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit.html#gs.bed5op), and set the paths using the script [set_intel_paths.sh](set_intel_paths.sh). 
+You need to have install [Intel's oneAPI HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html) and set the paths using the script [set_intel_paths.sh](set_intel_paths.sh) in this repository. 
 
 # Use
 The code is written in Fortran, with some functions written in C++ interfacing to third-party libraries in [third_party](third_party). 
@@ -47,7 +47,7 @@ The [Makefile](src/Makefile) in the [test](test) directory can serve as an examp
 Third-party codes are included in [third_party](third_party) for the purpose of completeness. Please read [third_party/README](third_party/README) for details. 
 
 # License
-&copy; 2024. Triad National Security, LLC. All rights reserved. 
+&copy; 2024 - 2025. Triad National Security, LLC. All rights reserved. 
 
 This program is Open-Source under the BSD-3 License.
 
