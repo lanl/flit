@@ -157,6 +157,15 @@ module libflit_statistics
         module procedure :: gaussian_3d_double
     end interface gaussian
 
+    interface cauchy
+        module procedure :: cauchy_1d_float
+        module procedure :: cauchy_2d_float
+        module procedure :: cauchy_3d_float
+        module procedure :: cauchy_1d_double
+        module procedure :: cauchy_2d_double
+        module procedure :: cauchy_3d_double
+    end interface cauchy
+
     ! Covariance matrix
     interface covar_matrix
         module procedure :: covariance_matrix_1d_float
@@ -229,6 +238,7 @@ module libflit_statistics
     public :: lxcorr
     public :: xcorr_coef
     public :: gaussian
+    public :: cauchy
     public :: kernel_triangular
     public :: kernel_bisquare
     public :: kernel_trisquare

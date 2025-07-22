@@ -41,6 +41,9 @@
 #define gaussian_1d_      CONCAT(gaussian_1d, T)
 #define gaussian_2d_      CONCAT(gaussian_2d, T)
 #define gaussian_3d_      CONCAT(gaussian_3d, T)
+#define cauchy_1d_      CONCAT(cauchy_1d, T)
+#define cauchy_2d_      CONCAT(cauchy_2d, T)
+#define cauchy_3d_      CONCAT(cauchy_3d, T)
 #define covariance_1d_      CONCAT(covariance_1d, T)
 #define covariance_2d_      CONCAT(covariance_2d, T)
 #define covariance_3d_      CONCAT(covariance_3d, T)
@@ -352,64 +355,341 @@ function variance_3d_(w) result(s)
 
 end function variance_3d_
 
-function gaussian_1d_(mu, sigma, x) result(f)
+!
+!> 1D Gaussian
+!
+function gaussian_1d_(x, mu, sigma) result(f)
 
     TT, intent(in) :: mu, sigma
     TT, dimension(:), intent(in) :: x
     TT, allocatable, dimension(:) :: f
 
-    f = exp(-0.5*((x - mu)/sigma)**2)/(sigma*sqrt(2*const_pi))
+    ! The normalization factor is sigma*sqrt(2*const_pi)
+
+    f = exp(-0.5*((x - mu)/sigma)**2)
 
 end function gaussian_1d_
 
-function gaussian_2d_(mu, sigma, x, y) result(f)
+!
+!> 2D Gaussian
+!
+function gaussian_2d_(x, y, mu, sigma, theta) result(f)
 
-    TT, dimension(1:2), intent(in) :: mu, sigma
     TT, dimension(:), intent(in) :: x, y
+    TT, dimension(1:2), intent(in) :: mu, sigma
+    TT, intent(in), optional :: theta
     TT, allocatable, dimension(:, :) :: f
 
-    TT, allocatable, dimension(:) :: f1, f2
     integer :: i, j
+    integer :: n1, n2
+    TT, allocatable, dimension(:, :) :: rt
+    TT :: g1, g2
+    logical :: rotate
 
-    f1 = exp(-0.5*((x - mu(1))/sigma(1))**2)/(sigma(1)*sqrt(2*const_pi))
-    f2 = exp(-0.5*((y - mu(2))/sigma(2))**2)/(sigma(2)*sqrt(2*const_pi))
+    n1 = size(x)
+    n2 = size(y)
 
-    f = zeros(size(f1), size(f2))
-    !$omp parallel do private(i, j)
-    do j = 1, size(f2)
-        do i = 1, size(f1)
-            f(i, j) = f1(i)*f2(j)
+    if (present(theta)) then
+        rt = zeros(2, 2)
+        rt(1, :) = [cos(theta), -sin(theta)]
+        rt(2, :) = [sin(theta), cos(theta)]
+        rotate = .true.
+    else
+        rotate = .false.
+    end if
+
+    ! The normalization factor is product(sigma)*(2*const_pi)
+
+    f = zeros(n1, n2)
+
+    if (rotate) then
+
+        !$omp parallel do private(i, j, g1, g2)
+        do j = 1, n2
+            do i = 1, n1
+
+                g1 = (x(i) - mu(1))*rt(1, 1) + (y(j) - mu(2))*rt(1, 2)
+                g2 = (x(i) - mu(1))*rt(2, 1) + (y(j) - mu(2))*rt(2, 2)
+
+                f(i, j) = exp(-0.5*((g1/sigma(1))**2 + (g2/sigma(2))**2))
+
+            end do
         end do
-    end do
-    !$omp end parallel do
+        !$omp end parallel do
+
+    else
+
+        !$omp parallel do private(i, j)
+        do j = 1, n2
+            do i = 1, n1
+                f(i, j) = exp(-0.5*((x(i)/sigma(1))**2 + (y(j)/sigma(2))**2))
+            end do
+        end do
+        !$omp end parallel do
+
+    end if
 
 end function gaussian_2d_
 
-function gaussian_3d_(mu, sigma, x, y, z) result(f)
+!
+!> 3D Gaussian
+!
+function gaussian_3d_(x, y, z, mu, sigma, theta) result(f)
 
-    TT, dimension(1:3), intent(in) :: mu, sigma
     TT, dimension(:), intent(in) :: x, y, z
+    TT, dimension(1:3), intent(in) :: mu, sigma
+    TT, dimension(1:3), intent(in), optional :: theta
     TT, allocatable, dimension(:, :, :) :: f
 
-    TT, allocatable, dimension(:) :: f1, f2, f3
     integer :: i, j, k
+    integer :: n1, n2, n3
+    TT, allocatable, dimension(:, :) :: rt1, rt2, rt3, rt
+    TT :: g1, g2, g3
+    TT :: zero
+    logical :: rotate
 
-    f1 = exp(-0.5*((x - mu(1))/sigma(1))**2)/(sigma(1)*sqrt(2*const_pi))
-    f2 = exp(-0.5*((y - mu(2))/sigma(2))**2)/(sigma(2)*sqrt(2*const_pi))
-    f3 = exp(-0.5*((z - mu(3))/sigma(3))**2)/(sigma(3)*sqrt(2*const_pi))
+    n1 = size(x)
+    n2 = size(y)
+    n3 = size(z)
 
-    f = zeros(size(f1), size(f2), size(f3))
-    !$omp parallel do private(i, j, k)
-    do k = 1, size(f3)
-        do j = 1, size(f2)
-            do i = 1, size(f1)
-                f(i, j, k) = f1(i)*f2(j)*f3(k)
+    zero = 0.0
+
+    if (present(theta)) then
+
+        rt1 = zeros(3, 3)
+        rt2 = zeros(3, 3)
+        rt3 = zeros(3, 3)
+
+        rt1(1, :) = [ 1.0,            0.0,            0.0          ]
+        rt1(2, :) = [ zero,           cos(theta(1)), -sin(theta(1))]
+        rt1(3, :) = [ zero,           sin(theta(1)),  cos(theta(1))]
+
+        rt2(1, :) = [ cos(theta(2)),  zero,           sin(theta(2))]
+        rt2(2, :) = [ 0.0,            1.0,            0.0]
+        rt2(3, :) = [-sin(theta(2)),  zero,           cos(theta(2))]
+
+        rt3(1, :) = [ cos(theta(3)), -sin(theta(3)),  zero         ]
+        rt3(2, :) = [ sin(theta(3)),  cos(theta(3)),  zero         ]
+        rt3(3, :) = [ 0.0,            0.0,            1.0          ]
+
+        rt = matx(rt3, matx(rt2, rt1))
+
+        rotate = .true.
+    else
+        rotate = .false.
+    end if
+
+    ! The normalization fator is h = product(sigma)*(2*const_pi)**1.5d0
+
+    f = zeros(n1, n2, n3)
+
+    if (rotate) then
+
+        !$omp parallel do private(i, j, k, g1, g2, g3)
+        do k = 1, n3
+            do j = 1, n2
+                do i = 1, n1
+
+                    g1 = (x(i) - mu(1))*rt(1, 1) + (y(j) - mu(2))*rt(1, 2) + (z(k) - mu(3))*rt(1, 3)
+                    g2 = (x(i) - mu(1))*rt(2, 1) + (y(j) - mu(2))*rt(2, 2) + (z(k) - mu(3))*rt(2, 3)
+                    g3 = (x(i) - mu(1))*rt(3, 1) + (y(j) - mu(2))*rt(3, 2) + (z(k) - mu(3))*rt(3, 3)
+
+                    f(i, j, k) = exp(-0.5*((g1/sigma(1))**2 + (g2/sigma(2))**2 + (g3/sigma(3))**2))
+
+                end do
             end do
         end do
-    end do
-    !$omp end parallel do
+        !$omp end parallel do
+
+    else
+
+        !$omp parallel do private(i, j, k)
+        do k = 1, n3
+            do j = 1, n2
+                do i = 1, n1
+                    f(i, j, k) = exp(-0.5*((x(i)/sigma(1))**2 + (y(j)/sigma(2))**2 + (z(k)/sigma(3))**2))
+                end do
+            end do
+        end do
+        !$omp end parallel do
+
+    end if
 
 end function gaussian_3d_
+
+!
+!>
+!> Multidimensional Cauchy distribution follows:
+!>      f(x) = Gamma((1 + d)/2)/(Gamma(1/2)*pi^(d/2)*product(gamma))*(1 + sum_{i=1}^d ((xi - mu_i)/gamma_i)^2)^(-(1 + d)/2)
+!> Therefore,
+!>      1D: f(x1) = 1/(pi*gamma_1)*(1 + ((x_1 - mu_1)/gamma_1)^2)^(-1)
+!>      2D: f(x1, x2) = 1/(2*pi*gamma_1*gamma_2)*(1 + ((x_1 - mu_1)/gamma_1)^2
+!>                                                  + ((x_2 - mu_2)/gamma_2)^2)^(-3/2)
+!>      3D: f(x1, x2, x3) = 1/(pi^2*gamma_1*gamma_2*gamma_3)*(1 + ((x_1 - mu_1)/gamma_1)^2
+!>                                                              + ((x_2 - mu_2)/gamma_2)^2
+!>                                                              + ((x_3 - mu_3)/gamma_3)^2)^(-2)
+!>
+!
+!> 1D Cauchy
+!
+function cauchy_1d_(x, mu, sigma) result(f)
+
+    TT, intent(in) :: mu, sigma
+    TT, dimension(:), intent(in) :: x
+    TT, allocatable, dimension(:) :: f
+
+    ! The normalization factor is const_pi*sigma
+
+    f = (1.0 + ((x - mu)/sigma)**2)**(-1.0d0)
+
+end function cauchy_1d_
+
+!
+!> 2D Cauchy
+!
+function cauchy_2d_(x, y, mu, sigma, theta) result(f)
+
+    TT, dimension(:), intent(in) :: x, y
+    TT, dimension(1:2), intent(in) :: mu, sigma
+    TT, intent(in), optional :: theta
+    TT, allocatable, dimension(:, :) :: f
+
+    integer :: i, j
+    integer :: n1, n2
+    TT, allocatable, dimension(:, :) :: rt
+    TT :: g1, g2
+    logical :: rotate
+
+    n1 = size(x)
+    n2 = size(y)
+
+    if (present(theta)) then
+        rt = zeros(2, 2)
+        rt(1, :) = [cos(theta), -sin(theta)]
+        rt(2, :) = [sin(theta), cos(theta)]
+        rotate = .true.
+    else
+        rotate = .false.
+    end if
+
+    ! The normalization factoris h = product(sigma)*(2*const_pi)
+
+    f = zeros(n1, n2)
+
+    if (rotate) then
+
+        !$omp parallel do private(i, j, g1, g2)
+        do j = 1, n2
+            do i = 1, n1
+
+                g1 = (x(i) - mu(1))*rt(1, 1) + (y(j) - mu(2))*rt(1, 2)
+                g2 = (x(i) - mu(1))*rt(2, 1) + (y(j) - mu(2))*rt(2, 2)
+
+                f(i, j) = (1.0 + ((g1/sigma(1))**2 + (g2/sigma(2))**2))**(-1.5d0)
+
+            end do
+        end do
+        !$omp end parallel do
+
+    else
+
+        !$omp parallel do private(i, j)
+        do j = 1, n2
+            do i = 1, n1
+                f(i, j) = (1.0 + ((x(i)/sigma(1))**2 + (y(j)/sigma(2))**2))**(-1.5d0)
+            end do
+        end do
+        !$omp end parallel do
+
+    end if
+
+end function cauchy_2d_
+
+!
+!> 3D Cauchy
+!
+function cauchy_3d_(x, y, z, mu, sigma, theta) result(f)
+
+    TT, dimension(:), intent(in) :: x, y, z
+    TT, dimension(1:3), intent(in) :: mu, sigma
+    TT, dimension(1:3), intent(in), optional :: theta
+    TT, allocatable, dimension(:, :, :) :: f
+
+    integer :: i, j, k
+    integer :: n1, n2, n3
+    TT, allocatable, dimension(:, :) :: rt1, rt2, rt3, rt
+    TT :: g1, g2, g3
+    TT :: zero
+    logical :: rotate
+
+    n1 = size(x)
+    n2 = size(y)
+    n3 = size(z)
+
+    zero = 0.0
+
+    if (present(theta)) then
+
+        rt1 = zeros(3, 3)
+        rt2 = zeros(3, 3)
+        rt3 = zeros(3, 3)
+
+        rt1(1, :) = [ 1.0,            0.0,            0.0          ]
+        rt1(2, :) = [ zero,           cos(theta(1)), -sin(theta(1))]
+        rt1(3, :) = [ zero,           sin(theta(1)),  cos(theta(1))]
+
+        rt2(1, :) = [ cos(theta(2)),  zero,           sin(theta(2))]
+        rt2(2, :) = [ 0.0,            1.0,            0.0]
+        rt2(3, :) = [-sin(theta(2)),  zero,           cos(theta(2))]
+
+        rt3(1, :) = [ cos(theta(3)), -sin(theta(3)),  zero         ]
+        rt3(2, :) = [ sin(theta(3)),  cos(theta(3)),  zero         ]
+        rt3(3, :) = [ 0.0,            0.0,            1.0          ]
+
+        rt = matx(rt3, matx(rt2, rt1))
+
+        rotate = .true.
+    else
+        rotate = .false.
+    end if
+
+    ! The normalization factor is h = product(sigma)*const_pi**2
+
+    f = zeros(n1, n2, n3)
+
+    if (rotate) then
+
+        !$omp parallel do private(i, j, k, g1, g2, g3)
+        do k = 1, n3
+            do j = 1, n2
+                do i = 1, n1
+
+                    g1 = (x(i) - mu(1))*rt(1, 1) + (y(j) - mu(2))*rt(1, 2) + (z(k) - mu(3))*rt(1, 3)
+                    g2 = (x(i) - mu(1))*rt(2, 1) + (y(j) - mu(2))*rt(2, 2) + (z(k) - mu(3))*rt(2, 3)
+                    g3 = (x(i) - mu(1))*rt(3, 1) + (y(j) - mu(2))*rt(3, 2) + (z(k) - mu(3))*rt(3, 3)
+
+                    f(i, j, k) = (1.0 + ((g1/sigma(1))**2 + (g2/sigma(2))**2 + (g3/sigma(3))**2))**(-2.0d0)
+
+                end do
+            end do
+        end do
+        !$omp end parallel do
+
+    else
+
+        !$omp parallel do private(i, j, k)
+        do k = 1, n3
+            do j = 1, n2
+                do i = 1, n1
+                    f(i, j, k) = (1.0 + ((x(i)/sigma(1))**2 + (y(j)/sigma(2))**2 + (z(k)/sigma(3))**2))**(-2.0d0)
+                end do
+            end do
+        end do
+        !$omp end parallel do
+
+    end if
+
+end function cauchy_3d_
 
 
 function covariance_1d_(x, y) result(c)
@@ -1603,6 +1883,9 @@ end function xcorr_coef_3d_
 #undef gaussian_1d_
 #undef gaussian_2d_
 #undef gaussian_3d_
+#undef cauchy_1d_
+#undef cauchy_2d_
+#undef cauchy_3d_
 #undef covariance_1d_
 #undef covariance_2d_
 #undef covariance_3d_
