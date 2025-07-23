@@ -34,12 +34,12 @@ object_iir = \
 	Butterworth.o \
 	Cascade.o \
 	ChebyshevI.o \
-    ChebyshevII.o \
-    Custom.o \
-    PoleFilter.o \
-    RBJ.o \
-    external_iir.o \
-    module_iirfilt.o
+	ChebyshevII.o \
+	Custom.o \
+	PoleFilter.o \
+	RBJ.o \
+	external_iir.o \
+	module_iirfilt.o
 
 object_filesystem = \
 	common.o \
