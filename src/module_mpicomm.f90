@@ -124,7 +124,6 @@ module libflit_mpicomm
         module procedure :: domain_decomp_regular_3d
     end interface
 
-    !    interface mpi_global_min
     !        module procedure :: mpi_global_min_1d_int
     !        module procedure :: mpi_global_min_1d_float
     !        module procedure :: mpi_global_min_1d_double

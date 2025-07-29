@@ -125,8 +125,8 @@ module libflit_mpicomm_group
     end interface
 
     interface domain_decomp_regular_group
-        module procedure :: domain_decomp_regular_2d
-        module procedure :: domain_decomp_regular_3d
+        module procedure :: domain_decomp_regular_2d_group
+        module procedure :: domain_decomp_regular_3d_group
     end interface
 
     !    interface mpi_group_min
