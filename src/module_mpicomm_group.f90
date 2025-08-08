@@ -176,13 +176,12 @@ contains
                 exit
             end if
         end do
-        !        groupid = rankid/nrank_group
         call mpi_comm_split(mpi_comm_world, groupid, nrank, mpi_group_comm, mpi_ierr)
 
         call mpi_comm_size(mpi_group_comm, nrank_group, mpi_ierr_group)
         call mpi_comm_rank(mpi_group_comm, rankid_group, mpi_ierr_group)
 
-        !        write(error_unit, '(a, i6, a, i6, a, i6)') ' @ group ', groupid, ' with group id ', rankid_group, '/', nrank_group
+        ! write(error_unit, '(a, i6, a, i6, a, i6)') ' @ group ', groupid, ' with group id ', rankid_group, '/', nrank_group
 
     end subroutine mpistart_group
 
@@ -206,20 +205,32 @@ contains
     end subroutine mpistop_group
 
     !
-    !> Decompose a matrix into MPI blocks
+    !> Decompose a 2D domain into MPI blocks
     !
-    subroutine domain_decomp_regular_2d_group(n1, n2, n1beg, n1end, n2beg, n2end)
+    subroutine domain_decomp_regular_2d_group(n1, n2, n1beg, n1end, n2beg, n2end, weights1, weights2)
 
         integer, intent(in) :: n1, n2
         integer, intent(out) :: n1beg, n1end, n2beg, n2end
+        real, dimension(:), intent(in), optional :: weights1, weights2
 
         integer, allocatable, dimension(:, :) :: blk1, blk2
         integer :: i, j
 
         call mpi_comm_rank(mpi_group_comm, rankid_group, mpi_ierr_group)
 
-        call cut(1, n1, rank1_group, blk1)
-        call cut(1, n2, rank2_group, blk2)
+        if (present(weights1) .and. present(weights2)) then
+            ! If the domain is padded with special layers (like PML) where number of FLOP is higher per point
+            call assert(size(weights1) == n1, ' <domain_decomp_regular_2d_group> Error: size(weights1) must = n1. ')
+            call assert(size(weights2) == n2, ' <domain_decomp_regular_2d_group> Error: size(weights2) must = n2. ')
+            blk1 = zeros(rank1_group, 2)
+            blk2 = zeros(rank2_group, 2)
+            call divide_domain(weights1, rank1_group, blk1)
+            call divide_domain(weights2, rank2_group, blk2)
+        else
+            ! Otherwise, use simple cut where FLOP is same for all points
+            call cut(1, n1, rank1_group, blk1)
+            call cut(1, n2, rank2_group, blk2)
+        end if
 
         if (rankid_group > rank1_group*rank2_group - 1) then
             n1beg = 1
@@ -274,21 +285,36 @@ contains
     end subroutine domain_decomp_regular_2d_group
 
     !
-    !> Decompose a volume into MPI blocks
+    !> Decompose a 3D domain into MPI blocks
     !
-    subroutine domain_decomp_regular_3d_group(n1, n2, n3, n1beg, n1end, n2beg, n2end, n3beg, n3end)
+    subroutine domain_decomp_regular_3d_group(n1, n2, n3, n1beg, n1end, n2beg, n2end, n3beg, n3end, weights1, weights2, weights3)
 
         integer, intent(in) :: n1, n2, n3
         integer, intent(out) :: n1beg, n1end, n2beg, n2end, n3beg, n3end
+        real, dimension(:),intent(in), optional :: weights1, weights2, weights3
 
         integer, allocatable, dimension(:, :) :: blk1, blk2, blk3
         integer :: i, j, k
 
         call mpi_comm_rank(mpi_group_comm, rankid_group, mpi_ierr_group)
 
-        call cut(1, n1, rank1_group, blk1)
-        call cut(1, n2, rank2_group, blk2)
-        call cut(1, n3, rank3_group, blk3)
+        if (present(weights1) .and. present(weights2)) then
+            ! If the domain is padded with special layers (like PML) where number of FLOP is higher per point
+            call assert(size(weights1) == n1, ' <domain_decomp_regular_3d_group> Error: size(weights1) must = n1. ')
+            call assert(size(weights2) == n2, ' <domain_decomp_regular_3d_group> Error: size(weights2) must = n2. ')
+            call assert(size(weights3) == n3, ' <domain_decomp_regular_3d_group> Error: size(weights3) must = n3. ')
+            blk1 = zeros(rank1_group, 2)
+            blk2 = zeros(rank2_group, 2)
+            blk3 = zeros(rank3_group, 2)
+            call divide_domain(weights1, rank1_group, blk1)
+            call divide_domain(weights2, rank2_group, blk2)
+            call divide_domain(weights3, rank3_group, blk3)
+        else
+            ! Otherwise, use simple cut where FLOP is same for all points
+            call cut(1, n1, rank1_group, blk1)
+            call cut(1, n2, rank2_group, blk2)
+            call cut(1, n3, rank3_group, blk3)
+        end if
 
         if (rankid_group > rank1_group*rank2_group*rank3_group - 1) then
             n1beg = 1

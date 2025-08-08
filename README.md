@@ -3,7 +3,7 @@
 
 We develop a generic Fortran library, `FLIT` (Fortran Library based on Interfaces and Templates), to provide a number of useful functionalities for computational geophysics and beyond. These functionalities include several single/multi-dimensional array manipulation functions/subroutines, flexible parameter reading from textual file or command line arguments, signal and image filtering and processing, integral transforms, interpolation, statistical functions, and so on. These functionalities are not intrinsically available in the current Fortran standard. The most notable feature of `FLIT` is that we provide user-friendly interfaces for similar functionalities with different data types, attempting to demonstrate the possibility of accelerating scientific application development using modern Fortran. The package can be used as a robust Fortran library for developing sophisticated scientific applications in the fields of computational physics, computational and applied geophysics, signal and image processing, and so on. 
 
-The work was supported by Los Alamos National Laboratory (LANL) Laboratory Directory Research and Development (LDRD) project 20240322ER. LANL is operated by Triad National Security, LLC, for the National Nuclear Security Administration (NNSA) of the U.S. Department of Energy (DOE) under Contract No. 89233218CNA000001. The research used high-performance computing resources provided by LANL's Institutional Computing program. 
+The work is supported by Los Alamos National Laboratory (LANL) Laboratory Directory Research and Development (LDRD) project 20240322ER. LANL is operated by Triad National Security, LLC, for the National Nuclear Security Administration (NNSA) of the U.S. Department of Energy (DOE) under Contract No. 89233218CNA000001. The research used high-performance computing resources provided by LANL's Institutional Computing program. 
 
 The work is under LANL open source approval reference O4767.
 
@@ -11,12 +11,10 @@ The work is under LANL open source approval reference O4767.
 Please refer to the document [LA-UR-24-26315](doc/doc_libflit.pdf) for details. 
 
 # Requirement
-Currently, `FLIT` can only be compiled with Intel's compiler suite (ifx, icx, icpx, and mpiifx) on Linux platform. We tested `FLIT` with Intel's oneAPI HPC Toolkit 2024.2/2025.2. Note that the classic Intel Fortran compiler [ifort is deprecated](https://www.intel.com/content/www/us/en/developer/articles/guide/porting-guide-for-ifort-to-ifx.html), and therefore we don't provide compatibility support based on ifort anymore. Also, currently `FLIT` cannot be compiled with GNU's compiler suite (gcc and gfortran) due to a number of nontrivial differences in these two compiler suites. 
-
-You need to have install [Intel's oneAPI HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html) and set the paths using the script [set_intel_paths.sh](set_intel_paths.sh) in this repository. 
+Currently, `FLIT` can only be compiled with Intel's oneAPI HPC Toolkit 2024.2/2025.2 (including ifx, icx, icpx, and mpiifx compilers) on Linux platforms. You need to install [Intel's oneAPI HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html) and set the paths using the script [set_intel_paths.sh](set_intel_paths.sh) included this repository. `FLIT` cannot be compiled with GNU's compiler suite (gcc and gfortran). 
 
 # Use
-The code is written in Fortran, with some functions written in C++ interfacing to third-party libraries in [third_party](third_party). 
+The codes are written in Fortran, with some functions written in C++ interfacing to third-party libraries in [third_party](third_party). 
 
 To install `FLIT`, 
 

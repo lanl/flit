@@ -57,27 +57,24 @@ module libflit_domain_decomposition
 contains
 
     !
-    !> Divide a 1D domain with nrank intervals
+    !> Divide a 1D domain
     !
-    !> @param[in] n - number of points
-    !> @param[in] nhead - number of PML points at the head of the array
-    !> @param[in] ntail - number of PML points at the tail of the array
-    !> @param[in] weight - computation complexity of the PML points
-    !> @param[in] nrank - number of mpi ranks
+    !> @param[in] n - number of grid points
+    !> @param[in] nhead - number of additional points at the head
+    !> @param[in] ntail - number of additional points at the tail
+    !> @param[in] weight - computational complexity of the additional points
+    !> @param[in] nblk - number of blocks after division
     !
     !> @param[out] blkrange - the calculated ranges of blocks
     !
-    !
     subroutine divide_domain_1(n, nhead, ntail, weight, nblk, blkrange)
 
-        ! arguments
         integer, intent(in) :: n, nblk, nhead, ntail
         real, intent(in) :: weight
         integer, allocatable, dimension(:, :), intent(inout) :: blkrange
 
-        ! local variables
         integer, dimension(1:nblk) :: blocksizes
-        real, dimension(1:n + nhead + ntail + 1) :: w
+        real, allocatable, dimension(:) :: w
         integer :: r_start, r_end, i, j
         real :: plength, d
         real :: avg, last
@@ -110,7 +107,7 @@ contains
         else
 
             ! Weight
-            w = 1.0
+            w = ones(n + nhead + ntail + 1)
             w(1:nhead) = weight
             w(n + nhead + 1:n + nhead + ntail) = weight
             w(n + nhead + ntail + 1) = 0.0
@@ -137,19 +134,24 @@ contains
                 r_end = r_end + 1
                 j = j + 1
             end do
+
             ! Ensure the last blocks has correct size
             blocksizes(nblk) = n + nhead + ntail - sum(blocksizes(1:nblk - 1))
 
             ! Generate blkrange
             allocate (tmpbk(1:nblk, 1:2))
-            tmpbk(1, 1) = -nhead + 1
+            ! Here to keep consistency with other functions in this module, the additional nhead points are not subtracted
+            ! otherwise, it should be - nhead + 1
+            tmpbk(1, 1) = 1
             do i = 2, nblk
-                tmpbk(i, 1) = -nhead + 1 + sum(blocksizes(1:i - 1))
+                ! Same here, otherwise it should be -nhead + ...
+                tmpbk(i, 1) = 1 + sum(blocksizes(1:i - 1))
             end do
             do i = 1, nblk - 1
                 tmpbk(i, 2) = tmpbk(i + 1, 1) - 1
             end do
-            tmpbk(nblk, 2) = n + ntail
+            ! Same here, otherwise it should be n + ntail
+            tmpbk(nblk, 2) = n + nhead + ntail
 
             blkrange(bkbeg:bkend, 1) = tmpbk(1:nblk, 1)
             blkrange(bkbeg:bkend, 2) = tmpbk(1:nblk, 2)
@@ -159,22 +161,20 @@ contains
     end subroutine divide_domain_1
 
     !
-    !> Divide an 1D domain with blocks of approximately equal sum
+    !> Divide a 1D domain where elements may have different weights
+    !> into blocks with approximately equal sum
     !
-    !
-    subroutine divide_domain_1_weight(n, weight, nblk, blkrange)
+    subroutine divide_domain_1_weight(weight, nblk, blkrange)
 
-        ! arguments
-        integer, intent(in) :: n, nblk
         real, dimension(:), intent(in) :: weight
+        integer, intent(in) :: nblk
         integer, allocatable, dimension(:, :), intent(inout) :: blkrange
 
-        ! local variables
         integer, dimension(1:nblk) :: blocksizes
-        real, allocatable, dimension(:) :: w
-        integer :: r_start, r_end, i, j, nw, bkbeg, bkend
+        integer :: r_start, r_end, i, j, bkbeg, bkend
         real :: d
         integer, allocatable, dimension(:, :) :: tmpbk
+        integer :: n
 
         if (.not. allocated(blkrange)) then
             bkbeg = 0
@@ -186,26 +186,11 @@ contains
             bkend = ubound(blkrange, 1)
         end if
 
-        ! Weight
-        allocate (w(1:n))
-        ! Origional weight might only have nw bins
-        nw = size(weight)
-        ! Bin size of the oringal weight
-        d = (n - 1.0)/nw
-        ! Interpolate to find the weight on each of the n elements
-        !        call linear_interp_1d(nw, regspace(0.5*d, d, n + 0.5*d), weight, &
-            !            n, regspace(0.0, 1.0, n - 1.0), w)
-        !        call reg2reg_interp(weight, nw, d, 0.5*d, w, n, 1.0, 0.0)
-        w = interp(weight, nw, d, 0.5*d, n, 1.0, 0.0)
-        ! Normalize the weight using its smalles value
-        w = w/minval(w)
-        ! Constrain that all elements of the interpolated weight must > 0.01
-        where (w == 0 .or. isnan(w))
-            w = minval(w, mask=(w /= 0 .and. .not. isnan(w)))
-        end where
+        ! Length of the array
+        n = size(weight)
 
         ! Average pseudo-length
-        d = sum(w)/nblk
+        d = sum(weight)/nblk
 
         ! Initialization
         r_start = 1
@@ -214,8 +199,8 @@ contains
 
         ! Solve for size
         do while (j <= nblk)
-            do while ((r_end < n) &
-                    .and. (abs(sum(w(r_start:r_end + 1)) - d) <= abs(sum(w(r_start:r_end)) - d)))
+            do while (r_end < n &
+                    .and. abs(sum(weight(r_start:r_end + 1)) - d) <= abs(sum(weight(r_start:r_end)) - d))
                 r_end = r_end + 1
             end do
             blocksizes(j) = r_end - r_start + 1
@@ -223,6 +208,7 @@ contains
             r_end = r_end + 1
             j = j + 1
         end do
+
         ! Ensure the last blocks has correct size
         blocksizes(nblk) = n - sum(blocksizes(1:nblk - 1))
 
@@ -243,9 +229,7 @@ contains
     end subroutine divide_domain_1_weight
 
     !
-    !> Cut 1D range into blocks simple version
-    !
-    !> author 2017.08
+    !> Cut a 1D domain into blocks
     !
     subroutine cut_simple(nbeg, nend, nblk, blkrange)
 
@@ -284,6 +268,9 @@ contains
 
     end subroutine cut_simple
 
+    !
+    !> Cut a large 1D domain into blocks
+    !
     subroutine cut_simple_large(nbeg, nend, nblk, blkrange)
 
         ! arguments
@@ -321,14 +308,15 @@ contains
 
     end subroutine cut_simple_large
 
+    !
+    !> Cut a 1D piecewise domain into blocks based on piece interfaces
+    !
     subroutine cut_pwconst(pwconst, nblk, blkrange)
 
-        ! arguments
         real, dimension(:), intent(in) :: pwconst
         integer, intent(in) :: nblk
         integer, allocatable, dimension(:, :), intent(inout) :: blkrange
 
-        ! local variables
         integer :: i, l, nw
         real, allocatable, dimension(:) :: w
 
@@ -336,12 +324,13 @@ contains
 
         ! Find piecewise interfaces using finite difference
         nw = size(pwconst)
-        allocate (w(1:nw))
         w = deriv(pwconst, method='forward')
+
         l = index_first_nonzero(w)
         blkrange(1, 1) = 1
         blkrange(1, 2) = l
         w(l) = 0
+
         do i = 2, nblk
             l = min(index_first_nonzero(w), nw)
             blkrange(i, 1) = blkrange(i - 1, 2) + 1
