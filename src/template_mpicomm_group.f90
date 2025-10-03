@@ -39,7 +39,6 @@
 #define gather_distribute_array_2d_group_     CONCAT(gather_distribute_array_2d_group, T)
 #define gather_distribute_array_3d_group_     CONCAT(gather_distribute_array_3d_group, T)
 #define gather_distribute_large_array_1d_group_     CONCAT(gather_distribute_large_array_1d_group, T)
-!#define mpi_group_min_1d_     CONCAT(mpi_group_min_1d, T)
 
 !
 ! Broadcast
@@ -230,19 +229,27 @@ subroutine commute_array_1d_group_(w, nl)
 
 end subroutine commute_array_1d_group_
 
-subroutine commute_array_2d_group_(w, nl)
+subroutine commute_array_2d_group_(w, nl, dim)
 
     TT, allocatable, dimension(:, :), intent(inout) :: w
     integer, intent(in) :: nl
+    integer, intent(in), optional :: dim
 
     integer :: blks1, blks2, n1l, n1u, n2l, n2u
+    integer :: axis
 
     n1l = lbound(w, 1) + nl
     n1u = ubound(w, 1) - nl
     n2l = lbound(w, 2) + nl
     n2u = ubound(w, 2) - nl
 
-    if (rank1_group > 1) then
+    if (present(dim)) then
+        axis = dim
+    else
+        axis = 0
+    end if
+
+    if (rank1_group > 1 .and. (axis == 0 .or. axis == 1)) then
 
         blks1 = (n2u - n2l + 1 + 2*nl)*nl
 
@@ -253,7 +260,7 @@ subroutine commute_array_2d_group_(w, nl)
 
     end if
 
-    if (rank2_group > 1) then
+    if (rank2_group > 1 .and. (axis == 0 .or. axis == 2)) then
 
         blks2 = (n1u - n1l + 1 + 2*nl)*nl
 
@@ -266,12 +273,14 @@ subroutine commute_array_2d_group_(w, nl)
 
 end subroutine commute_array_2d_group_
 
-subroutine commute_array_3d_group_(w, nl)
+subroutine commute_array_3d_group_(w, nl, dim)
 
     TT, allocatable, dimension(:, :, :), intent(inout) :: w
     integer, intent(in) :: nl
+    integer, intent(in), optional :: dim
 
     integer :: blks1, blks2, blks3, n1l, n1u, n2l, n2u, n3l, n3u
+    integer :: axis
 
     n1l = lbound(w, 1) + nl
     n1u = ubound(w, 1) - nl
@@ -280,7 +289,13 @@ subroutine commute_array_3d_group_(w, nl)
     n3l = lbound(w, 3) + nl
     n3u = ubound(w, 3) - nl
 
-    if (rank1_group > 1) then
+    if (present(dim)) then
+        axis = dim
+    else
+        axis = 0
+    end if
+
+    if (rank1_group > 1 .and. (axis == 0 .or. axis == 1)) then
 
         blks1 = (n2u - n2l + 1 + 2*nl)*(n3u - n3l + 1 + 2*nl)*nl
 
@@ -291,7 +306,7 @@ subroutine commute_array_3d_group_(w, nl)
 
     end if
 
-    if (rank2_group > 1) then
+    if (rank2_group > 1 .and. (axis == 0 .or. axis == 2)) then
 
         blks2 = (n1u - n1l + 1 + 2*nl)*(n3u - n3l + 1 + 2*nl)*nl
 
@@ -302,7 +317,7 @@ subroutine commute_array_3d_group_(w, nl)
 
     end if
 
-    if (rank3_group > 1) then
+    if (rank3_group > 1 .and. (axis == 0 .or. axis == 3)) then
 
         blks3 = (n2u - n2l + 1 + 2*nl)*(n1u - n1l + 1 + 2*nl)*nl
 
@@ -383,23 +398,6 @@ subroutine gather_distribute_array_3d_group_(w)
 
 end subroutine gather_distribute_array_3d_group_
 
-!! Min max
-!#ifdef T
-!function mpi_group_min_1d_(w) result(m)
-!
-!    TT, dimension(:) :: w
-!    TT :: m
-!
-!    TT :: local_min
-!
-!    local_min = minval(w)
-!
-!    call mpi_barrier(mpi_group_comm, mpi_ierr_group)
-!    call mpi_allreduce(local_min, m, 1, TTT, mpi_min, mpi_group_comm, mpi_ierr_group)
-!    call mpi_barrier(mpi_group_comm, mpi_ierr_group)
-!
-!end function mpi_group_min_1d_
-
 #undef T
 #undef TT
 #undef TTT
@@ -425,4 +423,3 @@ end subroutine gather_distribute_array_3d_group_
 #undef gather_distribute_array_2d_group_
 #undef gather_distribute_array_3d_group_
 #undef gather_distribute_large_array_1d_group_
-!#undef mpi_group_min_1d_

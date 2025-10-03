@@ -1,15 +1,15 @@
 !
 ! © 2024. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -115,6 +115,11 @@ module libflit_utility
         module procedure :: round_double
     end interface round
 
+    interface nice
+        module procedure :: nice_float
+        module procedure :: nice_double
+    end interface nice
+
     public :: warn
     public :: clip
     public :: swap
@@ -127,6 +132,7 @@ module libflit_utility
     public :: order_of_magnitude
     public :: rov
     public :: round
+    public :: nice
 
 contains
 
@@ -246,7 +252,6 @@ contains
 
     !
     !> Get the name of the host
-    !
     !
     function get_hostname() result(hostname)
 
@@ -427,9 +432,9 @@ contains
         end if
 
         r = base*nint(x/base)
-        r = r*10**prec
+        r = r*10.0d0**prec
         r = nint(r)
-        r = r/10**prec
+        r = r/10.0d0**prec
 
     end function round_float
 
@@ -448,59 +453,58 @@ contains
         end if
 
         r = base*nint(x/base)
-        r = r*10**prec
+        r = r*10.0d0**prec
         r = nint(r)
-        r = r/10**prec
+        r = r/10.0d0**prec
 
     end function round_double
 
-    !    elemental function nice_float(x, base) result(xnice)
-    !
-    !        real, intent(in) :: x
-    !        real, intent(in), optional :: base
-    !        real :: xnice
-    !
-    !        integer :: nm
-    !        real :: b
-    !
-    !        if (present(base)) then
-    !            b = base
-    !        else
-    !            b = 0.5
-    !        end if
-    !
-    !        nm = order_of_magnitude(x)
-    !        xnice = x/10**nm
-    !        xnice = round(xnice, b)
-    !        xnice = xnice*10**nm
-    !
-    !    end function nice_float
-    !
-    !    elemental function nice_double(x, base) result(xnice)
-    !
-    !        double precision, intent(in) :: x
-    !        double precision, intent(in), optional :: base
-    !        double precision :: xnice
-    !
-    !        integer :: nm
-    !        double precision :: b
-    !
-    !        if (present(base)) then
-    !            b = base
-    !        else
-    !            b = 0.5
-    !        end if
-    !
-    !        nm = order_of_magnitude(x)
-    !        xnice = x/10**nm
-    !        xnice = round(xnice, b)
-    !        xnice = xnice*10**nm
-    !
-    !    end function nice_double
+    elemental function nice_float(x, base) result(xnice)
+
+        real, intent(in) :: x
+        real, intent(in), optional :: base
+        real :: xnice
+
+        integer :: nm
+        real :: b
+
+        if (present(base)) then
+            b = base
+        else
+            b = 0.5
+        end if
+
+        nm = order_of_magnitude(x)
+        xnice = x/10.0d0**nm
+        xnice = round(xnice, b)
+        xnice = xnice*10.0d0**nm
+
+    end function nice_float
+
+    elemental function nice_double(x, base) result(xnice)
+
+        double precision, intent(in) :: x
+        double precision, intent(in), optional :: base
+        double precision :: xnice
+
+        integer :: nm
+        double precision :: b
+
+        if (present(base)) then
+            b = base
+        else
+            b = 0.5
+        end if
+
+        nm = order_of_magnitude(x)
+        xnice = x/10.0d0**nm
+        xnice = round(xnice, b)
+        xnice = xnice*10.0d0**nm
+
+    end function nice_double
 
     !
     !> Separate an integer into digits
-    !
     !
     subroutine get_integer_digits(w, nw, wd)
 

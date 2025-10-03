@@ -19,8 +19,7 @@
 
 module libflit_mpicomm
 
-    use mpi
-    ! using mpi_f08 seems to cause mysterious errors in mpi_sendrecv
+    use mpi_f08
     use libflit_array
     use libflit_domain_decomposition
     use libflit_error
@@ -124,10 +123,25 @@ module libflit_mpicomm
         module procedure :: domain_decomp_regular_3d
     end interface
 
-    !        module procedure :: mpi_global_min_1d_int
-    !        module procedure :: mpi_global_min_1d_float
-    !        module procedure :: mpi_global_min_1d_double
-    !    end interface mpi_global_min
+    interface global_min
+        module procedure :: mpi_global_min_1d_int
+        module procedure :: mpi_global_min_1d_float
+        module procedure :: mpi_global_min_1d_double
+    end interface global_min
+
+    interface global_max
+        module procedure :: mpi_global_max_1d_int
+        module procedure :: mpi_global_max_1d_float
+        module procedure :: mpi_global_max_1d_double
+    end interface global_max
+
+    interface global_and
+        module procedure :: mpi_global_and
+    end interface
+
+    interface global_or
+        module procedure :: mpi_global_or
+    end interface
 
     integer, public :: rank1, rank2, rank3
     integer, public :: block_x1left, block_x1right
@@ -147,6 +161,10 @@ module libflit_mpicomm
     public :: allreduce_array
     public :: commute_array
     public :: domain_decomp_regular
+    public :: global_min
+    public :: global_max
+    public :: global_and
+    public :: global_or
 
 contains
 
@@ -401,6 +419,129 @@ contains
         call mpi_bcast(w, len(w), mpi_character, rid, mpi_comm_world, mpi_ierr)
         call mpi_barrier(mpi_comm_world, mpi_ierr)
 
-    end subroutine bcast_array_1d_global_string
+    end subroutine
+
+    ! Min max
+    function mpi_global_min_1d_int(w) result(m)
+
+        integer :: w
+        integer :: m
+
+        integer :: local_min
+
+        local_min = w
+
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+        call mpi_allreduce(local_min, m, 1, mpi_integer, mpi_min, mpi_comm_world, mpi_ierr)
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+
+    end function
+
+    function mpi_global_min_1d_float(w) result(m)
+
+        real :: w
+        real :: m
+
+        real :: local_min
+
+        local_min = w
+
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+        call mpi_allreduce(local_min, m, 1, mpi_real, mpi_min, mpi_comm_world, mpi_ierr)
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+
+    end function
+
+    function mpi_global_min_1d_double(w) result(m)
+
+        double precision :: w
+        double precision :: m
+
+        double precision :: local_min
+
+        local_min = w
+
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+        call mpi_allreduce(local_min, m, 1, mpi_double_precision, mpi_min, mpi_comm_world, mpi_ierr)
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+
+    end function
+
+    ! Min max
+    function mpi_global_max_1d_int(w) result(m)
+
+        integer :: w
+        integer :: m
+
+        integer :: local_max
+
+        local_max = w
+
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+        call mpi_allreduce(local_max, m, 1, mpi_integer, mpi_max, mpi_comm_world, mpi_ierr)
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+
+    end function
+
+    function mpi_global_max_1d_float(w) result(m)
+
+        real :: w
+        real :: m
+
+        real :: local_max
+
+        local_max = w
+
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+        call mpi_allreduce(local_max, m, 1, mpi_real, mpi_max, mpi_comm_world, mpi_ierr)
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+
+    end function
+
+    function mpi_global_max_1d_double(w) result(m)
+
+        double precision :: w
+        double precision :: m
+
+        double precision :: local_max
+
+        local_max = w
+
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+        call mpi_allreduce(local_max, m, 1, mpi_double_precision, mpi_max, mpi_comm_world, mpi_ierr)
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+
+    end function
+
+    ! Logical
+    function mpi_global_and(w) result(m)
+
+        logical :: w
+        logical :: m
+
+        logical :: local_and
+
+        local_and = w
+
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+        call mpi_allreduce(local_and, m, 1, mpi_logical, mpi_land, mpi_comm_world, mpi_ierr)
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+
+    end function
+
+    function mpi_global_or(w) result(m)
+
+        logical :: w
+        logical :: m
+
+        logical :: local_or
+
+        local_or = w
+
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+        call mpi_allreduce(local_or, m, 1, mpi_logical, mpi_lor, mpi_comm_world, mpi_ierr)
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+
+    end function
 
 end module libflit_mpicomm

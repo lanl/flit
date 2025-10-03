@@ -19,8 +19,7 @@
 
 module libflit_mpicomm_group
 
-    use mpi
-    ! using mpi_f08 seems to cause mysterious errors in mpi_sendrecv
+    use mpi_f08
     use libflit_array
     use libflit_domain_decomposition
     use libflit_error
@@ -129,15 +128,29 @@ module libflit_mpicomm_group
         module procedure :: domain_decomp_regular_3d_group
     end interface
 
-    !    interface mpi_group_min
-    !        module procedure :: mpi_group_min_1d_int
-    !        module procedure :: mpi_group_min_1d_float
-    !        module procedure :: mpi_group_min_1d_double
-    !    end interface mpi_group_min
+    interface group_min
+        module procedure :: mpi_group_min_int
+        module procedure :: mpi_group_min_float
+        module procedure :: mpi_group_min_double
+    end interface
+
+    interface group_max
+        module procedure :: mpi_group_max_int
+        module procedure :: mpi_group_max_float
+        module procedure :: mpi_group_max_double
+    end interface
+
+    interface group_and
+        module procedure :: mpi_group_and
+    end interface
+
+    interface group_or
+        module procedure :: mpi_group_or
+    end interface
 
     integer, public :: ngroup = 1
     integer, public :: groupid
-    integer, public :: mpi_group_comm
+    type(mpi_comm), public :: mpi_group_comm
 
     integer, public :: rank1_group, rank2_group, rank3_group
     integer, public :: block_x1left_group, block_x1right_group
@@ -157,6 +170,9 @@ module libflit_mpicomm_group
     public :: allreduce_array_group
     public :: commute_array_group
     public :: domain_decomp_regular_group
+    public :: group_min
+    public :: group_max
+    public :: group_and
 
 contains
 
@@ -253,9 +269,9 @@ contains
             do j = 0, rank2_group - 1
                 do i = 0, rank1_group - 1
 
-                    blockid = j*rank1_group + i
+                    blockid_group = j*rank1_group + i
 
-                    if (blockid == rankid_group) then
+                    if (blockid_group == rankid_group) then
 
                         block_x1left_group = rankid_group - 1
                         block_x1right_group = rankid_group + 1
@@ -344,9 +360,9 @@ contains
                 do j = 0, rank2_group - 1
                     do i = 0, rank1_group - 1
 
-                        blockid = k*rank2_group*rank1_group + j*rank1_group + i
+                        blockid_group = k*rank2_group*rank1_group + j*rank1_group + i
 
-                        if (blockid == rankid_group) then
+                        if (blockid_group == rankid_group) then
 
                             block_x1left_group = rankid_group - 1
                             block_x1right_group = rankid_group + 1
@@ -428,6 +444,129 @@ contains
         call mpi_bcast(w, len(w), mpi_character, rid, mpi_group_comm, mpi_ierr_group)
         call mpi_barrier(mpi_group_comm, mpi_ierr_group)
 
-    end subroutine bcast_array_1d_group_string
+    end subroutine
+
+    ! Min max
+    function mpi_group_min_int(w) result(m)
+
+        integer :: w
+        integer :: m
+
+        integer :: local_min
+
+        local_min = w
+
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+        call mpi_allreduce(local_min, m, 1, mpi_integer, mpi_min, mpi_group_comm, mpi_ierr_group)
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+
+    end function
+
+    function mpi_group_min_float(w) result(m)
+
+        real :: w
+        real :: m
+
+        real :: local_min
+
+        local_min = w
+
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+        call mpi_allreduce(local_min, m, 1, mpi_real, mpi_min, mpi_group_comm, mpi_ierr_group)
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+
+    end function
+
+    function mpi_group_min_double(w) result(m)
+
+        double precision :: w
+        double precision :: m
+
+        double precision :: local_min
+
+        local_min = w
+
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+        call mpi_allreduce(local_min, m, 1, mpi_double_precision, mpi_min, mpi_group_comm, mpi_ierr_group)
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+
+    end function
+
+    ! Min max
+    function mpi_group_max_int(w) result(m)
+
+        integer :: w
+        integer :: m
+
+        integer :: local_max
+
+        local_max = w
+
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+        call mpi_allreduce(local_max, m, 1, mpi_integer, mpi_max, mpi_group_comm, mpi_ierr_group)
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+
+    end function
+
+    function mpi_group_max_float(w) result(m)
+
+        real :: w
+        real :: m
+
+        real :: local_max
+
+        local_max = w
+
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+        call mpi_allreduce(local_max, m, 1, mpi_real, mpi_max, mpi_group_comm, mpi_ierr_group)
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+
+    end function
+
+    function mpi_group_max_double(w) result(m)
+
+        double precision :: w
+        double precision :: m
+
+        double precision :: local_max
+
+        local_max = w
+
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+        call mpi_allreduce(local_max, m, 1, mpi_double_precision, mpi_max, mpi_group_comm, mpi_ierr_group)
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+
+    end function
+
+    ! Logical
+    function mpi_group_and(w) result(m)
+
+        logical :: w
+        logical :: m
+
+        logical :: local_and
+
+        local_and = w
+
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+        call mpi_allreduce(local_and, m, 1, mpi_logical, mpi_land, mpi_group_comm, mpi_ierr_group)
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+
+    end function
+
+    function mpi_group_or(w) result(m)
+
+        logical :: w
+        logical :: m
+
+        logical :: local_or
+
+        local_or = w
+
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+        call mpi_allreduce(local_or, m, 1, mpi_logical, mpi_lor, mpi_group_comm, mpi_ierr_group)
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+
+    end function
 
 end module libflit_mpicomm_group

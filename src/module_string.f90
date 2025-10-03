@@ -16,7 +16,6 @@
 !    Kai Gao, kaigao@lanl.gov
 !
 
-
 module libflit_string
 
     use iso_fortran_env
@@ -1094,39 +1093,19 @@ contains
         character(len=*), intent(in) :: str, separator
         integer(kind=2), allocatable, dimension(:), intent(inout) :: var
 
-        integer :: nsep, nvar, i
-        integer, allocatable, dimension(:) :: pos_sep
-        integer :: ibeg, iend
+        integer :: i, n
+        character(len=24), allocatable, dimension(:) :: vars
 
-        call count_substring(str, separator, nsep, pos_sep)
-        nvar = nsep + 1
+        vars = split_string(str, separator)
+        n = size(vars)
+
         if (allocated(var)) then
-            deallocate (var)
+            deallocate(var)
         end if
-        allocate (var(1:nvar))
-
-        if (nvar == 1) then
-            var(1) = int(extract_float(str), kind=2)
-            return
-        end if
-
-        ! !$omp parallel do private(i,ibeg,iend)
-        do i = 1, nvar
-
-            if (i == 1) then
-                ibeg = 1
-                iend = pos_sep(1) - 1
-            else if (i == nvar) then
-                ibeg = pos_sep(nsep) + 1
-                iend = len_trim(str)
-            else
-                ibeg = pos_sep(i - 1) + 1
-                iend = pos_sep(i) - 1
-            end if
-            var(i) = int(extract_float(str(ibeg:iend)), kind=2)
-
+        allocate (var(1:n))
+        do i = 1, n
+            var(i) = int(extract_float(vars(i)), kind=2)
         end do
-        ! !$omp end parallel do
 
     end subroutine extract_nint2
 
@@ -1138,349 +1117,180 @@ contains
         character(len=*), intent(in) :: str, separator
         integer(kind=4), allocatable, dimension(:), intent(inout) :: var
 
-        integer :: nsep, nvar, i
-        integer, allocatable, dimension(:) :: pos_sep
-        integer :: ibeg, iend
+        integer :: i, n
+        character(len=24), allocatable, dimension(:) :: vars
 
-        call count_substring(str, separator, nsep, pos_sep)
-        nvar = nsep + 1
+        vars = split_string(str, separator)
+        n = size(vars)
+
         if (allocated(var)) then
-            deallocate (var)
+            deallocate(var)
         end if
-        allocate (var(1:nvar))
-
-        if (nvar == 1) then
-            var(1) = int(extract_float(str), kind=4)
-            return
-        end if
-
-        ! !$omp parallel do private(i,ibeg,iend)
-        do i = 1, nvar
-
-            if (i == 1) then
-                ibeg = 1
-                iend = pos_sep(1) - 1
-            else if (i == nvar) then
-                ibeg = pos_sep(nsep) + 1
-                iend = len_trim(str)
-            else
-                ibeg = pos_sep(i - 1) + 1
-                iend = pos_sep(i) - 1
-            end if
-            var(i) = int(extract_float(str(ibeg:iend)), kind=4)
-
+        allocate (var(1:n))
+        do i = 1, n
+            var(i) = int(extract_float(vars(i)), kind=4)
         end do
-        ! !$omp end parallel do
 
     end subroutine extract_nint4
 
+    !
+    !> Extract multiple integers of kind 8 from string
+    !
     subroutine extract_nint8(str, separator, var)
 
         character(len=*), intent(in) :: str, separator
         integer(kind=8), allocatable, dimension(:), intent(inout) :: var
 
-        integer :: nsep, nvar, i
-        integer, allocatable, dimension(:) :: pos_sep
-        integer :: ibeg, iend
+        integer :: i, n
+        character(len=24), allocatable, dimension(:) :: vars
 
-        call count_substring(str, separator, nsep, pos_sep)
-        nvar = nsep + 1
+        vars = split_string(str, separator)
+        n = size(vars)
+
         if (allocated(var)) then
-            deallocate (var)
+            deallocate(var)
         end if
-        allocate (var(1:nvar))
-
-        if (nvar == 1) then
-            var(1) = int(extract_float(str), kind=8)
-            return
-        end if
-
-        ! !$omp parallel do private(i,ibeg,iend)
-        do i = 1, nvar
-
-            if (i == 1) then
-                ibeg = 1
-                iend = pos_sep(1) - 1
-            else if (i == nvar) then
-                ibeg = pos_sep(nsep) + 1
-                iend = len_trim(str)
-            else
-                ibeg = pos_sep(i - 1) + 1
-                iend = pos_sep(i) - 1
-            end if
-            var(i) = int(extract_float(str(ibeg:iend)), kind=8)
-
+        allocate (var(1:n))
+        do i = 1, n
+            var(i) = int(extract_float(vars(i)), kind=8)
         end do
-        ! !$omp end parallel do
 
     end subroutine extract_nint8
 
     !
-    !> Extract multiple real numbers from string
+    !> Extract multiple single-precision float numbers from string
     !
     subroutine extract_nfloat(str, separator, var)
 
         character(len=*), intent(in) :: str, separator
         real, allocatable, dimension(:), intent(inout) :: var
 
-        integer :: nsep, nvar, i
-        integer, allocatable, dimension(:) :: pos_sep
-        integer :: ibeg, iend
+        integer :: i, n
+        character(len=24), allocatable, dimension(:) :: vars
 
-        call count_substring(str, separator, nsep, pos_sep)
-        nvar = nsep + 1
+        vars = split_string(str, separator)
+        n = size(vars)
+
         if (allocated(var)) then
-            deallocate (var)
+            deallocate(var)
         end if
-        allocate (var(1:nvar))
-
-        if (nvar == 1) then
-            var(1) = extract_float(str)
-            return
-        end if
-
-        ! !$omp parallel do private(i,ibeg,iend)
-        do i = 1, nvar
-
-            if (i == 1) then
-                ibeg = 1
-                iend = pos_sep(1) - 1
-            else if (i == nvar) then
-                ibeg = pos_sep(nsep) + 1
-                iend = len_trim(str)
-            else
-                ibeg = pos_sep(i - 1) + 1
-                iend = pos_sep(i) - 1
-            end if
-            var(i) = extract_float(str(ibeg:iend))
-
+        allocate (var(1:n))
+        do i = 1, n
+            var(i) = extract_float(vars(i))
         end do
-        ! !$omp end parallel do
 
     end subroutine extract_nfloat
 
+    !
+    !> Extract multiple double-precision float numbers from string
+    !
     subroutine extract_ndouble(str, separator, var)
 
         character(len=*), intent(in) :: str, separator
         double precision, allocatable, dimension(:), intent(inout) :: var
 
-        integer :: nsep, nvar, i
-        integer, allocatable, dimension(:) :: pos_sep
-        integer :: ibeg, iend
+        integer :: i, n
+        character(len=24), allocatable, dimension(:) :: vars
 
-        call count_substring(str, separator, nsep, pos_sep)
-        nvar = nsep + 1
+        vars = split_string(str, separator)
+        n = size(vars)
+
         if (allocated(var)) then
-            deallocate (var)
+            deallocate(var)
         end if
-        allocate (var(1:nvar))
-
-        if (nvar == 1) then
-            var(1) = extract_double(str)
-            return
-        end if
-
-        ! !$omp parallel do private(i,ibeg,iend)
-        do i = 1, nvar
-
-            if (i == 1) then
-                ibeg = 1
-                iend = pos_sep(1) - 1
-            else if (i == nvar) then
-                ibeg = pos_sep(nsep) + 1
-                iend = len_trim(str)
-            else
-                ibeg = pos_sep(i - 1) + 1
-                iend = pos_sep(i) - 1
-            end if
-            var(i) = extract_double(str(ibeg:iend))
-
+        allocate (var(1:n))
+        do i = 1, n
+            var(i) = extract_double(vars(i))
         end do
-        ! !$omp end parallel do
 
     end subroutine extract_ndouble
 
     !
-    !> Extract multiple complex numbers from string
+    !> Extract multiple single-precision complex numbers from string
     !
     subroutine extract_ncomplex(str, separator, var)
 
         character(len=*), intent(in) :: str, separator
         complex, allocatable, dimension(:), intent(inout) :: var
 
-        integer :: nsep, nvar, i
-        integer, allocatable, dimension(:) :: pos_sep
-        integer :: ibeg, iend
+        integer :: i, n
+        character(len=48), allocatable, dimension(:) :: vars
 
-        call count_substring(str, separator, nsep, pos_sep)
-        nvar = nsep + 1
+        vars = split_string(str, separator)
+        n = size(vars)
+
         if (allocated(var)) then
-            deallocate (var)
+            deallocate(var)
         end if
-        allocate (var(1:nvar))
-
-        if (nvar == 1) then
-            var(1) = extract_complex(str)
-            return
-        end if
-
-        ! !$omp parallel do private(i,ibeg,iend)
-        do i = 1, nvar
-
-            if (i == 1) then
-                ibeg = 1
-                iend = pos_sep(1) - 1
-            else if (i == nvar) then
-                ibeg = pos_sep(nsep) + 1
-                iend = len_trim(str)
-            else
-                ibeg = pos_sep(i - 1) + 1
-                iend = pos_sep(i) - 1
-            end if
-            var(i) = extract_complex(str(ibeg:iend))
-
+        allocate (var(1:n))
+        do i = 1, n
+            var(i) = extract_complex(vars(i))
         end do
-        ! !$omp end parallel do
 
     end subroutine extract_ncomplex
 
     !
-    !> Extract multiple complex numbers from string
+    !> Extract multiple double-precision complex numbers from string
     !
     subroutine extract_ndcomplex(str, separator, var)
 
         character(len=*), intent(in) :: str, separator
         double complex, allocatable, dimension(:), intent(inout) :: var
 
-        integer :: nsep, nvar, i
-        integer, allocatable, dimension(:) :: pos_sep
-        integer :: ibeg, iend
+        integer :: i, n
+        character(len=48), allocatable, dimension(:) :: vars
 
-        call count_substring(str, separator, nsep, pos_sep)
-        nvar = nsep + 1
+        vars = split_string(str, separator)
+        n = size(vars)
+
         if (allocated(var)) then
-            deallocate (var)
+            deallocate(var)
         end if
-        allocate (var(1:nvar))
-
-        if (nvar == 1) then
-            var(1) = extract_dcomplex(str)
-            return
-        end if
-
-        ! !$omp parallel do private(i,ibeg,iend)
-        do i = 1, nvar
-
-            if (i == 1) then
-                ibeg = 1
-                iend = pos_sep(1) - 1
-            else if (i == nvar) then
-                ibeg = pos_sep(nsep) + 1
-                iend = len_trim(str)
-            else
-                ibeg = pos_sep(i - 1) + 1
-                iend = pos_sep(i) - 1
-            end if
-            var(i) = extract_dcomplex(str(ibeg:iend))
-
+        allocate (var(1:n))
+        do i = 1, n
+            var(i) = extract_dcomplex(vars(i))
         end do
-        ! !$omp end parallel do
 
     end subroutine extract_ndcomplex
 
     !
     !> Extract multiple strings from string
     !
-    !
     subroutine extract_nstring(str, separator, var)
 
         character(len=*), intent(in) :: str, separator
         character(len=*), allocatable, dimension(:), intent(inout) :: var
 
-        integer :: nsep, nvar, i
-        integer, allocatable, dimension(:) :: pos_sep
-        integer :: ibeg, iend
-
-        call count_substring(str, separator, nsep, pos_sep)
-        nvar = nsep + 1
-        if (allocated(var)) then
-            deallocate (var)
-        end if
-        allocate (var(1:nvar))
-
-        if (nvar == 1) then
-            var(1) = extract_string(str)
-            return
-        end if
-
-        ! !$omp parallel do private(i,ibeg,iend)
-        do i = 1, nvar
-
-            if (i == 1) then
-                ibeg = 1
-                iend = pos_sep(1) - 1
-            else if (i == nvar) then
-                ibeg = pos_sep(nsep) + 1
-                iend = len_trim(str)
-            else
-                ibeg = pos_sep(i - 1) + 1
-                iend = pos_sep(i) - 1
-            end if
-            var(i) = extract_string(str(ibeg:iend))
-
-        end do
-        ! !$omp end parallel do
+        var = split_string(str, separator)
 
     end subroutine extract_nstring
 
     !
-    !> Extract multiple strings from string
-    !
+    !> Extract multiple logical values from string
     !
     subroutine extract_nlogical(str, separator, var)
 
         character(len=*), intent(in) :: str, separator
         logical, allocatable, dimension(:), intent(inout) :: var
 
-        integer :: nsep, nvar, i
-        integer, allocatable, dimension(:) :: pos_sep
-        integer :: ibeg, iend
+        integer :: i, n
+        character(len=8), allocatable, dimension(:) :: vars
 
-        call count_substring(str, separator, nsep, pos_sep)
-        nvar = nsep + 1
+        vars = split_string(str, separator)
+        n = size(vars)
+
         if (allocated(var)) then
-            deallocate (var)
+            deallocate(var)
         end if
-        allocate (var(1:nvar))
-
-        if (nvar == 1) then
-            var(1) = extract_logical(str)
-            return
-        end if
-
-        ! !$omp parallel do private(i,ibeg,iend)
-        do i = 1, nvar
-
-            if (i == 1) then
-                ibeg = 1
-                iend = pos_sep(1) - 1
-            else if (i == nvar) then
-                ibeg = pos_sep(nsep) + 1
-                iend = len_trim(str)
-            else
-                ibeg = pos_sep(i - 1) + 1
-                iend = pos_sep(i) - 1
-            end if
-            var(i) = extract_logical(str(ibeg:iend))
-
+        allocate (var(1:n))
+        do i = 1, n
+            var(i) = extract_logical(vars(i))
         end do
-        ! !$omp end parallel do
 
     end subroutine extract_nlogical
 
     !
     !> Extract a~b:c from a string (where a, b are floats and c is int2)
-    !
     !
     subroutine extract_xint2(str, rbeg, rend, var)
 
@@ -1537,6 +1347,9 @@ contains
 
     end subroutine extract_xint4
 
+    !
+    !> Extract a~b:c from a string (where a, b are floats and c is int8)
+    !
     subroutine extract_xint8(str, rbeg, rend, var)
 
         character(len=*), intent(in) :: str
@@ -1621,7 +1434,7 @@ contains
     end subroutine extract_xdouble
 
     !
-    !> Extract a~b:c from a string (where a, b are floats and c is complex)
+    !> Extract a~b:c from a string (where a, b are floats and c is single-precision complex)
     !
     subroutine extract_xcomplex(str, rbeg, rend, var)
 
@@ -1650,7 +1463,7 @@ contains
     end subroutine extract_xcomplex
 
     !
-    !> Extract a~b:c from a string (where a, b are floats and c is complex)
+    !> Extract a~b:c from a string (where a, b are floats and c is double-precision complex)
     !
     subroutine extract_xdcomplex(str, rbeg, rend, var)
 
@@ -1680,7 +1493,6 @@ contains
 
     !
     !> Extract a~b:c from a string (where a, b are floats and c is string)
-    !
     !
     subroutine extract_xstring(str, rbeg, rend, var)
 
@@ -1737,6 +1549,9 @@ contains
 
     end subroutine extract_xlogical
 
+    !
+    !> Remove substring tailing a substring
+    !
     function remove_string_after(str, strbeg) result(w)
 
         character(len=*), intent(in) :: str
@@ -1766,6 +1581,9 @@ contains
 
     end function remove_string_after
 
+    !
+    !> Get substring tailing a substring
+    !
     function get_string_after(str, strbeg) result(w)
 
         character(len=*), intent(in) :: str
@@ -1795,6 +1613,9 @@ contains
 
     end function get_string_after
 
+    !
+    !> Get substring based on index of characters
+    !
     function substring(str, imin, imax) result(w)
 
         character(len=*), intent(in) :: str
@@ -1845,12 +1666,12 @@ contains
 
         n = len_trim(adjustl(s))
         if (n > l) then
-            write(error_unit, *) ' <center_substring> Error: len(substring) must <= l. '
+            write (error_unit, *) ' <center_substring> Error: len(substring) must <= l. '
             stop
         end if
         nz = nint((l - n)/2.0)
 
-        allocate(character(len=l) :: sr)
+        allocate (character(len=l) :: sr)
         do i = 1, l
             sr(i:i) = ' '
         end do
@@ -1859,4 +1680,476 @@ contains
 
     end function center_substring
 
+    !
+    !> Split a string with a separator
+    !> Inside the string, the separator may be consecutively repeated,
+    !> and in this case, consecutive separators will be treated as one.
+    !
+    function split_string(str, sep) result(parts)
+
+        character(len=*), intent(in) :: str
+        character(len=*), intent(in) :: sep
+        character(len=:), allocatable, dimension(:) :: parts
+
+        integer :: start, pos, sep_len, str_len
+        integer :: word_count, i
+        character(len=:), allocatable :: temp
+
+        !---------------------------------------
+        ! Step 0: Initialize
+        !---------------------------------------
+        str_len = len(str)
+        sep_len = len(sep)
+        word_count = 0
+        start = 1
+
+        !---------------------------------------
+        ! Step 1: Count words (skip empty ones)
+        !---------------------------------------
+        do while (start <= str_len)
+            pos = index(str(start:), sep)
+
+            if (pos == 0) then
+                temp = str(start:)
+                if (len_trim(adjustl(temp)) > 0) then
+                    word_count = word_count + 1
+                end if
+                exit
+            else
+                if (pos > 1) then
+                    temp = str(start:start + pos - 2)
+                    if (len_trim(adjustl(temp)) > 0) then
+                        word_count = word_count + 1
+                    end if
+                end if
+                start = start + pos - 1 + sep_len
+                ! Skip consecutive separators
+                do while (start <= str_len .and. str(start:start + sep_len - 1) == sep)
+                    start = start + sep_len
+                end do
+            end if
+        end do
+
+        !---------------------------------------
+        ! Step 2: Allocate array and fill it
+        !---------------------------------------
+        allocate (character(len=len_trim(adjustl(str))) :: parts(word_count))
+        start = 1
+        i = 0
+
+        do while (start <= str_len)
+            pos = index(str(start:), sep)
+
+            if (pos == 0) then
+                temp = str(start:)
+                if (len_trim(temp) > 0) then
+                    i = i + 1
+                    parts(i) = trim(adjustl(temp))
+                end if
+                exit
+            else
+                if (pos > 1) then
+                    temp = str(start:start + pos - 2)
+                    if (len_trim(temp) > 0) then
+                        i = i + 1
+                        parts(i) = trim(adjustl(temp))
+                    end if
+                end if
+                start = start + pos - 1 + sep_len
+                do while (start <= str_len .and. str(start:start + sep_len - 1) == sep)
+                    start = start + sep_len
+                end do
+            end if
+        end do
+
+    end function split_string
+
 end module libflit_string
+
+
+! History
+!
+! The following cannot properly process consecutive separators such as
+! ,,, ::: or consecutive spaces; therefore move them to legacy.
+!
+!    !
+!    !> Extract multiple integers of kind 2 from string
+!    !
+!    subroutine extract_nint2(str, separator, var)
+!
+!        character(len=*), intent(in) :: str, separator
+!        integer(kind=2), allocatable, dimension(:), intent(inout) :: var
+!
+!        integer :: nsep, nvar, i
+!        integer, allocatable, dimension(:) :: pos_sep
+!        integer :: ibeg, iend
+!
+!        call count_substring(str, separator, nsep, pos_sep)
+!        nvar = nsep + 1
+!        if (allocated(var)) then
+!            deallocate (var)
+!        end if
+!        allocate (var(1:nvar))
+!
+!        if (nvar == 1) then
+!            var(1) = int(extract_float(str), kind=2)
+!            return
+!        end if
+!
+!        do i = 1, nvar
+!
+!            if (i == 1) then
+!                ibeg = 1
+!                iend = pos_sep(1) - 1
+!            else if (i == nvar) then
+!                ibeg = pos_sep(nsep) + 1
+!                iend = len_trim(str)
+!            else
+!                ibeg = pos_sep(i - 1) + 1
+!                iend = pos_sep(i) - 1
+!            end if
+!            var(i) = int(extract_float(str(ibeg:iend)), kind=2)
+!
+!        end do
+!
+!    end subroutine extract_nint2
+!
+!    !
+!    !> Extract multiple integers of kind 4 from string
+!    !
+!    subroutine extract_nint4(str, separator, var)
+!
+!        character(len=*), intent(in) :: str, separator
+!        integer(kind=4), allocatable, dimension(:), intent(inout) :: var
+!
+!        integer :: nsep, nvar, i
+!        integer, allocatable, dimension(:) :: pos_sep
+!        integer :: ibeg, iend
+!
+!        call count_substring(str, separator, nsep, pos_sep)
+!        nvar = nsep + 1
+!        if (allocated(var)) then
+!            deallocate (var)
+!        end if
+!        allocate (var(1:nvar))
+!
+!        if (nvar == 1) then
+!            var(1) = int(extract_float(str), kind=4)
+!            return
+!        end if
+!
+!        do i = 1, nvar
+!
+!            if (i == 1) then
+!                ibeg = 1
+!                iend = pos_sep(1) - 1
+!            else if (i == nvar) then
+!                ibeg = pos_sep(nsep) + 1
+!                iend = len_trim(str)
+!            else
+!                ibeg = pos_sep(i - 1) + 1
+!                iend = pos_sep(i) - 1
+!            end if
+!            var(i) = int(extract_float(str(ibeg:iend)), kind=4)
+!
+!        end do
+!
+!    end subroutine extract_nint4
+!
+!    subroutine extract_nint8(str, separator, var)
+!
+!        character(len=*), intent(in) :: str, separator
+!        integer(kind=8), allocatable, dimension(:), intent(inout) :: var
+!
+!        integer :: nsep, nvar, i
+!        integer, allocatable, dimension(:) :: pos_sep
+!        integer :: ibeg, iend
+!
+!        call count_substring(str, separator, nsep, pos_sep)
+!        nvar = nsep + 1
+!        if (allocated(var)) then
+!            deallocate (var)
+!        end if
+!        allocate (var(1:nvar))
+!
+!        if (nvar == 1) then
+!            var(1) = int(extract_float(str), kind=8)
+!            return
+!        end if
+!
+!        ! !$omp parallel do private(i,ibeg,iend)
+!        do i = 1, nvar
+!
+!            if (i == 1) then
+!                ibeg = 1
+!                iend = pos_sep(1) - 1
+!            else if (i == nvar) then
+!                ibeg = pos_sep(nsep) + 1
+!                iend = len_trim(str)
+!            else
+!                ibeg = pos_sep(i - 1) + 1
+!                iend = pos_sep(i) - 1
+!            end if
+!            var(i) = int(extract_float(str(ibeg:iend)), kind=8)
+!
+!        end do
+!        ! !$omp end parallel do
+!
+!    end subroutine extract_nint8
+!
+!    !
+!    !> Extract multiple real numbers from string
+!    !
+!    subroutine extract_nfloat(str, separator, var)
+!
+!        character(len=*), intent(in) :: str, separator
+!        real, allocatable, dimension(:), intent(inout) :: var
+!
+!        integer :: nsep, nvar, i
+!        integer, allocatable, dimension(:) :: pos_sep
+!        integer :: ibeg, iend
+!
+!        call count_substring(str, separator, nsep, pos_sep)
+!        nvar = nsep + 1
+!        if (allocated(var)) then
+!            deallocate (var)
+!        end if
+!        allocate (var(1:nvar))
+!
+!        if (nvar == 1) then
+!            var(1) = extract_float(str)
+!            return
+!        end if
+!
+!        ! !$omp parallel do private(i,ibeg,iend)
+!        do i = 1, nvar
+!
+!            if (i == 1) then
+!                ibeg = 1
+!                iend = pos_sep(1) - 1
+!            else if (i == nvar) then
+!                ibeg = pos_sep(nsep) + 1
+!                iend = len_trim(str)
+!            else
+!                ibeg = pos_sep(i - 1) + 1
+!                iend = pos_sep(i) - 1
+!            end if
+!            var(i) = extract_float(str(ibeg:iend))
+!
+!        end do
+!        ! !$omp end parallel do
+!
+!    end subroutine extract_nfloat
+!
+!    subroutine extract_ndouble(str, separator, var)
+!
+!        character(len=*), intent(in) :: str, separator
+!        double precision, allocatable, dimension(:), intent(inout) :: var
+!
+!        integer :: nsep, nvar, i
+!        integer, allocatable, dimension(:) :: pos_sep
+!        integer :: ibeg, iend
+!
+!        call count_substring(str, separator, nsep, pos_sep)
+!        nvar = nsep + 1
+!        if (allocated(var)) then
+!            deallocate (var)
+!        end if
+!        allocate (var(1:nvar))
+!
+!        if (nvar == 1) then
+!            var(1) = extract_double(str)
+!            return
+!        end if
+!
+!        ! !$omp parallel do private(i,ibeg,iend)
+!        do i = 1, nvar
+!
+!            if (i == 1) then
+!                ibeg = 1
+!                iend = pos_sep(1) - 1
+!            else if (i == nvar) then
+!                ibeg = pos_sep(nsep) + 1
+!                iend = len_trim(str)
+!            else
+!                ibeg = pos_sep(i - 1) + 1
+!                iend = pos_sep(i) - 1
+!            end if
+!            var(i) = extract_double(str(ibeg:iend))
+!
+!        end do
+!        ! !$omp end parallel do
+!
+!    end subroutine extract_ndouble
+!
+!    !
+!    !> Extract multiple complex numbers from string
+!    !
+!    subroutine extract_ncomplex(str, separator, var)
+!
+!        character(len=*), intent(in) :: str, separator
+!        complex, allocatable, dimension(:), intent(inout) :: var
+!
+!        integer :: nsep, nvar, i
+!        integer, allocatable, dimension(:) :: pos_sep
+!        integer :: ibeg, iend
+!
+!        call count_substring(str, separator, nsep, pos_sep)
+!        nvar = nsep + 1
+!        if (allocated(var)) then
+!            deallocate (var)
+!        end if
+!        allocate (var(1:nvar))
+!
+!        if (nvar == 1) then
+!            var(1) = extract_complex(str)
+!            return
+!        end if
+!
+!        do i = 1, nvar
+!
+!            if (i == 1) then
+!                ibeg = 1
+!                iend = pos_sep(1) - 1
+!            else if (i == nvar) then
+!                ibeg = pos_sep(nsep) + 1
+!                iend = len_trim(str)
+!            else
+!                ibeg = pos_sep(i - 1) + 1
+!                iend = pos_sep(i) - 1
+!            end if
+!            var(i) = extract_complex(str(ibeg:iend))
+!
+!        end do
+!
+!    end subroutine extract_ncomplex
+!
+!    !
+!    !> Extract multiple complex numbers from string
+!    !
+!    subroutine extract_ndcomplex(str, separator, var)
+!
+!        character(len=*), intent(in) :: str, separator
+!        double complex, allocatable, dimension(:), intent(inout) :: var
+!
+!        integer :: nsep, nvar, i
+!        integer, allocatable, dimension(:) :: pos_sep
+!        integer :: ibeg, iend
+!
+!        call count_substring(str, separator, nsep, pos_sep)
+!        nvar = nsep + 1
+!        if (allocated(var)) then
+!            deallocate (var)
+!        end if
+!        allocate (var(1:nvar))
+!
+!        if (nvar == 1) then
+!            var(1) = extract_dcomplex(str)
+!            return
+!        end if
+!
+!        ! !$omp parallel do private(i,ibeg,iend)
+!        do i = 1, nvar
+!
+!            if (i == 1) then
+!                ibeg = 1
+!                iend = pos_sep(1) - 1
+!            else if (i == nvar) then
+!                ibeg = pos_sep(nsep) + 1
+!                iend = len_trim(str)
+!            else
+!                ibeg = pos_sep(i - 1) + 1
+!                iend = pos_sep(i) - 1
+!            end if
+!            var(i) = extract_dcomplex(str(ibeg:iend))
+!
+!        end do
+!        ! !$omp end parallel do
+!
+!    end subroutine extract_ndcomplex
+!
+!    !
+!    !> Extract multiple strings from string
+!    !
+!    subroutine extract_nstring(str, separator, var)
+!
+!        character(len=*), intent(in) :: str, separator
+!        character(len=*), allocatable, dimension(:), intent(inout) :: var
+!
+!        integer :: nsep, nvar, i
+!        integer, allocatable, dimension(:) :: pos_sep
+!        integer :: ibeg, iend
+!
+!        call count_substring(str, separator, nsep, pos_sep)
+!        nvar = nsep + 1
+!        if (allocated(var)) then
+!            deallocate (var)
+!        end if
+!        allocate (var(1:nvar))
+!
+!        if (nvar == 1) then
+!            var(1) = extract_string(str)
+!            return
+!        end if
+!
+!        do i = 1, nvar
+!
+!            if (i == 1) then
+!                ibeg = 1
+!                iend = pos_sep(1) - 1
+!            else if (i == nvar) then
+!                ibeg = pos_sep(nsep) + 1
+!                iend = len_trim(str)
+!            else
+!                ibeg = pos_sep(i - 1) + 1
+!                iend = pos_sep(i) - 1
+!            end if
+!            var(i) = extract_string(str(ibeg:iend))
+!
+!        end do
+!
+!    end subroutine extract_nstring
+!
+!    !
+!    !> Extract multiple strings from string
+!    !
+!    subroutine extract_nlogical(str, separator, var)
+!
+!        character(len=*), intent(in) :: str, separator
+!        logical, allocatable, dimension(:), intent(inout) :: var
+!
+!        integer :: nsep, nvar, i
+!        integer, allocatable, dimension(:) :: pos_sep
+!        integer :: ibeg, iend
+!
+!        call count_substring(str, separator, nsep, pos_sep)
+!        nvar = nsep + 1
+!        if (allocated(var)) then
+!            deallocate (var)
+!        end if
+!        allocate (var(1:nvar))
+!
+!        if (nvar == 1) then
+!            var(1) = extract_logical(str)
+!            return
+!        end if
+!
+!        ! !$omp parallel do private(i,ibeg,iend)
+!        do i = 1, nvar
+!
+!            if (i == 1) then
+!                ibeg = 1
+!                iend = pos_sep(1) - 1
+!            else if (i == nvar) then
+!                ibeg = pos_sep(nsep) + 1
+!                iend = len_trim(str)
+!            else
+!                ibeg = pos_sep(i - 1) + 1
+!                iend = pos_sep(i) - 1
+!            end if
+!            var(i) = extract_logical(str(ibeg:iend))
+!
+!        end do
+!        ! !$omp end parallel do
+!
+!    end subroutine extract_nlogical
