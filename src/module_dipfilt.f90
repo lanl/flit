@@ -52,8 +52,7 @@ contains
     !
     subroutine gst_localdip2(w, dp, k1, k2)
 
-        ! arguments
-        real, allocatable, dimension(:, :), intent(in) :: w
+        real, dimension(:, :), intent(in) :: w
         real, allocatable, dimension(:, :), intent(inout) :: dp
         real, allocatable, dimension(:, :), intent(inout), optional :: k1, k2
 
@@ -114,8 +113,7 @@ contains
     !
     subroutine gst_localdip3(w, dp1, dp2, k1, k2, k3)
 
-        ! arguments
-        real, allocatable, dimension(:, :, :), intent(in) :: w
+        real, dimension(:, :, :), intent(in) :: w
         real, allocatable, dimension(:, :, :), intent(inout) :: dp1, dp2
         real, allocatable, dimension(:, :, :), intent(inout), optional :: k1, k2, k3
 
