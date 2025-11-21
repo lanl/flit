@@ -561,18 +561,18 @@ end subroutine dft_gaussian_filt_3d_
 ! See Sugimoto and Kamata, 2013, Fast Gaussian filter with second-order shift property of DCT-5
 ! https://ieeexplore.ieee.org/document/6738106/
 !
-function athead_(x) result(xx)
+pure function athead_(x) result(xx)
 
-    integer :: x
+    integer, intent(in) :: x
     integer :: xx
 
     xx = abs(x)
 
 end function athead_
 
-function attail_(x, n) result(xx)
+pure function attail_(x, n) result(xx)
 
-    integer :: x, n
+    integer, intent(in) :: x, n
     integer :: xx
 
     xx = n - 1 - abs(n - 1 - x)

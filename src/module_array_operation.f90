@@ -194,6 +194,7 @@ module libflit_array_operation
     end interface flip
 
     ! If-then-else ternary operation, including scalar and array
+
     interface ifelse
         module procedure :: ifelse_int
         module procedure :: ifelse_float

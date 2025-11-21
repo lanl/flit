@@ -137,7 +137,7 @@ inc = $(base_inc) \
 	-I$(PWD)/../third_party/hdbscan/Runner \
 	-I$(PWD)/../third_party/hdbscan/Utils
 lflags = $(base_lflags)
-fflags = $(base_fflags) #-O0 -g -check bounds
+fflags = $(base_fflags) #-O0 -g -check bounds -fpe:0 -init:snan
 cflags = $(base_cflags)
 cxxflags = $(base_cxxflags)
 

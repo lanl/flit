@@ -28,10 +28,11 @@
 #define ifelse_3d_      CONCAT(ifelse_3d, T)
 #define ifelse_4d_      CONCAT(ifelse_4d, T)
 
-function ifelse_(condition, a, b) result(c)
+pure function ifelse_(condition, a, b) result(c)
 
-    logical :: condition
-    TT :: a, b, c
+    logical, intent(in) :: condition
+    TT, intent(in) :: a, b
+    TT :: c
 
     if (condition) then
         c = a
@@ -39,12 +40,12 @@ function ifelse_(condition, a, b) result(c)
         c = b
     end if
 
-end function ifelse_
+end function
 
-function ifelse_1d_(condition, a, b) result(c)
+pure function ifelse_1d_(condition, a, b) result(c)
 
-    logical :: condition
-    TT, dimension(:) :: a, b
+    logical, intent(in) :: condition
+    TT, dimension(:), intent(in) :: a, b
     TT, allocatable, dimension(:) :: c
 
     if (condition) then
@@ -53,12 +54,12 @@ function ifelse_1d_(condition, a, b) result(c)
         c = b
     end if
 
-end function ifelse_1d_
+end function
 
-function ifelse_2d_(condition, a, b) result(c)
+pure function ifelse_2d_(condition, a, b) result(c)
 
-    logical :: condition
-    TT, dimension(:, :) :: a, b
+    logical, intent(in) :: condition
+    TT, dimension(:, :), intent(in) :: a, b
     TT, allocatable, dimension(:, :) :: c
 
     if (condition) then
@@ -67,12 +68,12 @@ function ifelse_2d_(condition, a, b) result(c)
         c = b
     end if
 
-end function ifelse_2d_
+end function
 
-function ifelse_3d_(condition, a, b) result(c)
+pure function ifelse_3d_(condition, a, b) result(c)
 
-    logical :: condition
-    TT, dimension(:, :, :) :: a, b
+    logical, intent(in) :: condition
+    TT, dimension(:, :, :), intent(in) :: a, b
     TT, allocatable, dimension(:, :, :) :: c
 
     if (condition) then
@@ -81,12 +82,12 @@ function ifelse_3d_(condition, a, b) result(c)
         c = b
     end if
 
-end function ifelse_3d_
+end function
 
-function ifelse_4d_(condition, a, b) result(c)
+pure function ifelse_4d_(condition, a, b) result(c)
 
-    logical :: condition
-    TT, dimension(:, :, :, :) :: a, b
+    logical, intent(in) :: condition
+    TT, dimension(:, :, :, :), intent(in) :: a, b
     TT, allocatable, dimension(:, :, :, :) :: c
 
     if (condition) then
@@ -95,7 +96,7 @@ function ifelse_4d_(condition, a, b) result(c)
         c = b
     end if
 
-end function ifelse_4d_
+end function
 
 #undef T
 #undef TT

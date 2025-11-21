@@ -473,7 +473,7 @@ contains
         else
             b = 0.5
         end if
-
+        
         nm = order_of_magnitude(x)
         xnice = x/10.0d0**nm
         xnice = round(xnice, b)
