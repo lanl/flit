@@ -1,15 +1,15 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024--2026. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -19,101 +19,73 @@
 
 module libflit_clustering
 
-    use libflit_array
-    use libflit_array_operation
-    use libflit_utility
-    use libflit_string
+    use hdbscan_mod
     use libflit_error
 
     implicit none
 
-    interface
+    type hdbscan
 
-        !> Interface to C++ HDBSCAN to support the subroutines in this module,
-        !> but could also be used as standalone subroutine for data of arbitrary dimension
-        subroutine hdbscan_clustering(n, nd, x, min_sample, min_cluster_size, metric, p, ncluster, nnoisy, labels, probs) bind(c, name='hdbscan')
+        real, allocatable :: data(:, :)
 
-            use iso_c_binding, only: c_float, c_int
-
-            !> Number of points
-            integer(kind=c_int), value, intent(in) :: n
-            !> Dimension of a point, nd >= 1
-            integer(kind=c_int), value, intent(in) :: nd
-            !> Input data organized as (x_1, y_1, ...), (x_2, y_2, ...), ..., (x_n, y_n, ...)
-            real(kind=c_float), dimension(*), intent(in) :: x
-            !> The number of samples in a neighborhood for a point to be considered as a core point, including the point itself.
-            integer(kind=c_int), value, intent(in) :: min_sample
-            !> The minimum number of samples in a group for that group to be considered a cluster;
-            !> groupings smaller than this size will be left as noise.
-            integer(kind=c_int), value, intent(in) :: min_cluster_size
-            !> Distance metric, could be manhanttan (l1), euclidean (l2), and minkowski (l_p, with p >= 0)
-            !> Minkowski distance is a generalization of Manhattan and Euclidean
-            integer(kind=c_int), value, intent(in) :: metric
-            !> If metric = minkowski, p is the power of the norm
-            real(kind=c_float), value, intent(in) :: p
-            !> Number of clusters
-            integer(kind=c_int), intent(out) :: ncluster
-            !> Number of noisy points (ungrouped)
-            integer(kind=c_int), intent(out) :: nnoisy
-            !> Labels of length n indicating which group a point belongs to; = 0 means a noisy point.
-            integer(kind=c_int), dimension(*), intent(out) :: labels
-            !> Probabilities of length n indicating the probability of a point belonging to the
-            !> labeled group.
-            real(kind=c_float), dimension(*), intent(out) :: probs
-
-        end subroutine hdbscan_clustering
-
-    end interface
-
-    type hdbscan_param
-        integer :: n
-        integer :: nd
-        real, allocatable, dimension(:, :) :: data
-        integer :: min_sample = 5
         integer :: min_cluster_size = 5
-        character(len=24) :: metric = 'euclidean'
-        real :: p = 3.0
-        integer :: ncluster
-        integer :: nnoisy
-        integer, allocatable, dimension(:) :: labels
-        real, allocatable, dimension(:) :: probs
-    end type hdbscan_param
+        integer :: min_samples = 5
+        real :: cluster_selection_epsilon = 0.0
+        logical :: allow_single_cluster = .false.
+        character(len=16) :: metric = 'euclidean'
+        real :: minkowski_p = 2.0
+
+        integer, allocatable :: labels(:)
+        real, allocatable :: probabilities(:)
+        real, allocatable :: outlier_scores(:)
+        real, allocatable :: core_distances(:)
+        integer :: n_clusters = 0
+        integer :: n_noise = 0
+
+        integer :: n_points = 0
+
+    contains
+        procedure :: cluster => hdbscan_clustering
+
+    end type
 
     private
-    public :: hdbscan_param
     public :: hdbscan
-    public :: hdbscan_clustering
 
 contains
 
-    subroutine hdbscan(this)
+    subroutine hdbscan_clustering(this)
 
-        type(hdbscan_param), intent(inout) :: this
+        class(hdbscan), intent(inout) :: this
 
-        call assert(this%n >= 2, ' <hdbscan> Error: Number of points must >= 2.')
-        call assert(this%nd >= 1, ' <hdbscan> Error: Dimension of a point must >= 1.')
-        call assert(allocated(this%data), ' <hdbscan> Error: Input data are not defined.')
-        call assert(size(this%data, 1) == this%n .and. size(this%data, 2) == this%nd, &
-            ' <hdbscan> Error: Dimensions of the data are incorrect.')
+        type(hdbscan_params) :: params
+        type(hdbscan_result) :: res
 
-        this%labels = zeros(this%n)
-        this%probs = zeros(this%n)
+        ! Check data
+        call assert(allocated(this%data), '<hdbscan_clustering> Error: data is not initialized. ')
 
-        select case (this%metric)
-            case default
-                call hdbscan_clustering(this%n, this%nd, flatten(transpose(this%data)), this%min_sample, this%min_cluster_size, &
-                    1, this%p, this%ncluster, this%nnoisy, this%labels, this%probs)
-            case ('euclidean')
-                call hdbscan_clustering(this%n, this%nd, flatten(transpose(this%data)), this%min_sample, this%min_cluster_size, &
-                    1, this%p, this%ncluster, this%nnoisy, this%labels, this%probs)
-            case ('manhattan')
-                call hdbscan_clustering(this%n, this%nd, flatten(transpose(this%data)), this%min_sample, this%min_cluster_size, &
-                    2, this%p, this%ncluster, this%nnoisy, this%labels, this%probs)
-            case ('minkowski')
-                call hdbscan_clustering(this%n, this%nd, flatten(transpose(this%data)), this%min_sample, this%min_cluster_size, &
-                    3, this%p, this%ncluster, this%nnoisy, this%labels, this%probs)
-        end select
+        ! Copy parameter
+        params%min_cluster_size = this%min_cluster_size
+        params%min_samples = this%min_samples
+        params%metric = this%metric
+        params%cluster_selection_epsilon = this%cluster_selection_epsilon
+        params%allow_single_cluster = this%allow_single_cluster
 
-    end subroutine hdbscan
+        ! Run HDBSCAN clustering
+        call hdbscan_fit(transpose(dble(this%data)), params, res)
 
-end module libflit_clustering
+        ! Return results
+        this%n_clusters = res%n_clusters
+        this%n_noise = res%n_noise
+        this%labels = res%labels
+        this%probabilities = res%probabilities
+        this%outlier_scores = res%outlier_scores
+
+        this%n_points = size(this%data, 1)
+
+        ! Free memory
+        call hdbscan_free(res)
+
+    end subroutine
+
+end module

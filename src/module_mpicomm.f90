@@ -27,42 +27,58 @@ module libflit_mpicomm
 
     implicit none
 
+    interface bcast
+        module procedure :: bcast_global_int
+        module procedure :: bcast_global_float
+        module procedure :: bcast_global_double
+        module procedure :: bcast_global_complex
+        module procedure :: bcast_global_dcomplex
+        ! For logical and string
+        module procedure :: bcast_global_logical
+        module procedure :: bcast_global_string
+    end interface
+
     interface bcast_array
-        module procedure :: bcast_array_1d_global_string
         module procedure :: bcast_array_1d_global_int
         module procedure :: bcast_array_2d_global_int
         module procedure :: bcast_array_3d_global_int
-        module procedure :: bcast_array_1d_global_double
-        module procedure :: bcast_array_2d_global_double
-        module procedure :: bcast_array_3d_global_double
         module procedure :: bcast_array_1d_global_float
         module procedure :: bcast_array_2d_global_float
         module procedure :: bcast_array_3d_global_float
+        module procedure :: bcast_array_1d_global_double
+        module procedure :: bcast_array_2d_global_double
+        module procedure :: bcast_array_3d_global_double
         module procedure :: bcast_array_1d_global_complex
         module procedure :: bcast_array_2d_global_complex
         module procedure :: bcast_array_3d_global_complex
+        module procedure :: bcast_array_1d_global_dcomplex
+        module procedure :: bcast_array_2d_global_dcomplex
+        module procedure :: bcast_array_3d_global_dcomplex
     end interface
 
     interface commute_array
         module procedure :: commute_array_1d_global_int
         module procedure :: commute_array_2d_global_int
         module procedure :: commute_array_3d_global_int
-        module procedure :: commute_array_1d_global_double
-        module procedure :: commute_array_2d_global_double
-        module procedure :: commute_array_3d_global_double
         module procedure :: commute_array_1d_global_float
         module procedure :: commute_array_2d_global_float
         module procedure :: commute_array_3d_global_float
+        module procedure :: commute_array_1d_global_double
+        module procedure :: commute_array_2d_global_double
+        module procedure :: commute_array_3d_global_double
         module procedure :: commute_array_1d_global_complex
         module procedure :: commute_array_2d_global_complex
         module procedure :: commute_array_3d_global_complex
+        module procedure :: commute_array_1d_global_dcomplex
+        module procedure :: commute_array_2d_global_dcomplex
+        module procedure :: commute_array_3d_global_dcomplex
     end interface
 
     interface allreduce
         ! Scalar
         module procedure :: gather_distribute_global_int
-        module procedure :: gather_distribute_global_double
         module procedure :: gather_distribute_global_float
+        module procedure :: gather_distribute_global_double
         module procedure :: gather_distribute_global_complex
         module procedure :: gather_distribute_global_dcomplex
     end interface
@@ -72,12 +88,12 @@ module libflit_mpicomm
         module procedure :: gather_distribute_array_1d_global_int
         module procedure :: gather_distribute_array_2d_global_int
         module procedure :: gather_distribute_array_3d_global_int
-        module procedure :: gather_distribute_array_1d_global_double
-        module procedure :: gather_distribute_array_2d_global_double
-        module procedure :: gather_distribute_array_3d_global_double
         module procedure :: gather_distribute_array_1d_global_float
         module procedure :: gather_distribute_array_2d_global_float
         module procedure :: gather_distribute_array_3d_global_float
+        module procedure :: gather_distribute_array_1d_global_double
+        module procedure :: gather_distribute_array_2d_global_double
+        module procedure :: gather_distribute_array_3d_global_double
         module procedure :: gather_distribute_array_1d_global_complex
         module procedure :: gather_distribute_array_2d_global_complex
         module procedure :: gather_distribute_array_3d_global_complex
@@ -154,7 +170,7 @@ module libflit_mpicomm
     integer, public :: mpi_ierr
 
     public :: mpistart, mpiend, mpibarrier, mpistop
-    public :: bcast_array
+    public :: bcast, bcast_array
     public :: reduce
     public :: reduce_array
     public :: allreduce
@@ -401,16 +417,36 @@ contains
 #define TTT mpi_double_complex
 #include "template_mpicomm.f90"
 
-    ! For string
-    subroutine bcast_array_1d_global_string(w, rankid)
+    ! For logical
+    subroutine bcast_global_logical(w, source)
 
-        character(len=*), intent(inout) :: w
-        integer, intent(in), optional :: rankid
+        logical, intent(inout) :: w
+        integer, intent(in), optional :: source
 
         integer :: rid
 
-        if (present(rankid)) then
-            rid = rankid
+        if (present(source)) then
+            rid = source
+        else
+            rid = 0
+        end if
+
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+        call mpi_bcast(w, 1, mpi_logical, rid, mpi_comm_world, mpi_ierr)
+        call mpi_barrier(mpi_comm_world, mpi_ierr)
+
+    end subroutine
+
+    ! For string
+    subroutine bcast_global_string(w, source)
+
+        character(len=*), intent(inout) :: w
+        integer, intent(in), optional :: source
+
+        integer :: rid
+
+        if (present(source)) then
+            rid = source
         else
             rid = 0
         end if

@@ -24,6 +24,7 @@
 #define CONCATHELP(X, Y)    PASTE2(X)Y
 #define CONCAT(X, Y)        CONCATHELP(X, Y)
 
+#define bcast_group_     CONCAT(bcast_group, T)
 #define bcast_array_1d_group_     CONCAT(bcast_array_1d_group, T)
 #define bcast_array_2d_group_     CONCAT(bcast_array_2d_group, T)
 #define bcast_array_3d_group_     CONCAT(bcast_array_3d_group, T)
@@ -43,6 +44,25 @@
 !
 ! Broadcast
 !
+subroutine bcast_group_(w, source)
+
+    TT, intent(inout) :: w
+    integer, intent(in), optional :: source
+
+    integer :: rid
+
+    if (present(source)) then
+        rid = source
+    else
+        rid = 0
+    end if
+
+    call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+    call mpi_bcast(w, 1, TTT, rid, mpi_group_comm, mpi_ierr_group)
+    call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+
+end subroutine
+
 subroutine bcast_array_1d_group_(w, source)
 
     TT, dimension(:), intent(inout) :: w
@@ -408,6 +428,7 @@ end subroutine gather_distribute_array_3d_group_
 #undef CONCATHELP
 #undef CONCAT
 
+#undef bcast_group_
 #undef bcast_array_1d_group_
 #undef bcast_array_2d_group_
 #undef bcast_array_3d_group_

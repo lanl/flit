@@ -32,42 +32,58 @@ module libflit_mpicomm_group
     ! The module is a copy-and-paste of module_mpicomm
     ! with slight modifications to group domain
 
+    interface bcast_group
+        module procedure :: bcast_group_int
+        module procedure :: bcast_group_float
+        module procedure :: bcast_group_double
+        module procedure :: bcast_group_complex
+        module procedure :: bcast_group_dcomplex
+        ! For logical and string
+        module procedure :: bcast_group_logical
+        module procedure :: bcast_group_string
+    end interface
+
     interface bcast_array_group
-        module procedure :: bcast_array_1d_group_string
         module procedure :: bcast_array_1d_group_int
         module procedure :: bcast_array_2d_group_int
         module procedure :: bcast_array_3d_group_int
-        module procedure :: bcast_array_1d_group_double
-        module procedure :: bcast_array_2d_group_double
-        module procedure :: bcast_array_3d_group_double
         module procedure :: bcast_array_1d_group_float
         module procedure :: bcast_array_2d_group_float
         module procedure :: bcast_array_3d_group_float
+        module procedure :: bcast_array_1d_group_double
+        module procedure :: bcast_array_2d_group_double
+        module procedure :: bcast_array_3d_group_double
         module procedure :: bcast_array_1d_group_complex
         module procedure :: bcast_array_2d_group_complex
         module procedure :: bcast_array_3d_group_complex
+        module procedure :: bcast_array_1d_group_dcomplex
+        module procedure :: bcast_array_2d_group_dcomplex
+        module procedure :: bcast_array_3d_group_dcomplex
     end interface
 
     interface commute_array_group
         module procedure :: commute_array_1d_group_int
         module procedure :: commute_array_2d_group_int
         module procedure :: commute_array_3d_group_int
-        module procedure :: commute_array_1d_group_double
-        module procedure :: commute_array_2d_group_double
-        module procedure :: commute_array_3d_group_double
         module procedure :: commute_array_1d_group_float
         module procedure :: commute_array_2d_group_float
         module procedure :: commute_array_3d_group_float
+        module procedure :: commute_array_1d_group_double
+        module procedure :: commute_array_2d_group_double
+        module procedure :: commute_array_3d_group_double
         module procedure :: commute_array_1d_group_complex
         module procedure :: commute_array_2d_group_complex
         module procedure :: commute_array_3d_group_complex
+        module procedure :: commute_array_1d_group_dcomplex
+        module procedure :: commute_array_2d_group_dcomplex
+        module procedure :: commute_array_3d_group_dcomplex
     end interface
 
     interface allreduce_group
         ! Scalar
         module procedure :: gather_distribute_group_int
-        module procedure :: gather_distribute_group_double
         module procedure :: gather_distribute_group_float
+        module procedure :: gather_distribute_group_double
         module procedure :: gather_distribute_group_complex
         module procedure :: gather_distribute_group_dcomplex
     end interface
@@ -77,12 +93,12 @@ module libflit_mpicomm_group
         module procedure :: gather_distribute_array_1d_group_int
         module procedure :: gather_distribute_array_2d_group_int
         module procedure :: gather_distribute_array_3d_group_int
-        module procedure :: gather_distribute_array_1d_group_double
-        module procedure :: gather_distribute_array_2d_group_double
-        module procedure :: gather_distribute_array_3d_group_double
         module procedure :: gather_distribute_array_1d_group_float
         module procedure :: gather_distribute_array_2d_group_float
         module procedure :: gather_distribute_array_3d_group_float
+        module procedure :: gather_distribute_array_1d_group_double
+        module procedure :: gather_distribute_array_2d_group_double
+        module procedure :: gather_distribute_array_3d_group_double
         module procedure :: gather_distribute_array_1d_group_complex
         module procedure :: gather_distribute_array_2d_group_complex
         module procedure :: gather_distribute_array_3d_group_complex
@@ -91,16 +107,16 @@ module libflit_mpicomm_group
         module procedure :: gather_distribute_array_3d_group_dcomplex
         ! For array with size = int8
         module procedure :: gather_distribute_large_array_1d_group_int
-        module procedure :: gather_distribute_large_array_1d_group_double
         module procedure :: gather_distribute_large_array_1d_group_float
+        module procedure :: gather_distribute_large_array_1d_group_double
         module procedure :: gather_distribute_large_array_1d_group_complex
         module procedure :: gather_distribute_large_array_1d_group_dcomplex
     end interface
 
     interface reduce_group
         module procedure :: gather_group_int
-        module procedure :: gather_group_double
         module procedure :: gather_group_float
+        module procedure :: gather_group_double
         module procedure :: gather_group_complex
         module procedure :: gather_group_dcomplex
     end interface
@@ -109,12 +125,12 @@ module libflit_mpicomm_group
         module procedure :: gather_array_1d_group_int
         module procedure :: gather_array_2d_group_int
         module procedure :: gather_array_3d_group_int
-        module procedure :: gather_array_1d_group_double
-        module procedure :: gather_array_2d_group_double
-        module procedure :: gather_array_3d_group_double
         module procedure :: gather_array_1d_group_float
         module procedure :: gather_array_2d_group_float
         module procedure :: gather_array_3d_group_float
+        module procedure :: gather_array_1d_group_double
+        module procedure :: gather_array_2d_group_double
+        module procedure :: gather_array_3d_group_double
         module procedure :: gather_array_1d_group_complex
         module procedure :: gather_array_2d_group_complex
         module procedure :: gather_array_3d_group_complex
@@ -163,7 +179,7 @@ module libflit_mpicomm_group
     integer, public :: mpi_ierr_group
 
     public :: mpistart_group, mpiend_group, mpibarrier_group, mpistop_group
-    public :: bcast_array_group
+    public :: bcast_group, bcast_array_group
     public :: reduce_group
     public :: reduce_array_group
     public :: allreduce_group
@@ -426,16 +442,36 @@ contains
 #define TTT mpi_double_complex
 #include "template_mpicomm_group.f90"
 
-    ! For string
-    subroutine bcast_array_1d_group_string(w, rankid)
+    ! For logical
+    subroutine bcast_group_logical(w, source)
 
-        character(len=*), intent(inout) :: w
-        integer, intent(in), optional :: rankid
+        logical, intent(inout) :: w
+        integer, intent(in), optional :: source
 
         integer :: rid
 
-        if (present(rankid)) then
-            rid = rankid
+        if (present(source)) then
+            rid = source
+        else
+            rid = 0
+        end if
+
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+        call mpi_bcast(w, 1, mpi_logical, rid, mpi_group_comm, mpi_ierr_group)
+        call mpi_barrier(mpi_group_comm, mpi_ierr_group)
+
+    end subroutine
+
+    ! For string
+    subroutine bcast_group_string(w, source)
+
+        character(len=*), intent(inout) :: w
+        integer, intent(in), optional :: source
+
+        integer :: rid
+
+        if (present(source)) then
+            rid = source
         else
             rid = 0
         end if

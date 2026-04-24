@@ -50,6 +50,7 @@ base_fflags = \
 	-O3 -fpp -traceback -warn unused -module $(moddir) -qmkl \
 	-assume byterecl -assume buffered_io -qopenmp -heap-arrays \
 	-gen-interfaces -xHost -fp-model=consistent -fpscomp logicals
+	#	-standard-semantics
 	#	-align all -falign-loops -xHost -fp-model precise \
 	#	-O0 -g -check bounds
 

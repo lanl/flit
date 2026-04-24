@@ -51,17 +51,7 @@ object_filesystem = \
 	f2c.o
 
 object_hdbscan = \
-	hdbscan.o \
-	cluster.o \
-	hdbscanAlgorithm.o \
-	hdbscanConstraint.o \
-	outlierScore.o \
-	undirectedGraph.o \
-	hdbscanParameters.o \
-	hdbscanResult.o \
-	hdbscanRunner.o \
-	bitSet.o \
-	external_hdbscan.o
+	hdbscan_mod.o
 
 object_libflit = \
 	module_error.o \
@@ -131,11 +121,7 @@ inc = $(base_inc) \
 	-I$(PWD)/../third_party/multilevel_bspline \
 	-I$(PWD)/../third_party/iir \
 	-I$(PWD)/../third_party/filesystem \
-	-I$(PWD)/../third_party/convexhull \
-	-I$(PWD)/../third_party/hdbscan/Hdbscan \
-	-I$(PWD)/../third_party/hdbscan/HdbscanStar \
-	-I$(PWD)/../third_party/hdbscan/Runner \
-	-I$(PWD)/../third_party/hdbscan/Utils
+	-I$(PWD)/../third_party/convexhull
 lflags = $(base_lflags)
 fflags = $(base_fflags) #-O0 -g -check bounds -fpe:0 -init:snan
 cflags = $(base_cflags)
@@ -169,8 +155,8 @@ $(objdir)/%.o : $(srcdir)/../third_party/filesystem/%.c
 $(objdir)/%.o : $(srcdir)/../third_party/filesystem/%.cpp
 	$(cxx) -o $@ -c $(cxxflags) $(inc) $<
 
-$(objdir)/%.o : $(srcdir)/../third_party/hdbscan/*/%.cpp
-	$(cxx) -o $@ -c $(cxxflags) $(inc) $<
+$(objdir)/%.o : $(srcdir)/../third_party/hdbscan/%.f90
+	$(fc) -o $@ -c $(fflags) $(inc) $<
 
 # link
 $(lib): $(obj)

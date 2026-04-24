@@ -11,7 +11,7 @@ program test
         integer, allocatable, dimension(:) :: unindex
         integer :: np, np1, np2, np3, np4, ic
 
-        type(hdbscan_param) :: p
+        type(hdbscan) :: p
 
         np1 = 100
         p1 = zeros(np1, 3)
@@ -63,17 +63,15 @@ program test
         end do
         close(3)
 
-        p%n = size(p%data, 1)
-        p%nd = 3
-        p%min_sample = 25
+        p%min_samples = 25
         p%min_cluster_size = 25
 
-        call hdbscan(p)
+        call p%cluster()
 
-        print *, p%ncluster, p%nnoisy
+        print *, p%n_clusters, p%n_noise
 
         open(3, file='./cluster3.txt')
-        do i = 1, p%n
+        do i = 1, p%n_points
             write(3, *) p%data(i, :), p%labels(i)*1.0
         end do
         close(3)
@@ -83,7 +81,7 @@ program test
         open(3, file='./cluster3_multiple_fit.txt')
         do ic = 2, size(unindex)
 
-            sindex = pack(regspace(1, 1, p%n), mask=(p%labels==unindex(ic)))
+            sindex = pack(regspace(1, 1, p%n_points), mask=(p%labels==unindex(ic)))
             np = size(sindex)
             print *, ic, np
 
@@ -113,21 +111,20 @@ program test
         integer, allocatable, dimension(:) :: unindex
         integer :: i, ic, np
 
-        type(hdbscan_param) :: p
+        type(hdbscan) :: p
 
         p%data = load('./multiple_cluster_data.txt', 2309, 2, ascii=.true.)
 
         !===========================================================================
-        p%n = size(p%data, 1)
-        p%nd = 2
-        p%min_sample = 15
+        p%n_points = size(p%data, 1)
+        p%min_samples = 15
         p%min_cluster_size = 15
 
-        call hdbscan(p)
+        call p%cluster()
 
         open(3, file='./cluster_multiple.txt')
-        do i = 1, p%n
-            write(3, *) p%data(i, :), p%labels(i)*1.0, p%probs(i)
+        do i = 1, p%n_points
+            write(3, *) p%data(i, :), p%labels(i)*1.0, p%probabilities(i)
         end do
         close(3)
 
@@ -136,7 +133,7 @@ program test
         open(3, file='./cluster_multiple_fit.txt')
         do ic = 2, size(unindex)
 
-            sindex = pack(regspace(1, 1, p%n), mask=(p%labels==unindex(ic)))
+            sindex = pack(regspace(1, 1, p%n_points), mask=(p%labels==unindex(ic)))
             np = size(sindex)
 
             ps = zeros(np, 2)
@@ -154,10 +151,10 @@ program test
         end do
         close(3)
 
-        np = count(p%labels /= 0)
+        np = count(p%labels /= minval(p%labels))
 
         ! This needs github.com/lanl/pymplot
-        call  execute_command_line('x_showgraph -in=cluster_multiple.txt,cluster_multiple_fit.txt -ftype=ascii -n1='//num2str(p%n)//','//num2str(np)//' -ptype=3 -tick1beg=-0.6 -tick2beg=-0.6 -x1beg=-0.6 -x1end=0.6 -tick1d=0.3 -label1=X -x2beg=-0.6 -x2end=0.6 -tick2d=0.3 -mtick1=2 -mtick2=2 -select=1,2,3 -color=hsv -ctruncbeg=0.1 -cmin=0 -cmax='//num2str(p%ncluster + 10.0)//' -marker=o,v -markersizemin=5 -markersizemax=5 -markeredgecolor=gray,gray -out=cluster_multiple.png &')
+        call  execute_command_line('x_showgraph -in=cluster_multiple.txt,cluster_multiple_fit.txt -ftype=ascii -n1='//num2str(p%n_points)//','//num2str(np)//' -ptype=3 -tick1beg=-0.6 -tick2beg=-0.6 -x1beg=-0.6 -x1end=0.6 -tick1d=0.3 -label1=X -x2beg=-0.6 -x2end=0.6 -tick2d=0.3 -mtick1=2 -mtick2=2 -select=1,2,3 -color=hsv -ctruncbeg=0.1 -cmin=0 -cmax='//num2str(p%n_clusters + 10.0)//' -marker=o,v -markersizemin=5 -markersizemax=5 -markeredgecolor=gray,gray -out=cluster_multiple.png &')
 
     end block
 
@@ -165,7 +162,7 @@ program test
 
         real, allocatable, dimension(:) :: p1, p2
         integer :: n
-        type(hdbscan_param) :: p
+        type(hdbscan) :: p
         character(len=1024) :: opts
 
         ! Raw data
@@ -255,7 +252,7 @@ program test
         integer, allocatable, dimension(:) :: sindex
         integer, allocatable, dimension(:) :: unindex
 
-        type(hdbscan_param) :: p
+        type(hdbscan) :: p
 
 
         p%data = zeros(1000, 2)
@@ -272,28 +269,27 @@ program test
 
 
         !===========================================================================
-        p%n = size(p%data, 1)
-        p%nd = 2
+        p%n_points = size(p%data, 1)
 
         open(3, file='./test_data.txt', status='replace')
-        do i = 1, p%n
+        do i = 1, p%n_points
             write(3, *) p%data(i, :)
         end do
         close(3)
 
-        p%min_sample = 35
+        p%min_samples = 35
         p%min_cluster_size = 35
 
-        call hdbscan(p)
+        call p%cluster()
 
         open(3, file='./cluster.txt')
-        do i = 1, p%n
+        do i = 1, p%n_points
             write(3, *) p%data(i, :), p%labels(i)*1.0
         end do
         close(3)
 
         unindex = sort(unique(p%labels))
-        sindex = pack(regspace(1, 1, p%n), mask=(p%labels==unindex(2)))
+        sindex = pack(regspace(1, 1, p%n_points), mask=(p%labels==unindex(2)))
         ps = zeros(size(sindex), 2)
         ps(:, 1) = p%data(sindex, 1)
         ps(:, 2) = p%data(sindex, 2)
@@ -321,7 +317,5 @@ program test
         call execute_command_line('x_showmatrix -in=b.bin -color=bwr -n1=400 -d1=0.025 -o1=-5 -d2=0.025 -o2=-5 -curve=select.txt,select_r.txt -curveselect=1,2 -curvesize=5,10 -curvefacecolor=w,yellow -curvestyle=scattero,scatter* -out=fit.png; vv fit.png ')
 
     end block
-
-    stop
 
 end program test
