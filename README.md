@@ -9,6 +9,7 @@
  - Interpolation
  - Statistical functions
  - etc. 
+ 
  These functionalities are not natively available in the current Fortran standard. 
  
 In `FLIT`, we provide user-friendly interfaces for similar functionalities with different data types, attempting to demonstrate the possibility of accelerating scientific application development using modern Fortran. The package can be used as a robust Fortran library for developing sophisticated scientific applications in the fields of computational physics, computational and applied geophysics, signal and image processing, and so on. 
