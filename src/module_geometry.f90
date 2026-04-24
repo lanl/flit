@@ -33,33 +33,6 @@ module libflit_geometry
 
     implicit none
 
-    ! For using external convex hull codes
-    interface
-
-        subroutine convhull_2d(n, x, y, nf, f) bind(c, name='convhull_2d')
-
-            use iso_c_binding, only: c_int
-
-            integer(kind=c_int), value :: n
-            real, dimension(*), intent(in) :: x, y
-            integer(kind=c_int), intent(out) :: nf
-            integer(kind=c_int), dimension(*), intent(out) :: f
-
-        end subroutine convhull_2d
-
-        subroutine convhull_3d(n, x, y, z, nf, f) bind(c, name='convhull_3d')
-
-            use iso_c_binding, only: c_int
-
-            integer(kind=c_int), value :: n
-            real, dimension(*), intent(in) :: x, y, z
-            integer(kind=c_int), intent(out) :: nf
-            integer(kind=c_int), dimension(*), intent(out) :: f
-
-        end subroutine convhull_3d
-
-    end interface
-
     interface rotation_matrix
         module procedure :: rotation_matrix_along_arbitrary
         module procedure :: rotation_matrix_along_axis
@@ -137,20 +110,24 @@ contains
     !
     function convexhull_2d(x, y) result(f)
 
+        use convex_hull_2d_mod
+
         real, dimension(:) :: x, y
         integer, allocatable, dimension(:) :: f
 
-        integer :: n, nf
+        integer :: n
+        double precision, allocatable, dimension(:, :) :: points
 
         call assert(size(x) == size(y), ' <convexhull_2d> Error: size(x) must = size(y)')
 
         n = size(x)
         f = zeros(n)
 
-        call convhull_2d(n, x, y, nf, f)
+        points = zeros(2, n)
+        points(1, :) = x
+        points(2, :) = y
 
-        ! Original output indicies are 0-based
-        f = f(1:nf) + 1
+        call convex_hull_2d(points, f)
 
     end function convexhull_2d
 
@@ -159,22 +136,32 @@ contains
     !
     function convexhull_3d(x, y, z) result(f)
 
+        use convex_hull_3d_mod
+
         real, dimension(:) :: x, y, z
         integer, allocatable, dimension(:, :) :: f
 
-        integer :: n, nf
-        integer, allocatable, dimension(:) ::  ft
+        integer :: n
+        type(face3d_t), allocatable :: faces(:)
+        double precision, allocatable, dimension(:, :) :: points
+        integer :: i, stat
 
         call assert(size(x) == size(y) .and. size(x) == size(z), &
             ' <convexhull_3d> Error: size(x) must = size(y) and = size(z)')
 
         n = size(x)
-        ft = zeros(3*n)
 
-        call convhull_3d(n, x, y, z, nf, ft)
+        points = zeros(3, n)
+        points(1, :) = x
+        points(2, :) = y
+        points(3, :) = z
 
-        ! Original output indicies are 0-based
-        f = transpose(reshape(ft(1:3*nf), [3, nf])) + 1
+        call convex_hull_3d(points, faces, stat=stat)
+
+        f = zeros(3, size(faces))
+        do i = 1, size(faces)
+            f(:, i) = faces(i)%v
+        end do
 
     end function convexhull_3d
 

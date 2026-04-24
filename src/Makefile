@@ -53,6 +53,11 @@ object_filesystem = \
 object_hdbscan = \
 	hdbscan_mod.o
 
+object_convexhull = \
+	convex_hull_kinds.o \
+	convex_hull_2d.o \
+	convex_hull_3d.o
+
 object_libflit = \
 	module_error.o \
 	module_string.o \
@@ -80,7 +85,6 @@ object_libflit = \
 	module_interp.o \
 	module_fit.o \
 	module_random_extra.o \
-	external_convexhull.o \
 	module_readpar.o \
 	module_transform.o \
 	module_balancefilt.o \
@@ -89,6 +93,7 @@ object_libflit = \
 	module_medianfilt.o \
 	module_meanfilt.o \
 	module_lowessfilt.o \
+	$(object_convexhull) \
 	module_geometry.o \
 	$(object_iir) \
 	module_fourierfilt.o \
@@ -156,6 +161,9 @@ $(objdir)/%.o : $(srcdir)/../third_party/filesystem/%.cpp
 	$(cxx) -o $@ -c $(cxxflags) $(inc) $<
 
 $(objdir)/%.o : $(srcdir)/../third_party/hdbscan/%.f90
+	$(fc) -o $@ -c $(fflags) $(inc) $<
+
+$(objdir)/%.o : $(srcdir)/../third_party/convexhull/%.f90
 	$(fc) -o $@ -c $(fflags) $(inc) $<
 
 # link

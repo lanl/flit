@@ -1,4 +1,9 @@
 # Description
+
+<p align="center">
+  <img src="doc/logo_flit.png" alt="" width="300"><br>
+</p>
+
 **FLIT: A Generic Fortran Library based on Interfaces and Templates**
 
 `FLIT` (Fortran Library based on Interfaces and Templates) is a generic Fortran library mainly for
