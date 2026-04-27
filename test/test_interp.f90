@@ -5,7 +5,7 @@ program test
 
     block
 
-        real, allocatable, dimension(:) :: w, ww
+        real, allocatable, dimension(:) :: w0, w, ww
         character(len=32), allocatable, dimension(:) :: m
         integer :: o, d
         integer :: n, nn, i
@@ -17,11 +17,12 @@ program test
 
         w = gauss_filt(random(n), 4.0)
         w = rescale(w, [0.0, 1.0])
+        w0 = w
         call output_array(w, 'w.bin')
         w = w(o + 1:n:d + 1)
         nn = size(w)
 
-        m = ['nearest', 'linear', 'cubic', 'pchip', 'sinc', 'quintic', 'mba', 'biharmonic', 'cubic_spline', 'hermite_spline', 'monotonic_spline']
+        m = ['nearest', 'linear', 'cubic', 'hermite', 'pchip', 'sinc', 'mba', 'biharmonic']
 
         do i = 1, size(m)
 
@@ -33,7 +34,7 @@ program test
 
             call cpu_time(finish)
 
-            print *, i, m(i), finish - start
+            print *, i, tidy(m(i)), '   time = ', num2str(finish - start), '   relative l2 error =', num2str(norm2(ww - w0)/norm2(w0))
 
             call output_array(ww, './w_'//tidy(m(i))//'.bin')
             ! This needs github.com/lanl/pymplot
@@ -48,7 +49,7 @@ program test
     block
 
         real, allocatable, dimension(:, :, :) :: w, ww
-        character(len=24) :: m = 'linear'
+        character(len=24) :: m = 'cubic'
 
         w = gauss_filt(random(200, 300, 100), [4.0, 4.0, 4.0])
         w = w - mean(w)

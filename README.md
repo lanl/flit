@@ -1,12 +1,11 @@
-# Description
 
 <p align="center">
-  <img src="doc/logo_flit.png" alt="" width="300"><br>
+  <img src="doc/logo_flit.png" alt="" width="320"><br>
 </p>
 
 **FLIT: A Generic Fortran Library based on Interfaces and Templates**
 
-`FLIT` (Fortran Library based on Interfaces and Templates) is a generic Fortran library mainly for
+`FLIT` is a generic Fortran library mainly for
  - Single/multi-dimensional array manipulation
  - Flexible parameter reading from textual file or command line arguments
  - Signal and image filtering and processing
@@ -15,17 +14,15 @@
  - Statistical functions
  - etc. 
  
- These functionalities are not natively available in the current Fortran standard. 
- 
-In `FLIT`, we provide user-friendly interfaces for similar functionalities with different data types, attempting to demonstrate the possibility of accelerating scientific application development using modern Fortran. The package can be used as a robust Fortran library for developing sophisticated scientific applications in the fields of computational physics, computational and applied geophysics, signal and image processing, and so on. 
+We provide user-friendly interfaces for similar functionalities with different data types, attempting to demonstrate the possibility of accelerating scientific application development using modern Fortran. `FLIT` may be useful for developing applications in computational physics, computational seismology, applied geophysics, signal and image processing, and so on. 
 
 The work is supported by Los Alamos National Laboratory (LANL) Laboratory Directory Research and Development (LDRD) project 20240322ER. LANL is operated by Triad National Security, LLC, for the National Nuclear Security Administration (NNSA) of the U.S. Department of Energy (DOE) under Contract No. 89233218CNA000001. The research used high-performance computing resources provided by LANL's Institutional Computing program. 
 
-The work is under LANL open source approval reference O4767.
+The work is approved for public release by LANL's Feynman Center for Innovation (FCI) under reference #O4767.
 
 # Requirement
  - Platform: Linux
- - Compiler: [Intel's oneAPI HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html)
+ - Compiler: [Intel's oneAPI HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html), including ifx, mpiifx, icx, icpx; other Fortran compilers (e.g., gfortran) are not supported at this moment. 
 
 # Use
 To set Intel's compiler paths: 
@@ -78,7 +75,7 @@ Under development. Please refer to the document [LA-UR-24-26315](doc/doc_libflit
 # Author
 Kai Gao, <kaigao@lanl.gov>
 
-We welcome feedbacks, bug reports, and improvement ideas on `FLIT`. 
+We welcome feedback and bug reports. 
 
 If you use this package in your research and find it useful, please cite it as
 * Kai Gao, Ting Chen, 2024, FLIT: A Generic Fortran Library based on Interfaces and Templates, url: [github.com/lanl/flit](https://github.com/lanl/flit)

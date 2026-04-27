@@ -39,6 +39,10 @@ program test
         
         print *
         call plot_histogram(random(1000, dist='exponential', lambda=0.1))
+        
+        print *, random(10, range=[1.0, 30.0], spacing=2.0)
+        print *, irandom(10, range=[1, 30], spacing=2)
+        print *, drandom(10, range=[1.0d0, 30.0d0], spacing=2.0d0)        
 
     end block
 
@@ -84,6 +88,11 @@ program test
         v = random(4, 4, dist='normal')
         v = conv(w, v, 'same')
         call output_array(v, 'vv.bin')
+        
+                print *, random(2, 3, range=[1.0, 30.0], spacing=2.0)
+        print *, irandom(2, 3, range=[1, 30], spacing=2)
+        print *, drandom(2, 3, range=[1.0d0, 30.0d0], spacing=2.0d0)        
+
 
     end block
 

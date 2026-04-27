@@ -2,6 +2,43 @@
 program test
 
     use libflit
+    
+    block
+
+        character(len=1024) :: file_parameter
+        character(len=24) :: par
+        character(len=48), allocatable, dimension(:) :: pars
+        character(len=3) :: x
+
+        file_parameter = './tmp.txt'
+
+        print *, 'readpar -- string'
+
+        call readpar_string(file_parameter, 'spar1', par, '')
+        print *, par
+
+        call readpar_xstring(file_parameter, 'spar2', par, '', 3.0)
+        print *, par
+
+        call readpar_nstring(file_parameter, 'spar3', pars, [''])
+        print *, pars(1)
+        print *, pars(2)
+        print *, pars(3)
+        
+        call extract_nstring('vp, vs, rho', ',', pars)
+        print *, pars(1)
+        print *, pars(2)
+        print *, pars(3)
+        
+        print *, any('vs' == pars)
+        
+        par = 'vs'
+        print *, any(par == pars)
+        
+        x = 'vs'
+        print *, any(x == pars)
+
+    end block
 
     block
 

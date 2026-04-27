@@ -6,40 +6,15 @@ moddir = $(bindir)
 srcdir = $(PWD)
 
 # Dependencies
-object_spline = \
-	SplineAkima.o \
-	SplineBessel.o \
-	SplineBiCubic.o \
-	SplineBilinear.o \
-	SplineBiQuintic.o \
-	SplineConstant.o \
-	SplineCubicBase.o \
-	SplineCubic.o \
-	SplineHermite.o \
-	SplineLinear.o \
-	SplinePchip.o \
-	SplineQuinticBase.o \
-	SplineQuintic.o \
-	SplinesBivariate.o \
-	Splines.o \
-	SplinesCinterface.o \
-	SplineSet.o \
-	SplineSetGC.o \
-	SplinesUnivariate.o \
-	SplineVec.o \
-	external_spline.o
+object_kdtree = \
+	kdtree_mod.o
+
+object_mba = \
+	mba_mod.o
 
 object_iir = \
-	Biquad.o \
-	Butterworth.o \
-	Cascade.o \
-	ChebyshevI.o \
-	ChebyshevII.o \
-	Custom.o \
-	PoleFilter.o \
-	RBJ.o \
-	external_iir.o \
-	module_iirfilt.o
+	iir_design_mod.o \
+	iir_filter_mod.o
 
 object_filesystem = \
 	common.o \
@@ -80,8 +55,8 @@ object_libflit = \
 	module_io.o \
 	module_linear_algebra.o \
 	module_taper.o \
-	$(object_spline) \
-	external_mba.o \
+	$(object_kdtree) \
+	$(object_mba) \
 	module_interp.o \
 	module_fit.o \
 	module_random_extra.o \
@@ -92,10 +67,11 @@ object_libflit = \
 	module_statistics.o \
 	module_medianfilt.o \
 	module_meanfilt.o \
+	$(object_iir) \
+	module_iirfilt.o \
 	module_lowessfilt.o \
 	$(object_convexhull) \
 	module_geometry.o \
-	$(object_iir) \
 	module_fourierfilt.o \
 	module_domain_decomposition.o \
 	module_mpicomm.o \
@@ -122,9 +98,9 @@ include $(PWD)/Makefile.in
 inc = $(base_inc) \
 	-I$(PWD) \
 	-I$(PWD)/../third_party/pcg_random \
-	-I$(PWD)/../third_party/spline \
-	-I$(PWD)/../third_party/multilevel_bspline \
+	-I$(PWD)/../third_party/mba \
 	-I$(PWD)/../third_party/iir \
+	-I$(PWD)/../third_party/kdtree \
 	-I$(PWD)/../third_party/filesystem \
 	-I$(PWD)/../third_party/convexhull
 lflags = $(base_lflags)
@@ -145,11 +121,14 @@ $(objdir)/%.o : $(srcdir)/%.f90
 $(objdir)/%.o : $(srcdir)/../third_party/pcg_random/%.cpp
 	$(cxx) -o $@ -c $(cxxflags) $(inc) $<
 
-$(objdir)/%.o : $(srcdir)/../third_party/spline/%.cc
-	$(cxx) -o $@ -c $(cxxflags) $(inc) $<
+$(objdir)/%.o : $(srcdir)/../third_party/kdtree/%.f90
+	$(fc) -o $@ -c $(fflags) $(inc) $<
 
-$(objdir)/%.o : $(srcdir)/../third_party/iir/%.cpp
-	$(cxx) -o $@ -c $(cxxflags) $(inc) $<
+$(objdir)/%.o : $(srcdir)/../third_party/mba/%.f90
+	$(fc) -o $@ -c $(fflags) $(inc) $<
+
+$(objdir)/%.o : $(srcdir)/../third_party/iir/%.f90
+	$(fc) -o $@ -c $(fflags) $(inc) $<
 
 $(objdir)/%.o : $(srcdir)/../third_party/filesystem/%.f90
 	$(fc) -o $@ -c $(fflags) $(inc) $<

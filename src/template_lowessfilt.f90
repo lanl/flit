@@ -1,15 +1,15 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
-! This program was produced under U.S. Government contract 89233218CNA000001 
-! for Los Alamos National Laboratory (LANL), which is operated by 
-! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear 
-! Security Administration. All rights in the program are reserved by 
-! Triad National Security, LLC, and the U.S. Department of Energy/National 
-! Nuclear Security Administration. The Government is granted for itself and 
-! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide 
-! license in this material to reproduce, prepare. derivative works, 
-! distribute copies to the public, perform publicly and display publicly, 
+! This program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by
+! Triad National Security, LLC for the U.S. Department of Energy/National Nuclear
+! Security Administration. All rights in the program are reserved by
+! Triad National Security, LLC, and the U.S. Department of Energy/National
+! Nuclear Security Administration. The Government is granted for itself and
+! others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+! license in this material to reproduce, prepare. derivative works,
+! distribute copies to the public, perform publicly and display publicly,
 ! and to permit others to do so.
 !
 ! Author:
@@ -42,6 +42,7 @@ recursive function lowess_1d_(x, y, xx, order, window, kernel, robust) result(yy
     TT, allocatable, dimension(:) :: rw, y_est, residual
     logical :: lowess_robust
     character(len=64) :: lowess_kernel
+    TT :: rx
 
     if (present(order)) then
         lowess_order = order
@@ -70,7 +71,7 @@ recursive function lowess_1d_(x, y, xx, order, window, kernel, robust) result(yy
 
     n = size(x)
     nn = size(xx)
-    lowess_window = lowess_window*rov(x)
+    rx = lowess_window*rov(x)
 
     b = zeros(n, lowess_order + 1)
     b(:, 1) = 1.0
@@ -89,7 +90,7 @@ recursive function lowess_1d_(x, y, xx, order, window, kernel, robust) result(yy
     end if
     do i = 1, nn
 
-        w = abs(xx(i) - x)/lowess_window
+        w = abs(xx(i) - x)/rx
         select case(lowess_kernel)
             case('tri-cube')
                 w = kernel_tricube(w)
@@ -134,6 +135,7 @@ recursive function lowess_2d_(x, y, z, xx, yy, order, window, kernel, robust) re
     logical :: lowess_robust
     character(len=64) :: lowess_kernel
     TT, allocatable, dimension(:) :: rw, z_est, residual
+    TT :: rx, ry
 
     if (present(order)) then
         lowess_order = order
@@ -162,7 +164,8 @@ recursive function lowess_2d_(x, y, z, xx, yy, order, window, kernel, robust) re
 
     n = size(x)
     nn = size(xx)
-    lowess_window = lowess_window*[rov(x), rov(y)]
+    rx = lowess_window(1)*rov(x)
+    ry = lowess_window(2)*rov(y)
 
     b = zeros(n, 2*lowess_order + 1)
     b(:, 1) = 1.0
@@ -184,7 +187,7 @@ recursive function lowess_2d_(x, y, z, xx, yy, order, window, kernel, robust) re
 
     do i = 1, nn
 
-        w = sqrt(((xx(i) - x)/lowess_window(1))**2 + ((yy(i) - y)/lowess_window(2))**2)
+        w = sqrt(((xx(i) - x)/rx)**2 + ((yy(i) - y)/ry)**2)
         select case(lowess_kernel)
             case('tri-cube')
                 w = kernel_tricube(w)
@@ -229,6 +232,7 @@ recursive function lowess_3d_(x, y, z, v, xx, yy, zz, order, window, kernel, rob
     logical :: lowess_robust
     character(len=64) :: lowess_kernel
     TT, allocatable, dimension(:) :: rw, v_est, residual
+    TT :: rx, ry, rz
 
     if (present(order)) then
         lowess_order = order
@@ -257,7 +261,9 @@ recursive function lowess_3d_(x, y, z, v, xx, yy, zz, order, window, kernel, rob
 
     n = size(x)
     nn = size(xx)
-    lowess_window = lowess_window*[rov(x), rov(y), rov(z)]
+    rx = lowess_window(1)*rov(x)
+    ry = lowess_window(2)*rov(y)
+    rz = lowess_window(3)*rov(z)
 
     b = zeros(n, 3*lowess_order + 1)
     b(:, 1) = 1.0
@@ -280,7 +286,7 @@ recursive function lowess_3d_(x, y, z, v, xx, yy, zz, order, window, kernel, rob
 
     do i = 1, nn
 
-        w = sqrt(((xx(i) - x)/lowess_window(1))**2 + ((yy(i) - y)/lowess_window(2))**2 + ((zz(i) - z)/lowess_window(3))**2)
+        w = sqrt(((xx(i) - x)/rx)**2 + ((yy(i) - y)/ry)**2 + ((zz(i) - z)/rz)**2)
         select case(lowess_kernel)
             case('tri-cube')
                 w = kernel_tricube(w)

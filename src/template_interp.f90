@@ -1,5 +1,6 @@
+
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
 ! This program was produced under U.S. Government contract 89233218CNA000001
 ! for Los Alamos National Laboratory (LANL), which is operated by
@@ -29,6 +30,9 @@
 #define interp_biharmonic_1d_     CONCAT(interp_biharmonic_1d, T)
 #define interp_biharmonic_2d_     CONCAT(interp_biharmonic_2d, T)
 #define interp_biharmonic_3d_     CONCAT(interp_biharmonic_3d, T)
+#define interp_mba_1d_     CONCAT(interp_mba_1d, T)
+#define interp_mba_2d_     CONCAT(interp_mba_2d, T)
+#define interp_mba_3d_     CONCAT(interp_mba_3d, T)
 #define interp_sinc_1d_     CONCAT(interp_sinc_1d, T)
 #define meshgrid_      CONCAT(meshgrid, T)
 #define meshgrid_1d_      CONCAT(meshgrid_1d, T)
@@ -55,88 +59,117 @@
 #define inpaint_1d_     CONCAT(inpaint_1d, T)
 #define inpaint_2d_     CONCAT(inpaint_2d, T)
 #define inpaint_3d_     CONCAT(inpaint_3d, T)
-
 #define point_interp_linear_1d_     CONCAT(point_interp_linear_1d, T)
 #define point_interp_linear_2d_     CONCAT(point_interp_linear_2d, T)
 #define point_interp_linear_3d_     CONCAT(point_interp_linear_3d, T)
 #define point_interp_barycentric_2d_     CONCAT(point_interp_barycentric_2d, T)
 #define point_interp_barycentric_3d_     CONCAT(point_interp_barycentric_3d, T)
 
-! external
-#define interp_cspline_1d_     CONCAT(interp_cspline_1d, T)
-#define interp_pchip_1d_     CONCAT(interp_pchip_1d, T)
-#define interp_quintic_1d_     CONCAT(interp_quintic_1d, T)
-#define interp_mba_1d_     CONCAT(interp_mba_1d, T)
-#define interp_mba_2d_     CONCAT(interp_mba_2d, T)
-#define interp_mba_3d_     CONCAT(interp_mba_3d, T)
-
 !
 !> Nearest neighbour interpolation for 1D data
 !
-subroutine interp_nearest_1d_(n, x, y, nn, xx, yy)
+subroutine interp_nearest_1d_(n, x, v, nn, xx, vv)
+
+    use kdtree_mod
 
     integer, intent(in) :: n, nn
     TT, dimension(:), intent(in) :: x, xx
-    TTT, dimension(:), intent(in) :: y
-    TTT, dimension(:), intent(out) :: yy
+    TTT, dimension(:), intent(in) :: v
+    TTT, dimension(:), intent(out) :: vv
 
-    integer :: i
+    integer :: i, j
+    type(kdtree) :: tree
+    double precision :: dist
+    double precision, allocatable, dimension(:, :) :: pts
+    double precision :: q(1)
 
-    call assert(size(x) == size(y), &
-        ' <interp_nearest_1d> Error: size(x) /= size(y). ')
+    call assert(size(x) == size(v), ' <interp_nearest_1d> Error: size(x) /= size(v). ')
 
-    i = n
+    pts = zeros(1, n)
+    pts(1, :) = x
+    call tree%build(pts)
 
     ! A brute-foce nearest neighbour implementation; could be slow for large data
     do i = 1, nn
-        yy(i) = y(minloc(abs(xx(i) - x), dim=1))
+        q(1) = xx(i)
+        call tree%query_nn(q, j, dist)
+        vv(i) = v(j)
     end do
+
+    call tree%free
 
 end subroutine interp_nearest_1d_
 
-subroutine interp_nearest_2d_(n, x, y, z, nn, xx, yy, zz)
+subroutine interp_nearest_2d_(n, x, y, v, nn, xx, yy, vv)
+
+    use kdtree_mod
 
     integer, intent(in) :: n, nn
     TT, dimension(:), intent(in) :: x, y, xx, yy
-    TTT, dimension(:), intent(in) :: z
-    TTT, dimension(:), intent(out) :: zz
+    TTT, dimension(:), intent(in) :: v
+    TTT, dimension(:), intent(out) :: vv
 
-    integer :: i
+    integer :: i, j
+    type(kdtree) :: tree
+    double precision :: dist
+    double precision, allocatable, dimension(:, :) :: pts
+    double precision :: q(2)
 
-    call assert(size(x) == size(y) .and. size(y) == size(z), &
+    call assert(size(x) == size(y) .and. size(y) == size(v), &
         ' <interp_nearest_3d> Error: Sizes of x, y, z are inconsistent. ')
 
-    i = n
+    pts = zeros(2, n)
+    pts(1, :) = x
+    pts(2, :) = y
+    call tree%build(pts)
 
     ! A brute-foce nearest neighbour implementation; could be slow for large data
-    !$omp parallel do private(i)
+    !$omp parallel do private(i, q, j)
     do i = 1, nn
-        zz(i) = z(minloc((xx(i) - x)**2 + (yy(i) - y)**2, dim=1))
+        q = [xx(i), yy(i)]
+        call tree%query_nn(q, j, dist)
+        vv(i) = v(j)
     end do
     !$omp end parallel do
+
+    call tree%free
 
 end subroutine interp_nearest_2d_
 
 subroutine interp_nearest_3d_(n, x, y, z, v, nn, xx, yy, zz, vv)
+
+    use kdtree_mod
 
     integer, intent(in) :: n, nn
     TT, dimension(:), intent(in) :: x, y, z, xx, yy, zz
     TTT, dimension(:), intent(in) :: v
     TTT, dimension(:), intent(out) :: vv
 
-    integer :: i
+    integer :: i, j
+    type(kdtree) :: tree
+    double precision :: dist
+    double precision, allocatable, dimension(:, :) :: pts
+    double precision :: q(3)
 
     call assert(size(x) == size(y) .and. size(y) == size(z) .and. size(z) == size(v), &
         ' <interp_nearest_3d> Error: Sizes of x, y, z, v are inconsistent. ')
 
-    i = n
+    pts = zeros(3, n)
+    pts(1, :) = x
+    pts(2, :) = y
+    pts(3, :) = z
+    call tree%build(pts)
 
     ! A brute-foce nearest neighbour implementation; could be slow for large data
-    !$omp parallel do private(i)
+    !$omp parallel do private(i, q, j)
     do i = 1, nn
-        vv(i) = v(minloc((xx(i) - x)**2 + (yy(i) - y)**2 + (zz(i) - z)**2, dim=1))
+        q = [xx(i), yy(i), zz(i)]
+        call tree%query_nn(q, j, dist)
+        vv(i) = v(j)
     end do
     !$omp end parallel do
+
+    call tree%free
 
 end subroutine interp_nearest_3d_
 
@@ -214,8 +247,7 @@ subroutine interp_cubic_spline_1d_(n, x, y, nn, xx, yy, method)
     character(len=*), intent(in) :: method
     TTT, dimension(:), intent(out) :: yy
 
-    TTT, allocatable, dimension(:) :: a, b, c, d, h, r
-    TTT, allocatable, dimension(:, :) :: m
+    TTT, allocatable, dimension(:) :: a, b, c, d, h, l, zeta, mu
     integer :: i, j
     TT :: dist
     TTT :: f1, f2
@@ -229,6 +261,7 @@ subroutine interp_cubic_spline_1d_(n, x, y, nn, xx, yy, method)
 
     a = y
     b = zeros(n)
+    c = zeros(n)
     d = zeros(n)
     h = zeros(n)
     do i = 1, n - 1
@@ -239,53 +272,59 @@ subroutine interp_cubic_spline_1d_(n, x, y, nn, xx, yy, method)
     select case (method)
 
         case ('c2')
-            ! Cubic spline
+            ! Cubic spline with c2 continuity
+            l = zeros(n)
+            mu = zeros(n)
+            zeta = zeros(n)
+            alpha = zeros(n)
 
-            m = zeros(3, n - 2)
-            r = zeros(n - 2)
-            ! Super-diagonal elements
-            do i = 2, n - 2
-                m(1, i) = h(i)/3.0
-            end do
-            ! Diagonal elements
+            alpha(1) = 0.0d0
+            alpha(n) = 0.0d0
+
             do i = 2, n - 1
-                m(2, i - 1) = (h(i - 1) + h(i))*2.0/3.0
-            end do
-            ! Sub-diagonal elements
-            do i = 2, n - 2
-                m(3, i - 1) = h(i - 1)/3.0
-            end do
-            ! RHS
-            do i = 2, n - 1
-                r(i - 1) = (y(i + 1) - y(i))/h(i) - (y(i) - y(i - 1))/h(i - 1)
+                alpha(i) = 3.0d0*(y(i + 1) - y(i))/h(i) - 3.0d0*(y(i) - y(i - 1))/h(i - 1)
             end do
 
-            c = [nTTT(0.0/2.0), solve_band(m, 1, 1, r), nTTT(0.0/2.0)]
-            do i = 1, n - 1
-                d(i) = (c(i + 1) - c(i))/(3.0*h(i))
-                b(i) = (y(i + 1) - y(i))/h(i) - (2*c(i) + c(i + 1))*h(i)/3.0
+            l(1) = 1.0d0
+            mu(1) = 0.0d0
+            zeta(1) = 0.0d0
+
+            do i = 2, n - 1
+                l(i) = 2.0d0*(x(i + 1) - x(i - 1)) - h(i - 1)*mu(i - 1)
+                mu(i) = h(i)/l(i)
+                zeta(i) = (alpha(i) - h(i - 1)*zeta(i - 1))/l(i)
             end do
-            d(n) = 0.0
-            b(n) = 3*d(n - 1)*h(n - 1)**2 + 2*c(n - 1)*h(n - 1) + b(n - 1)
+
+            l(n) = 1.0d0
+            zeta(n) = 0.0d0
+            c(n) = 0.0d0
+
+            do j = n - 1, 1, -1
+                c(j) = zeta(j) - mu(j)*c(j + 1)
+                b(j) = (y(j + 1) - y(j))/h(j) - h(j)*(c(j + 1) + 2.0d0*c(j))/3.0d0
+                d(j) = (c(j + 1) - c(j))/(3.0d0*h(j))
+                a(j) = y(j)
+            end do
 
             do i = 1, nn
+
                 if (xx(i) < x(1)) then
-                    dist = xx(i) - x(1)
-                    yy(i) = a(1) + b(1)*dist + c(1)*dist**2
+                    j = 1
 
                 else if (xx(i) >= x(n)) then
-                    dist = xx(i) - x(n)
-                    yy(i) = a(n) + b(n)*dist + c(n)*dist**2
+                    j = n - 1
 
                 else
                     do j = 1, n - 1
-                        if (xx(i) >= x(j) .and. xx(i) < x(j + 1)) then
-                            dist = xx(i) - x(j)
-                            yy(i) = a(j) + b(j)*dist + c(j)*dist**2 + d(j)*dist**3
+                        if (xx(i) >= x(j) .and. xx(i) <= x(j + 1)) then
                             exit
                         end if
                     end do
                 end if
+
+                dist = xx(i) - x(j)
+                yy(i) = a(j) + b(j)*dist + c(j)*dist**2 + d(j)*dist**3
+
             end do
 
         case ('hermite')
@@ -717,11 +756,116 @@ subroutine interp_sinc_1d_(n, x, y, nn, xx, yy)
         h = nint((xx(i) - xd(1))/d) + 1
         dist = (xx(i) - xd(h))/d
         ksinc = dist - regspace(-nkw, 1, nkw)
-        ksinc = sinc(ksinc*const_pi)*window_function(ksinc/nkw + 0.5d0, method='kaiser', alpha=b0 + 0.0d0)
-        yy(i) = sum(ksinc*yd(h - nkw:h + nkw))
+        ksinc = sinc(ksinc*const_pi)*window_function(ksinc/(2.0d0*nkw) + 0.5d0, &
+            method='kaiser', alpha=b0 + 0.0d0)
+        yy(i) = sum(ksinc*yd(h - nkw:h + nkw))/sum(ksinc)
     end do
 
 end subroutine interp_sinc_1d_
+
+!
+!> Multi-level B-spline interpolation
+!
+subroutine interp_mba_1d_(n, x, v, nn, xx, vv)
+
+    use mba_mod
+
+    integer, intent(in) :: n, nn
+    TT, dimension(:), intent(in) :: x, xx
+    TTT, dimension(:), intent(in) :: v
+    TTT, dimension(:), intent(out) :: vv
+
+    type(mba) :: m
+    double precision, allocatable, dimension(:, :) :: pts
+    double precision, allocatable, dimension(:) :: q
+
+    call assert(size(x) == size(v), ' <interp_mba_1d> Error: size(x) /= size(v). ')
+
+    pts = zeros(1, n)
+    pts(1, :) = x
+    q = dble(v)
+
+    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=.true.)
+
+    pts = zeros(1, nn)
+    pts(1, :) = xx
+    q = zeros(nn)
+    call m%eval(pts, q)
+    vv = q
+
+    call m%free
+
+end subroutine
+
+subroutine interp_mba_2d_(n, x, y, v, nn, xx, yy, vv)
+
+    use mba_mod
+
+    integer, intent(in) :: n, nn
+    TT, dimension(:), intent(in) :: x, y, xx, yy
+    TTT, dimension(:), intent(in) :: v
+    TTT, dimension(:), intent(out) :: vv
+
+    type(mba) :: m
+    double precision, allocatable, dimension(:, :) :: pts
+    double precision, allocatable, dimension(:) :: q
+
+    call assert(size(x) == size(y) .and. size(y) == size(v), &
+        ' <interp_mba_2d> Error: Sizes of x, y, and v are inconsistent. ')
+
+    pts = zeros(2, n)
+    pts(1, :) = x
+    pts(2, :) = y
+    q = dble(v)
+
+    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=.true.)
+
+    pts = zeros(2, nn)
+    pts(1, :) = xx
+    pts(2, :) = yy
+    q = zeros(nn)
+    call m%eval(pts, q)
+    vv = q
+
+    call m%free
+
+end subroutine interp_mba_2d_
+
+subroutine interp_mba_3d_(n, x, y, z, v, nn, xx, yy, zz, vv)
+
+    use mba_mod
+
+    integer, intent(in) :: n, nn
+    TT, dimension(:), intent(in) :: x, y, z, xx, yy, zz
+    TTT, dimension(:), intent(in) :: v
+    TTT, dimension(:), intent(out) :: vv
+
+    type(mba) :: m
+    double precision, allocatable, dimension(:, :) :: pts
+    double precision, allocatable, dimension(:) :: q
+
+    call assert(size(x) == size(y) .and. size(y) == size(z) .and. size(z) == size(v), &
+        ' <interp_mba_3d> Error: Sizes of x, y, z, and v are inconsistent. ')
+
+    pts = zeros(3, n)
+    pts(1, :) = x
+    pts(2, :) = y
+    pts(3, :) = z
+    q = dble(v)
+
+    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=.true.)
+
+    pts = zeros(3, nn)
+    pts(1, :) = xx
+    pts(2, :) = yy
+    pts(3, :) = zz
+    q = zeros(nn)
+    call m%eval(pts, q)
+    vv = q
+
+    call m%free
+
+end subroutine interp_mba_3d_
 
 !==================================================================================================
 !
@@ -774,21 +918,15 @@ function reg_to_reg_interp_1d_(f, n1, d1, o1, nn1, dd1, oo1, method) result(ff)
                 call interp_linear_1d_(n1, x, f, nn1, xx, ff)
             case ('sinc')
                 call interp_sinc_1d_(n1, x, f, nn1, xx, ff)
-            case ('cubic')
-                call interp_cspline_1d_(n1, x, f, nn1, xx, ff)
-            case ('pchip')
-                call interp_pchip_1d_(n1, x, f, nn1, xx, ff)
-            case ('quintic')
-                call interp_quintic_1d_(n1, x, f, nn1, xx, ff)
             case ('mba')
                 call interp_mba_1d_(n1, x, f, nn1, xx, ff)
             case ('biharmonic')
                 call interp_biharmonic_1d_(n1, x, f, nn1, xx, ff)
-            case ('cubic_spline')
+            case ('cubic')
                 call interp_cubic_spline_1d_(n1, x, f, nn1, xx, ff, method='c2')
-            case ('hermite_spline')
+            case ('hermite')
                 call interp_cubic_spline_1d_(n1, x, f, nn1, xx, ff, method='hermite')
-            case ('monotonic_spline')
+            case ('pchip')
                 call interp_cubic_spline_1d_(n1, x, f, nn1, xx, ff, method='monotonic')
             case default
                 call interp_linear_1d_(n1, x, f, nn1, xx, ff)
@@ -1154,21 +1292,15 @@ function irreg_to_irreg_interp_1d_(x, f, xx, method) result(ff)
             call interp_nearest_1d_(n, x, f, nn, xx, ff)
         case ('linear')
             call interp_linear_1d_(n, x, f, nn, xx, ff)
-        case ('cubic')
-            call interp_cspline_1d_(n, x, f, nn, xx, ff)
-        case ('pchip')
-            call interp_pchip_1d_(n, x, f, nn, xx, ff)
-        case ('quintic')
-            call interp_quintic_1d_(n, x, f, nn, xx, ff)
         case ('mba')
             call interp_mba_1d_(n, x, f, nn, xx, ff)
         case ('biharmonic')
             call interp_biharmonic_1d_(n, x, f, nn, xx, ff)
-        case ('cubic_spline')
+        case ('cubic')
             call interp_cubic_spline_1d_(n, x, f, nn, xx, ff, method='c2')
-        case ('hermite_spline')
+        case ('hermite')
             call interp_cubic_spline_1d_(n, x, f, nn, xx, ff, method='hermite')
-        case ('monotonic_spline')
+        case ('pchip')
             call interp_cubic_spline_1d_(n, x, f, nn, xx, ff, method='monotonic')
         case default
             call interp_linear_1d_(n, x, f, nn, xx, ff)
@@ -1412,7 +1544,7 @@ function irreg_to_reg_interp_1d_(x, f, n, d, o, method) result(ff)
     if (present(method)) then
         interp_method = method
     else
-        interp_method = 'mba'
+        interp_method = 'linear'
     end if
 
     l = size(x)
@@ -1425,21 +1557,15 @@ function irreg_to_reg_interp_1d_(x, f, n, d, o, method) result(ff)
             call interp_nearest_1d_(l, x, f, n, xx, ff)
         case ('linear')
             call interp_linear_1d_(l, x, f, n, xx, ff)
-        case ('cubic')
-            call interp_cspline_1d_(l, x, f, n, xx, ff)
-        case ('pchip')
-            call interp_pchip_1d_(l, x, f, n, xx, ff)
-        case ('quintic')
-            call interp_quintic_1d_(l, x, f, n, xx, ff)
         case ('mba')
             call interp_mba_1d_(l, x, f, n, xx, ff)
         case ('biharmonic')
             call interp_biharmonic_1d_(l, x, f, n, xx, ff)
-        case ('cubic_spline')
+        case ('cubic')
             call interp_cubic_spline_1d_(l, x, f, n, xx, ff, method='c2')
-        case ('hermite_spline')
+        case ('hermite')
             call interp_cubic_spline_1d_(l, x, f, n, xx, ff, method='hermite')
-        case ('monotonic_spline')
+        case ('pchip')
             call interp_cubic_spline_1d_(l, x, f, n, xx, ff, method='monotonic')
         case default
             call interp_linear_1d_(l, x, f, n, xx, ff)
@@ -1579,21 +1705,15 @@ function inpaint_1d_(w, method) result(ww)
             call interp_linear_1d_(n, x1, f, nn, xx1, ff)
         case ('sinc')
             call interp_sinc_1d_(n, x1, f, nn, xx1, ff)
-        case ('cubic')
-            call interp_cspline_1d_(n, x1, f, nn, xx1, ff)
-        case ('pchip')
-            call interp_pchip_1d_(n, x1, f, nn, xx1, ff)
-        case ('quintic')
-            call interp_quintic_1d_(n, x1, f, nn, xx1, ff)
         case ('mba')
             call interp_mba_1d_(n, x1, f, nn, xx1, ff)
         case ('biharmonic')
             call interp_biharmonic_1d_(n, x1, f, nn, xx1, ff)
-        case ('cubic_spline')
+        case ('cubic')
             call interp_cubic_spline_1d_(n, x1, f, nn, xx1, ff, method='c2')
-        case ('hermite_spline')
+        case ('hermite')
             call interp_cubic_spline_1d_(n, x1, f, nn, xx1, ff, method='hermite')
-        case ('monotonic_spline')
+        case ('pchip')
             call interp_cubic_spline_1d_(n, x1, f, nn, xx1, ff, method='monotonic')
         case default
             call interp_linear_1d_(n, x1, f, nn, xx1, ff)
@@ -1894,6 +2014,9 @@ end function point_interp_barycentric_3d_
 #undef interp_biharmonic_1d_
 #undef interp_biharmonic_2d_
 #undef interp_biharmonic_3d_
+#undef interp_mba_1d_
+#undef interp_mba_2d_
+#undef interp_mba_3d_
 #undef interp_sinc_1d_
 #undef meshgrid_
 #undef meshgrid_1d_
@@ -1920,17 +2043,8 @@ end function point_interp_barycentric_3d_
 #undef inpaint_1d_
 #undef inpaint_2d_
 #undef inpaint_3d_
-
 #undef point_interp_linear_1d_
 #undef point_interp_linear_2d_
 #undef point_interp_linear_3d_
 #undef point_interp_barycentric_2d_
 #undef point_interp_barycentric_3d_
-
-! external
-#undef interp_cspline_1d_
-#undef interp_pchip_1d_
-#undef interp_quintic_1d_
-#undef interp_mba_1d_
-#undef interp_mba_2d_
-#undef interp_mba_3d_
