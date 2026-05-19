@@ -785,7 +785,7 @@ subroutine interp_mba_1d_(n, x, v, nn, xx, vv)
     pts(1, :) = x
     q = dble(v)
 
-    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=.true.)
+    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=.false.)
 
     pts = zeros(1, nn)
     pts(1, :) = xx
