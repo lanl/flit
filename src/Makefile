@@ -1,4 +1,7 @@
 
+use_mpi ?= on
+use_hdf5 ?= on
+
 # Paths
 bindir = $(PWD)/../lib
 objdir = $(PWD)/../obj
@@ -33,6 +36,9 @@ object_convexhull = \
 	convex_hull_2d.o \
 	convex_hull_3d.o
 
+object_hdf5 = \
+	fh5.o
+
 object_libflit = \
 	module_error.o \
 	module_string.o \
@@ -63,8 +69,8 @@ object_libflit = \
 	module_readpar.o \
 	module_transform.o \
 	module_balancefilt.o \
-	module_gaussfilt.o \
 	module_statistics.o \
+	module_gaussfilt.o \
 	module_medianfilt.o \
 	module_meanfilt.o \
 	$(object_iir) \
@@ -81,7 +87,14 @@ object_libflit = \
 	module_tvfilt.o \
 	module_spectrum.o \
 	$(object_hdbscan) \
-	module_clustering.o \
+	module_clustering.o
+
+ifeq ($(use_hdf5), on)
+	object_libflit += \
+		$(object_hdf5)
+endif
+
+object_libflit += \
 	module_libflit.o
 
 object = $(object_libflit)
@@ -103,6 +116,11 @@ inc = $(base_inc) \
 	-I$(PWD)/../third_party/kdtree \
 	-I$(PWD)/../third_party/filesystem \
 	-I$(PWD)/../third_party/convexhull
+ifeq ($(use_hdf5), on)
+	inc += \
+		-I$(PWD)/../third_party/hdf5
+endif
+
 lflags = $(base_lflags)
 fflags = $(base_fflags) #-O0 -g -check bounds -fpe:0 -init:snan
 cflags = $(base_cflags)
@@ -143,6 +161,9 @@ $(objdir)/%.o : $(srcdir)/../third_party/hdbscan/%.f90
 	$(fc) -o $@ -c $(fflags) $(inc) $<
 
 $(objdir)/%.o : $(srcdir)/../third_party/convexhull/%.f90
+	$(fc) -o $@ -c $(fflags) $(inc) $<
+
+$(objdir)/%.o : $(srcdir)/../third_party/hdf5/%.f90
 	$(fc) -o $@ -c $(fflags) $(inc) $<
 
 # link

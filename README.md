@@ -23,6 +23,7 @@ The work is approved for public release by LANL's Feynman Center for Innovation 
 # Requirement
  - Platform: Linux
  - Compiler: [Intel's oneAPI HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html), including ifx, mpiifx, icx, icpx; other Fortran compilers (e.g., gfortran) are not supported at this moment. 
+ - (Optional) HDF5 
 
 # Use
 To set Intel's compiler paths: 
@@ -32,8 +33,7 @@ bash set_intel_paths.sh
 
 To install `FLIT`:
 ```
-cd src
-make
+ruby install.rb
 ```
 The compiled `FLIT` will be at `lib` including module/submodule files and a single static library file, `libflit.a`. 
 

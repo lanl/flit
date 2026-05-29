@@ -1,5 +1,5 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
 ! This program was produced under U.S. Government contract 89233218CNA000001
 ! for Los Alamos National Laboratory (LANL), which is operated by
@@ -24,8 +24,18 @@ module libflit_gaussfilt
     use libflit_transform
     use libflit_array_operation
     use libflit_error
+    use libflit_linear_algebra
+    use libflit_statistics
+    use, intrinsic :: iso_fortran_env, only: dp => real64, sp => real32
 
     implicit none
+
+    interface rotation_matrix
+        module procedure :: rotation_matrix_2d_float
+        module procedure :: rotation_matrix_2d_double
+        module procedure :: rotation_matrix_3d_euler_float
+        module procedure :: rotation_matrix_3d_euler_double
+    end interface
 
     interface gauss_filt
         module procedure :: gauss_filt_1d_float
@@ -34,7 +44,7 @@ module libflit_gaussfilt
         module procedure :: gauss_filt_1d_double
         module procedure :: gauss_filt_2d_double
         module procedure :: gauss_filt_3d_double
-    end interface gauss_filt
+    end interface
 
     private
     public :: gauss_filt
@@ -43,14 +53,22 @@ contains
 
 #define T float
 #define TT real
-#define TTT complex
-#define TTTT real
+#define fp sp
+#include "template_rotate.f90"
+#undef fp
+
+#define T double
+#define TT double precision
+#define fp dp
+#include "template_rotate.f90"
+#undef fp
+
+#define T float
+#define TT real
 #include "template_gaussfilt.f90"
 
 #define T double
 #define TT double precision
-#define TTT double complex
-#define TTTT dble
 #include "template_gaussfilt.f90"
 
 end module libflit_gaussfilt

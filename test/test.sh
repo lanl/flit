@@ -3,11 +3,26 @@
 \rm -rf test*.txt select*.txt cluster*.txt
 \rm -rf exec* *.bin *.png
 
-
 #
 # The following tests only cover some of the functionalities provided by FLIT.
 #
 
+# hdf5
+touch program_name
+mod="hdf5"
+echo "program_name="$mod > program_name
+make clean
+make
+./exec_$mod
+
+# filter
+touch program_name
+mod="filter"
+echo "program_name="$mod > program_name
+make clean
+make
+mpirun -np 1 ./exec_$mod
+mpirun -np 24 ./exec_$mod
 
 # interp
 touch program_name
@@ -16,7 +31,6 @@ echo "program_name="$mod > program_name
 make clean
 make
 ./exec_$mod
-
 
 # array
 touch program_name
@@ -60,8 +74,6 @@ make clean
 make
 ./exec_$mod
 
-
-
 # filedir
 touch program_name
 mod="filedir"
@@ -100,15 +112,6 @@ make
 	par1=0.12345 par2=0:0,10:2.0 par3=1.2,2.3,3.4 \
 	cpar1=0.12345+0.1i cpar2=0~3:0.0,10:2.0+3.0i cpar3=1.2,2.3+1.0i,3.4-4.0i
 
-# filter
-touch program_name
-mod="filter"
-echo "program_name="$mod > program_name
-make clean
-make
-mpirun -np 1 ./exec_$mod
-mpirun -np 24 ./exec_$mod
-
 # geometry
 touch program_name
 mod="geometry"
@@ -132,11 +135,3 @@ python compare_iir_with_obspy.py \
     --input-file x.txt \
     --output-file y.txt \
     --no-show
-
-# utility
-touch program_name
-mod="utlity"
-echo "program_name="$mod > program_name
-make clean
-make
-./exec_$mod

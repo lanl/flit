@@ -159,6 +159,40 @@ program test
 
         end block
 
+        block
+
+            ! Test 2D anisotropic Gaussian filter
+
+            real, allocatable, dimension(:, :) :: w, v
+
+            w = random(201, 201, dist='uniform')
+            w = w - mean(w)
+            w = w/std(w)
+            w = w/maxval(w)
+            call output_array(w, 'ww.bin')
+
+            v = gauss_filt(w, [30.0, 2.0], method='conv', angle=real(25.0*const_deg2rad))
+            call output_array(v, 'ww.bin', append=.true.)
+
+        end block
+
+        block
+
+            ! Test 3D anisotropic Gaussian filter
+
+            real, allocatable, dimension(:, :, :) :: w, v
+
+            w = random(201, 121, 111, dist='uniform')
+            w = w - mean(w)
+            w = w/std(w)
+            w = w/maxval(w)
+            call output_array(w, 'vv.bin')
+
+            v = gauss_filt(w, [30.0, 2.0, 2.0], method='conv', angle=real([30.0, 40.0, 10.0]*const_deg2rad))
+            call output_array(v, 'vv.bin', append=.true.)
+
+        end block
+
     else
 
         block

@@ -1,5 +1,5 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
 ! This program was produced under U.S. Government contract 89233218CNA000001
 ! for Los Alamos National Laboratory (LANL), which is operated by
@@ -21,7 +21,6 @@ module libflit
 
     use libflit_error
     use libflit_andffilt
-    use libflit_andffilt_mpi
     use libflit_array
     use libflit_array_operation
     use libflit_array_extension
@@ -61,5 +60,11 @@ module libflit
     use libflit_tvfilt
     use libflit_unique
     use libflit_utility
+
+    ! Third-party libraries
+    use kdtree_mod
+#ifdef _use_hdf5_
+    use fh5
+#endif
 
 end module libflit

@@ -30,9 +30,6 @@
 #define dct_gaussian_filt_1d_      CONCAT(dct_gaussian_filt_1d, T)
 #define dct_gaussian_filt_2d_      CONCAT(dct_gaussian_filt_2d, T)
 #define dct_gaussian_filt_3d_      CONCAT(dct_gaussian_filt_3d, T)
-#define dft_gaussian_filt_1d_      CONCAT(dft_gaussian_filt_1d, T)
-#define dft_gaussian_filt_2d_      CONCAT(dft_gaussian_filt_2d, T)
-#define dft_gaussian_filt_3d_      CONCAT(dft_gaussian_filt_3d, T)
 #define athead_      CONCAT(athead, T)
 #define attail_      CONCAT(attail, T)
 #define compute_rsgf_coef_      CONCAT(compute_rsgf_coef, T)
@@ -441,119 +438,6 @@ subroutine dct_gaussian_filt_3d_(w, sigma)
 
 end subroutine dct_gaussian_filt_3d_
 
-!==========================================================================
-! Gaussian filtering by DFT
-!
-
-!
-!> 1D Gaussian filtering by DFT
-!
-subroutine dft_gaussian_filt_1d_(w, sigma)
-
-    TT, dimension(:), intent(inout) :: w
-    TT, intent(in) :: sigma
-
-    integer :: i, n
-    TTT, allocatable, dimension(:) :: wt
-
-    if (sigma > 0) then
-
-        n = size(w)
-        allocate (wt(1:2*n))
-        wt(1:2*n) = cmplx([w, w(n:1:-1)])
-
-        call fourier_transform(wt)
-        do i = 1, n
-            wt(i) = wt(i)*exp(-2*const_pi**2*sigma**2*((i - 1.0)/(2.0*n))**2)
-        end do
-        do i = n + 1, 2*n
-            wt(i) = wt(i)*exp(-2*const_pi**2*sigma**2*((i - 1.0)/(2.0*n) - 1.0)**2)
-        end do
-        call inverse_fourier_transform(wt)
-
-        w = TTTT(wt(1:n))
-
-    end if
-
-end subroutine dft_gaussian_filt_1d_
-
-!
-!> 2D Gaussian filtering by DFT
-!
-subroutine dft_gaussian_filt_2d_(w, sigma)
-
-    TT, dimension(:, :), intent(inout) :: w
-    TT, dimension(:), intent(in) :: sigma
-
-    integer :: i, j, n1, n2
-
-    n1 = size(w, 1)
-    n2 = size(w, 2)
-
-    if (sigma(2) > 0) then
-        !$omp parallel do private(i)
-        do i = 1, n1
-            call dft_gaussian_filt_1d_(w(i, :), sigma(2))
-        end do
-        !$omp end parallel do
-    end if
-
-    if (sigma(1) > 0) then
-        !$omp parallel do private(j)
-        do j = 1, n2
-            call dft_gaussian_filt_1d_(w(:, j), sigma(1))
-        end do
-        !$omp end parallel do
-    end if
-
-end subroutine dft_gaussian_filt_2d_
-
-!
-!> 3D Gaussian filtering by DFT
-!
-subroutine dft_gaussian_filt_3d_(w, sigma)
-
-    TT, dimension(:, :, :), intent(inout) :: w
-    TT, dimension(:), intent(in) :: sigma
-
-    integer :: n1, n2, n3, i, j, k
-
-    n1 = size(w, 1)
-    n2 = size(w, 2)
-    n3 = size(w, 3)
-
-    if (sigma(3) > 0) then
-        !$omp parallel do private(i, j)
-        do j = 1, n2
-            do i = 1, n1
-                call dft_gaussian_filt_1d_(w(i, j, :), sigma(3))
-            end do
-        end do
-        !$omp end parallel do
-    end if
-
-    if (sigma(2) > 0) then
-        !$omp parallel do private(i, k)
-        do k = 1, n3
-            do i = 1, n1
-                call dft_gaussian_filt_1d_(w(i, :, k), sigma(2))
-            end do
-        end do
-        !$omp end parallel do
-    end if
-
-    if (sigma(1) > 0) then
-        !$omp parallel do private(j, k)
-        do k = 1, n3
-            do j = 1, n2
-                call dft_gaussian_filt_1d_(w(:, j, k), sigma(1))
-            end do
-        end do
-        !$omp end parallel do
-    end if
-
-end subroutine dft_gaussian_filt_3d_
-
 !=========================================================================
 ! Recursive spectral Gaussian filter, has the overall best performance:
 ! speed best + accuracy just a slightly worse than DFT/DCT-based
@@ -836,97 +720,188 @@ function conv_gaussian_filt_1d_(w, sigma) result(v)
     TT, intent(in) :: sigma
     TT, allocatable, dimension(:) :: v
 
-    integer :: i, n1
+    integer :: i, n1, nn1
     TT, allocatable, dimension(:) :: g
-    integer :: p1
+    integer :: p1a, p1b
 
     call assert(sigma > 0, " <conv_gaussian_filt_1d> Error: sigma must > 0. ")
 
     n1 = size(w)
-    p1 = nint(n1/4.0)
+    p1a = max(nint(n1/4.0), nint(4.0*sigma))
+    nn1 = next_power_235(n1 + 2*p1a)
+    p1b = nn1 - n1 - p1a
 
-    g = zeros(n1)
-    call pad_array(g, [p1, p1])
-    do i = -p1 + 1, n1 + p1
-        g(i) = exp(-0.5*(i - 0.5*(n1 + 2.0))**2/sigma**2)
+    g = zeros(nn1)
+    do i = 1, nn1
+        g(i) = exp(-0.5*(i - 0.5*(nn1 + 1.0))**2/sigma**2)
     end do
     g = g/sum(g)
 
-    v = conv(pad(w, [p1, p1], ['symm', 'symm']), g, method='same')
-    v = v(p1 + 1:p1 + n1)
+    v = conv(pad(w, [p1a, p1b], ['symm', 'symm']), g, method='same')
+    v = v(p1a + 1:p1a + n1)
 
 end function conv_gaussian_filt_1d_
 
-function conv_gaussian_filt_2d_(w, sigma) result(v)
+function conv_gaussian_filt_2d_(w, sigma, angle) result(v)
 
-    TT, dimension(:, :) :: w
+    TT, dimension(:, :), intent(in) :: w
     TT, dimension(2), intent(in) :: sigma
+    TT, intent(in), optional :: angle
     TT, allocatable, dimension(:, :) :: v
 
-    integer :: i, j, n1, n2
-    TT, allocatable, dimension(:, :) :: g
-    integer :: p1, p2
+    integer :: i, j, n1, n2, nn1, nn2
+    TT, allocatable, dimension(:, :) :: g, rr
+    integer :: p1a, p1b, p2a, p2b
+    TT :: v1, v2, u1, u2
 
     call assert(all(sigma > 0), " <conv_gaussian_filt_2d> Error: all sigma's must > 0. ")
 
     n1 = size(w, 1)
     n2 = size(w, 2)
-    p1 = nint(n1/4.0)
-    p2 = nint(n2/4.0)
+    p1a = max(nint(n1/4.0), nint(4.0*sigma(1)))
+    nn1 = next_power_235(n1 + 2*p1a)
+    p1b = nn1 - n1 - p1a
+    p2a = max(nint(n2/4.0), nint(4.0*sigma(2)))
+    nn2 = next_power_235(n2 + 2*p2a)
+    p2b = nn2 - n2 - p2a
 
-    g = zeros(n1, n2)
-    call pad_array(g, [p1, p1, p2, p2])
-    !$omp parallel do private(i, j)
-    do j = -p2 + 1, n2 + p2
-        do i = -p1 + 1, n1 + p1
-            g(i, j) = exp(-0.5*((i - 0.5*(n1 + 2.0))**2/sigma(1)**2 &
-                + (j - 0.5*(n2 + 2.0))**2/sigma(2)**2))
+    if (present(angle)) then
+        rr = rotation_matrix(angle)
+    end if
+
+    g = zeros(nn1, nn2)
+    if (present(angle)) then
+        if (angle /= 0) then
+            !$omp parallel do private(i, j, v1, v2, u1, u2)
+            do j = 1, nn2
+                do i = 1, nn1
+                    v1 = i - 0.5*(nn1 + 1.0)
+                    v2 = j - 0.5*(nn2 + 1.0)
+                    u1 = (v1*rr(1, 1) + v2*rr(1, 2))**2
+                    u2 = (v1*rr(2, 1) + v2*rr(2, 2))**2
+                    g(i, j) = exp(-0.5*(u1**2/sigma(1)**2 + u2**2/sigma(2)**2))
+                end do
+            end do
+            !$omp end parallel do
+        else
+            !$omp parallel do private(i, j)
+            do j = 1, nn2
+                do i = 1, nn1
+                    g(i, j) = exp(-0.5*((i - 0.5*(nn1 + 1.0))**2/sigma(1)**2 &
+                        + (j - 0.5*(nn2 + 1.0))**2/sigma(2)**2))
+                end do
+            end do
+            !$omp end parallel do
+        end if
+    else
+        !$omp parallel do private(i, j)
+        do j = 1, nn2
+            do i = 1, nn1
+                g(i, j) = exp(-0.5*((i - 0.5*(nn1 + 1.0))**2/sigma(1)**2 &
+                    + (j - 0.5*(nn2 + 1.0))**2/sigma(2)**2))
+            end do
         end do
-    end do
-    !$omp end parallel do
+        !$omp end parallel do
+    end if
     g = g/sum(g)
 
-    v = conv(pad(w, [p1, p1, p2, p2], ['symm', 'symm', 'symm', 'symm']), g, method='same')
-    v = v(p1 + 1:p1 + n1, p2 + 1:p2 + n2)
+    v = conv(pad(w, [p1a, p1b, p2a, p2b], ['symm', 'symm', 'symm', 'symm']), g, method='same')
+    v = v(p1a + 1:p1a + n1, p2a + 1:p2a + n2)
 
 end function conv_gaussian_filt_2d_
 
-function conv_gaussian_filt_3d_(w, sigma) result(v)
+function conv_gaussian_filt_3d_(w, sigma, angle, order) result(v)
 
-    TT, dimension(:, :, :) :: w
+    TT, dimension(:, :, :), intent(in) :: w
     TT, dimension(3), intent(in) :: sigma
     TT, allocatable, dimension(:, :, :) :: v
+    TT, dimension(1:3), intent(in), optional :: angle
+    character, intent(in), optional :: order
 
-    integer :: i, j, k, n1, n2, n3
+    integer :: i, j, k, n1, n2, n3, nn1, nn2, nn3
     TT, allocatable, dimension(:, :, :) :: g
-    integer :: p1, p2, p3
+    integer :: p1a, p1b, p2a, p2b, p3a, p3b
+    TT, allocatable, dimension(:, :) :: rr
+    TT :: v1, v2, v3, u1, u2, u3
+    character(len=3) :: rotation_order
 
     call assert(all(sigma > 0), " <conv_gaussian_filt_3d> Error: all sigma's must > 0. ")
 
     n1 = size(w, 1)
     n2 = size(w, 2)
     n3 = size(w, 3)
-    p1 = nint(n1/4.0)
-    p2 = nint(n2/4.0)
-    p3 = nint(n3/4.0)
+    p1a = max(nint(n1/4.0), nint(4.0*sigma(1)))
+    nn1 = next_power_235(n1 + 2*p1a)
+    p1b = nn1 - n1 - p1a
+    p2a = max(nint(n2/4.0), nint(4.0*sigma(2)))
+    nn2 = next_power_235(n2 + 2*p2a)
+    p2b = nn2 - n2 - p2a
+    p3a = max(nint(n3/4.0), nint(4.0*sigma(3)))
+    nn3 = next_power_235(n3 + 2*p3a)
+    p3b = nn3 - n3 - p3a
 
-    g = zeros(n1, n2, n3)
-    call pad_array(g, [p1, p1, p2, p2, p3, p3])
-    !$omp parallel do private(i, j, k)
-    do k = -p3 + 1, n3 + p3
-        do j = -p2 + 1, n2 + p2
-            do i = -p1 + 1, n1 + p1
-                g(i, j, k) = exp(-0.5*((i - 0.5*(n1 + 2.0))**2/sigma(1)**2 &
-                    + (j - 0.5*(n2 + 2.0))**2/sigma(2)**2 &
-                    + (k - 0.5*(n3 + 2.0))**2/sigma(3)**2))
+    if (present(order)) then
+        rotation_order = order
+    else
+        rotation_order = 'xyz'
+    end if
+
+    if (present(angle)) then
+        rr = rotation_matrix(angle, rotation_order)
+    end if
+
+    g = zeros(nn1, nn2, nn3)
+    if (present(angle)) then
+        if (any(angle /= 0)) then
+            !$omp parallel do private(i, j, k, v1, v2, v3, u1, u2, u3)
+            do k = 1, nn3
+                do j = 1, nn2
+                    do i = 1, nn1
+
+                        v1 = i - 0.5*(nn1 + 1.0)
+                        v2 = j - 0.5*(nn2 + 1.0)
+                        v3 = k - 0.5*(nn3 + 1.0)
+
+                        u1 = (v1*rr(1, 1) + v2*rr(1, 2) + v3*rr(1, 3))**2
+                        u2 = (v1*rr(2, 1) + v2*rr(2, 2) + v3*rr(2, 3))**2
+                        u3 = (v1*rr(3, 1) + v2*rr(3, 2) + v3*rr(3, 3))**2
+
+                        g(i, j, k) = exp(-0.5*(u1/sigma(1)**2 + u2/sigma(2)**2 + u3/sigma(3)**2))
+
+                    end do
+                end do
+            end do
+            !$omp end parallel do
+        else
+            !$omp parallel do private(i, j, k)
+            do k = 1, nn3
+                do j = 1, nn2
+                    do i = 1, nn1
+                        g(i, j, k) = exp(-0.5*((i - 0.5*(nn1 + 1.0))**2/sigma(1)**2 &
+                            + (j - 0.5*(nn2 + 1.0))**2/sigma(2)**2 &
+                            + (k - 0.5*(nn3 + 1.0))**2/sigma(3)**2))
+                    end do
+                end do
+            end do
+            !$omp end parallel do
+        end if
+    else
+        !$omp parallel do private(i, j, k)
+        do k = 1, nn3
+            do j = 1, nn2
+                do i = 1, nn1
+                    g(i, j, k) = exp(-0.5*((i - 0.5*(nn1 + 1.0))**2/sigma(1)**2 &
+                        + (j - 0.5*(nn2 + 1.0))**2/sigma(2)**2 &
+                        + (k - 0.5*(nn3 + 1.0))**2/sigma(3)**2))
+                end do
             end do
         end do
-    end do
-    !$omp end parallel do
+        !$omp end parallel do
+    end if
     g = g/sum(g)
 
-    v = conv(pad(w, [p1, p1, p2, p2, p3, p3], ['symm', 'symm', 'symm', 'symm', 'symm', 'symm']), g, method='same')
-    v = v(p1 + 1:p1 + n1, p2 + 1:p2 + n2, p3 + 1:p3 + n3)
+    v = conv(pad(w, [p1a, p1b, p2a, p2b, p3a, p3b], ['symm', 'symm', 'symm', 'symm', 'symm', 'symm']), g, method='same')
+    v = v(p1a + 1:p1a + n1, p2a + 1:p2a + n2, p3a + 1:p3a + n3)
 
 end function conv_gaussian_filt_3d_
 
@@ -962,8 +937,6 @@ function gauss_filt_1d_(w, sigma, order, method) result(wr)
             call deriche_gaussian_filt_1d_(wr, sigma, gauss_filt_order)
         case ('dct')
             call dct_gaussian_filt_1d_(wr, sigma)
-        case ('dft')
-            call dft_gaussian_filt_1d_(wr, sigma)
         case ('rsf')
             call spectral_gaussian_filt_1d_(wr, sigma)
         case ('conv')
@@ -972,16 +945,18 @@ function gauss_filt_1d_(w, sigma, order, method) result(wr)
 
 end function gauss_filt_1d_
 
-function gauss_filt_2d_(w, sigma, order, method) result(wr)
+function gauss_filt_2d_(w, sigma, order, method, angle) result(wr)
 
     TT, dimension(:, :), intent(in) :: w
     TT, dimension(1:2), intent(in) :: sigma
     integer, dimension(1:2), intent(in), optional :: order
     character(len=*), intent(in), optional :: method
+    TT, intent(in), optional :: angle
     TT, allocatable, dimension(:, :) :: wr
 
     integer, dimension(1:2) :: gauss_filt_order
     character(len=12) :: gauss_filt_method
+    TT :: gauss_filt_angle
 
     if (present(method)) then
         gauss_filt_method = method
@@ -995,6 +970,12 @@ function gauss_filt_2d_(w, sigma, order, method) result(wr)
         gauss_filt_order = [0, 0]
     end if
 
+    if (present(angle)) then
+        gauss_filt_angle = angle
+    else
+        gauss_filt_angle = 0
+    end if
+
     wr = w
 
     select case (gauss_filt_method)
@@ -1002,26 +983,30 @@ function gauss_filt_2d_(w, sigma, order, method) result(wr)
             call deriche_gaussian_filt_2d_(wr, sigma, gauss_filt_order)
         case ('dct')
             call dct_gaussian_filt_2d_(wr, sigma)
-        case ('dft')
-            call dft_gaussian_filt_2d_(wr, sigma)
         case ('rsf')
             call spectral_gaussian_filt_2d_(wr, sigma)
         case ('conv')
-            wr = conv_gaussian_filt_2d_(wr, sigma)
+            if (present(angle)) then
+                wr = conv_gaussian_filt_2d_(wr, sigma, angle)
+            else
+                wr = conv_gaussian_filt_2d_(wr, sigma)
+            end if
     end select
 
 end function gauss_filt_2d_
 
-function gauss_filt_3d_(w, sigma, order, method) result(wr)
+function gauss_filt_3d_(w, sigma, order, method, angle) result(wr)
 
     TT, dimension(:, :, :), intent(in) :: w
     TT, dimension(1:3), intent(in) :: sigma
     integer, dimension(1:3), intent(in), optional :: order
     character(len=*), intent(in), optional :: method
+    TT, dimension(1:3), intent(in), optional :: angle
     TT, allocatable, dimension(:, :, :) :: wr
 
     integer, dimension(1:3) :: gauss_filt_order
     character(len=12) :: gauss_filt_method
+    TT, dimension(1:3) :: gauss_filt_angle
 
     if (present(method)) then
         gauss_filt_method = method
@@ -1035,6 +1020,12 @@ function gauss_filt_3d_(w, sigma, order, method) result(wr)
         gauss_filt_order = [0, 0, 0]
     end if
 
+    if (present(angle)) then
+        gauss_filt_angle = angle
+    else
+        gauss_filt_angle = [0, 0, 0]
+    end if
+
     wr = w
 
     select case (gauss_filt_method)
@@ -1042,12 +1033,14 @@ function gauss_filt_3d_(w, sigma, order, method) result(wr)
             call deriche_gaussian_filt_3d_(wr, sigma, gauss_filt_order)
         case ('dct')
             call dct_gaussian_filt_3d_(wr, sigma)
-        case ('dft')
-            call dft_gaussian_filt_3d_(wr, sigma)
         case ('rsf')
             call spectral_gaussian_filt_3d_(wr, sigma)
         case ('conv')
-            wr = conv_gaussian_filt_3d_(wr, sigma)
+            if (present(angle)) then
+                wr = conv_gaussian_filt_3d_(wr, sigma, angle)
+            else
+                wr = conv_gaussian_filt_3d_(wr, sigma)
+            end if
     end select
 
 end function gauss_filt_3d_
@@ -1070,9 +1063,6 @@ end function gauss_filt_3d_
 #undef dct_gaussian_filt_1d_
 #undef dct_gaussian_filt_2d_
 #undef dct_gaussian_filt_3d_
-#undef dft_gaussian_filt_1d_
-#undef dft_gaussian_filt_2d_
-#undef dft_gaussian_filt_3d_
 #undef athead_
 #undef attail_
 #undef compute_rsgf_coef_

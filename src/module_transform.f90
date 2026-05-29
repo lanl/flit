@@ -261,6 +261,11 @@ module libflit_transform
         module procedure :: unwrap_double
     end interface unwrap
 
+    interface fft_omega
+        module procedure :: fft_omega_float
+        module procedure :: fft_omega_double
+    end interface
+
     public :: fourier_transform, inverse_fourier_transform
     public :: fft, ifft, fftd, ifftd
     public :: fftshift, fft_omega
@@ -2457,7 +2462,7 @@ contains
     !
     !> Compute frequencies corresponding to FFT
     !
-    function fft_omega(n, dx, s) result(k)
+    function fft_omega_float(n, dx, s) result(k)
 
         integer, intent(in) :: n
         real, intent(in), optional :: dx
@@ -2494,7 +2499,42 @@ contains
         !            k((n + 1)/2 + 1:n) = k((n + 1)/2 + 1:n) - n*dk
         !        end if
 
-    end function fft_omega
+    end function
+
+    function fft_omega_double(n, dx, s) result(k)
+
+        integer, intent(in) :: n
+        double precision, intent(in) :: dx
+        double precision, intent(in), optional :: s
+        double precision, allocatable, dimension(:) :: k
+
+        integer :: i, nq
+        double precision :: dk
+        double precision :: ss
+
+        dk = (2.0d0*const_pi)/n/dx
+
+        if (present(s)) then
+            ss = s
+        else
+            ss = 0.0
+        end if
+
+        allocate (k(1:n))
+        do i = 1, n
+            k(i) = (i - 1 - ss)*dk
+        end do
+
+        nq = nint(n/2.0)
+        k(nq + 1:n) = k(nq + 1:n) - n*dk
+
+        !        if (mod(n, 2) == 0) then
+        !            k(n/2 + 1:n) = k(n/2 + 1:n) - n*dk
+        !        else
+        !            k((n + 1)/2 + 1:n) = k((n + 1)/2 + 1:n) - n*dk
+        !        end if
+
+    end function
 
     !=================================================================
     ! Hilbert transform
@@ -2802,180 +2842,110 @@ contains
         real, dimension(:, :), intent(inout) :: w
 
         integer :: i, j, n1, n2
-        !        real, allocatable, dimension(:) :: wt1, wt2
 
         n1 = size(w, 1)
         n2 = size(w, 2)
-        !        allocate(wt1(1:n1))
-        !        allocate(wt2(1:n2))
 
-        !        !$omp parallel do private(j, wt1)
         do j = 1, n2
-            !            wt1 = w(:,j)
-            !            call dct_1d_float(wt1)
-            !            w(:,j) = wt1
             call dct_1d_float(w(:, j))
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, wt2)
         do i = 1, n1
-            !            wt2 = w(i,:)
-            !            call dct_1d_float(wt2)
-            !            w(i,:) = wt2
             call dct_1d_float(w(i, :))
         end do
-        !        !$omp end parallel do
 
     end subroutine dct_2d_float
 
     !
     !> 2D forward discrete cosine transform
     !
-    !
     subroutine idct_2d_float(w)
 
         real, dimension(:, :), intent(inout) :: w
 
         integer :: i, j, n1, n2
-        !        real, allocatable, dimension(:) :: wt1, wt2
 
         n1 = size(w, 1)
         n2 = size(w, 2)
-        !        allocate(wt1(1:n1))
-        !        allocate(wt2(1:n2))
 
-        !        !$omp parallel do private(j, wt1)
         do j = 1, n2
-            !            wt1 = w(:,j)
-            !            call idct_1d_float(wt1)
-            !            w(:,j) = wt1
             call idct_1d_float(w(:, j))
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, wt2)
         do i = 1, n1
-            !            wt2 = w(i,:)
-            !            call idct_1d_float(wt2)
-            !            w(i,:) = wt2
             call idct_1d_float(w(i, :))
         end do
-        !        !$omp end parallel do
 
     end subroutine idct_2d_float
 
     !
     !> 3D forward discrete cosine transform
     !
-    !
     subroutine dct_3d_float(w)
 
         real, dimension(:, :, :), intent(inout) :: w
 
         integer :: i, j, k, n1, n2, n3
-        !        real, allocatable, dimension(:) :: wt1, wt2, wt3
 
         n1 = size(w, 1)
         n2 = size(w, 2)
         n3 = size(w, 3)
 
-        !        allocate(wt1(1:n1))
-        !        allocate(wt2(1:n2))
-        !        allocate(wt3(1:n3))
-
-        !        !$omp parallel do private(j, k, wt1)
         do k = 1, n3
             do j = 1, n2
-                !                wt1 = w(:,j,k)
-                !                call dct_1d_float(wt1)
-                !                w(:,j,k) = wt1
                 call dct_1d_float(w(:, j, k))
             end do
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, k, wt2)
         do k = 1, n3
             do i = 1, n1
-                !                wt2 = w(i,:,k)
-                !                call dct_1d_float(wt2)
-                !                w(i,:,k) = wt2
                 call dct_1d_float(w(i, :, k))
             end do
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, j, wt3)
         do j = 1, n2
             do i = 1, n1
-                !                wt3 = w(i,j,:)
-                !                call dct_1d_float(wt3)
-                !                w(i,j,:) = wt3
                 call dct_1d_float(w(i, j, :))
             end do
         end do
-        !        !$omp end parallel do
 
     end subroutine dct_3d_float
 
     !
     !> 3D forward discrete cosine transform
     !
-    !
     subroutine idct_3d_float(w)
 
         real, dimension(:, :, :), intent(inout) :: w
 
         integer :: i, j, k, n1, n2, n3
-        !        real, allocatable, dimension(:) :: wt1, wt2, wt3
 
         n1 = size(w, 1)
         n2 = size(w, 2)
         n3 = size(w, 3)
 
-        !        allocate(wt1(1:n1))
-        !        allocate(wt2(1:n2))
-        !        allocate(wt3(1:n3))
-
-        !        !$omp parallel do private(j, k, wt1)
         do k = 1, n3
             do j = 1, n2
-                !                wt1 = w(:,j,k)
-                !                call dct_1d_float(wt1)
-                !                w(:,j,k) = wt1
                 call idct_1d_float(w(:, j, k))
             end do
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, k, wt2)
         do k = 1, n3
             do i = 1, n1
-                !                wt2 = w(i,:,k)
-                !                call dct_1d_float(wt2)
-                !                w(i,:,k) = wt2
                 call idct_1d_float(w(i, :, k))
             end do
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, j, wt3)
         do j = 1, n2
             do i = 1, n1
-                !                wt3 = w(i,j,:)
-                !                call dct_1d_float(wt3)
-                !                w(i,j,:) = wt3
                 call idct_1d_float(w(i, j, :))
             end do
         end do
-        !        !$omp end parallel do
 
     end subroutine idct_3d_float
 
     !
     !> 1D forward DCT function scheme
-    !
     !
     function dct1_float(w) result(wdct)
 
@@ -2991,7 +2961,6 @@ contains
     !
     !> 1D inverse DCT function scheme
     !
-    !
     function idct1_float(w) result(wdct)
 
         real, dimension(:), intent(in) :: w
@@ -3005,7 +2974,6 @@ contains
 
     !
     !> 2D forward DCT function scheme
-    !
     !
     function dct2_float(w) result(wdct)
 
@@ -3021,7 +2989,6 @@ contains
     !
     !> 2D inverse DCT function scheme
     !
-    !
     function idct2_float(w) result(wdct)
 
         real, dimension(:, :), intent(in) :: w
@@ -3035,7 +3002,6 @@ contains
 
     !
     !> 3D forward DCT function scheme
-    !
     !
     function dct3_float(w) result(wdct)
 
@@ -3116,30 +3082,17 @@ contains
         double precision, dimension(:, :), intent(inout) :: w
 
         integer :: i, j, n1, n2
-        !        double precision, allocatable, dimension(:) :: wt1, wt2
 
         n1 = size(w, 1)
         n2 = size(w, 2)
-        !        allocate(wt1(1:n1))
-        !        allocate(wt2(1:n2))
 
-        !        !$omp parallel do private(j, wt1)
         do j = 1, n2
-            !            wt1 = w(:,j)
-            !            call dct_1d_double(wt1)
-            !            w(:,j) = wt1
             call dct_1d_double(w(:, j))
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, wt2)
         do i = 1, n1
-            !            wt2 = w(i,:)
-            !            call dct_1d_double(wt2)
-            !            w(i,:) = wt2
             call dct_1d_double(w(i, :))
         end do
-        !        !$omp end parallel do
 
     end subroutine dct_2d_double
 
@@ -3152,144 +3105,88 @@ contains
         double precision, dimension(:, :), intent(inout) :: w
 
         integer :: i, j, n1, n2
-        !        double precision, allocatable, dimension(:) :: wt1, wt2
 
         n1 = size(w, 1)
         n2 = size(w, 2)
-        !        allocate(wt1(1:n1))
-        !        allocate(wt2(1:n2))
 
-        !        !$omp parallel do private(j, wt1)
         do j = 1, n2
-            !            wt1 = w(:,j)
-            !            call idct_1d_double(wt1)
-            !            w(:,j) = wt1
             call idct_1d_double(w(:, j))
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, wt2)
         do i = 1, n1
-            !            wt2 = w(i,:)
-            !            call idct_1d_double(wt2)
-            !            w(i,:) = wt2
             call idct_1d_double(w(i, :))
         end do
-        !        !$omp end parallel do
 
     end subroutine idct_2d_double
 
     !
     !> 3D forward discrete cosine transform
     !
-    !
     subroutine dct_3d_double(w)
 
         double precision, dimension(:, :, :), intent(inout) :: w
 
         integer :: i, j, k, n1, n2, n3
-        !        double precision, allocatable, dimension(:) :: wt1, wt2, wt3
 
         n1 = size(w, 1)
         n2 = size(w, 2)
         n3 = size(w, 3)
 
-        !        allocate(wt1(1:n1))
-        !        allocate(wt2(1:n2))
-        !        allocate(wt3(1:n3))
-
-        !        !$omp parallel do private(j, k, wt1)
         do k = 1, n3
             do j = 1, n2
-                !                wt1 = w(:,j,k)
-                !                call dct_1d_double(wt1)
-                !                w(:,j,k) = wt1
                 call dct_1d_double(w(:, j, k))
             end do
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, k, wt2)
         do k = 1, n3
             do i = 1, n1
-                !                wt2 = w(i,:,k)
-                !                call dct_1d_double(wt2)
-                !                w(i,:,k) = wt2
                 call dct_1d_double(w(i, :, k))
             end do
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, j, wt3)
         do j = 1, n2
             do i = 1, n1
-                !                wt3 = w(i,j,:)
-                !                call dct_1d_double(wt3)
-                !                w(i,j,:) = wt3
                 call dct_1d_double(w(i, j, :))
             end do
         end do
-        !        !$omp end parallel do
 
     end subroutine dct_3d_double
 
     !
     !> 3D forward discrete cosine transform
     !
-    !
     subroutine idct_3d_double(w)
 
         double precision, dimension(:, :, :), intent(inout) :: w
 
         integer :: i, j, k, n1, n2, n3
-        !        double precision, allocatable, dimension(:) :: wt1, wt2, wt3
 
         n1 = size(w, 1)
         n2 = size(w, 2)
         n3 = size(w, 3)
 
-        !        allocate(wt1(1:n1))
-        !        allocate(wt2(1:n2))
-        !        allocate(wt3(1:n3))
-
-        !        !$omp parallel do private(j, k, wt1)
         do k = 1, n3
             do j = 1, n2
-                !                wt1 = w(:,j,k)
-                !                call dct_1d_double(wt1)
-                !                w(:,j,k) = wt1
                 call idct_1d_double(w(:, j, k))
             end do
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, k, wt2)
         do k = 1, n3
             do i = 1, n1
-                !                wt2 = w(i,:,k)
-                !                call dct_1d_double(wt2)
-                !                w(i,:,k) = wt2
                 call idct_1d_double(w(i, :, k))
             end do
         end do
-        !        !$omp end parallel do
 
-        !        !$omp parallel do private(i, j, wt3)
         do j = 1, n2
             do i = 1, n1
-                !                wt3 = w(i,j,:)
-                !                call dct_1d_double(wt3)
-                !                w(i,j,:) = wt3
                 call idct_1d_double(w(i, j, :))
             end do
         end do
-        !        !$omp end parallel do
 
     end subroutine idct_3d_double
 
     !
     !> 1D forward DCT function scheme
-    !
     !
     function dct1_double(w) result(wdct)
 
@@ -3305,7 +3202,6 @@ contains
     !
     !> 1D inverse DCT function scheme
     !
-    !
     function idct1_double(w) result(wdct)
 
         double precision, dimension(:), intent(in) :: w
@@ -3319,7 +3215,6 @@ contains
 
     !
     !> 2D forward DCT function scheme
-    !
     !
     function dct2_double(w) result(wdct)
 
@@ -3335,7 +3230,6 @@ contains
     !
     !> 2D inverse DCT function scheme
     !
-    !
     function idct2_double(w) result(wdct)
 
         double precision, dimension(:, :), intent(in) :: w
@@ -3349,7 +3243,6 @@ contains
 
     !
     !> 3D forward DCT function scheme
-    !
     !
     function dct3_double(w) result(wdct)
 
@@ -3436,7 +3329,6 @@ contains
         wr = cos(shift)*w + sin(shift)*hilbert(w)
 
     end function phase_shift_double
-
 
     !
     !    # 0. Pad

@@ -1,51 +1,83 @@
 
 # ==============================================================================
-# Path settings
+# Path settings for Intel compilers
 
 #export intelroot=$HOME/intel
 #export PATH=$intelroot/bin:$PATH
-#export PATH=$intelroot/include:$PATH
-#export PATH=$intelroot/include/intel64:$PATH
+#export CPATH=$intelroot/include:$CPATH
+#export CPATH=$intelroot/include/intel64:$CPATH
 #export LD_LIBRARY_PATH=$intelroot/lib:$LD_LIBRARY_PATH
-#export PATH=$intelroot/mkl/include:$PATH
-#export PATH=$intelroot/mkl/include/intel64/lp64:$PATH
+#export CPATH=$intelroot/mkl/include:$CPATH
+#export CPATH=$intelroot/mkl/include/intel64/lp64:$CPATH
 #export LD_LIBRARY_PATH=$intelroot/mkl/lib:$LD_LIBRARY_PATH
 #export mpiroot=$HOME/intel/mpi
-#export PATH=$mpiroot/include:$mpiroot/bin:$mpiroot/lib:$PATH
+#export PATH=$mpiroot/bin:$PATH
+#export CPATH=$mpiroot/include:$CPATH
 #export LD_LIBRARY_PATH=$mpiroot/lib:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=$mpiroot/lib/release:$LD_LIBRARY_PATH
 
 # ==============================================================================
 # Compilation settings
 
-fc = mpiifx
+use_mpi ?= on
+use_hdf5 ?= on
+
+# Compilers
+ifeq ($(use_mpi), on)
+	fc = mpiifx
+else
+	fc = ifx
+endif
 cc = icx
 cxx = icpx
 ll = ar
 
+# Paths
 intelroot = $(HOME)/intel
 mklroot = $(intelroot)/mkl
 mpiroot = $(intelroot)/mpi
+hdf5root = $(HOME)/tool/hdf5
 
+# Include paths
 base_inc = \
 	-I$(mklroot)/include \
 	-I$(mklroot)/include/fftw \
-	-I$(mklroot)/include/intel64/lp64 \
-	-I$(mpiroot)/include
-	#	-I$(intelroot)/include \
-	#	-I$(intelroot)/include/intel64 \
+	-I$(mklroot)/include/intel64/lp64
 
+ifeq ($(use_mpi), on)
+	base_inc += \
+		-I$(mpiroot)/include
+endif
+
+ifeq ($(use_hdf5), on)
+	base_inc += \
+		-I$(hdf5root)/include
+endif
+
+# Link options
 base_lflags = \
-	-qmkl -qopenmp -lstdc++ -lstdc++fs -liomp5 -lpthread -lm \
+	-qmkl -qopenmp -lstdc++ -lstdc++fs \
 	-L$(intelroot)/lib \
 	-L$(mklroot)/lib \
-	-L$(mpiroot)/lib \
-	-L$(mpiroot)/lib/release \
 	$(mklroot)/lib/libmkl_core.a \
 	$(mklroot)/lib/libmkl_intel_thread.a \
 	$(mklroot)/lib/libmkl_intel_lp64.a \
 	$(mklroot)/lib/libmkl_blas95_lp64.a \
 	$(mklroot)/lib/libmkl_lapack95_lp64.a
+	#	-qmkl -qopenmp -lstdc++ -lstdc++fs -liomp5 -lpthread -lm \
 
+ifeq ($(use_mpi), on)
+	base_lflags += \
+		-L$(mpiroot)/lib \
+		-L$(mpiroot)/lib/release
+endif
+
+ifeq ($(use_hdf5), on)
+	base_lflags += \
+		-L$(hdf5root)/lib -lhdf5_fortran -lhdf5 -lz -ldl
+endif
+
+# Compilation options
 base_fflags = \
 	-O3 -fpp -traceback -warn unused -module $(moddir) -qmkl \
 	-assume byterecl -assume buffered_io -qopenmp -heap-arrays \
@@ -53,6 +85,11 @@ base_fflags = \
 	#	-standard-semantics
 	#	-align all -falign-loops -xHost -fp-model precise \
 	#	-O0 -g -check bounds
+
+ifeq ($(use_hdf5), on)
+	base_fflags += \
+		-D_use_hdf5_
+endif
 
 base_cflags = \
 	-O3 -w -qopenmp -std=c17 \
@@ -63,6 +100,5 @@ base_cflags = \
 
 base_cxxflags = \
 	-O3 -w -qopenmp -std=c++20 -lstdc++fs
-
 
 
