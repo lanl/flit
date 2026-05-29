@@ -26,23 +26,7 @@ The work is approved for public release by LANL's Feynman Center for Innovation 
  - (Optional) HDF5 
 
 # Use
-To set Intel's compiler paths: 
-```
-bash set_intel_paths.sh
-```
-
-To install `FLIT`:
-```
-ruby install.rb
-```
-The compiled `FLIT` will be at `lib` including module/submodule files and a single static library file, `libflit.a`. 
-
-To remake:
-```
-cd src
-make clean
-make
-```
+The user can use `test_install.sh` to install `FLIT` and its dependencies and set relevant environment variables. The compiled `FLIT` will be at `lib` including module/submodule files and a single static library file, `libflit.a`. 
 
 To run examples:
 ```
