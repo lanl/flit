@@ -1169,10 +1169,10 @@ function andf_fed_3d_mpi_(v, param, aux, df11, df12, df13, df22, df23, df33, aco
         u = u/scalar
     end if
 
-    ! divide domain
+    ! Divide domain
     call domain_decomp_regular(n1, n2, n3, n1beg, n1end, n2beg, n2end, n3beg, n3end)
 
-    ! allocate memory
+    ! Allocate memory
     call alloc_array(d1u, [n1beg, n1end, n2beg, n2end, n3beg, n3end], pad=1)
     call alloc_array(d2u, [n1beg, n1end, n2beg, n2end, n3beg, n3end], pad=1)
     call alloc_array(d3u, [n1beg, n1end, n2beg, n2end, n3beg, n3end], pad=1)
@@ -1204,7 +1204,6 @@ function andf_fed_3d_mpi_(v, param, aux, df11, df12, df13, df22, df23, df33, aco
     allocate (s33a(1:n1, 1:n2, 1:n3))
     call alloc_array(auxu, [n1beg, n1end, n2beg, n2end, n3beg, n3end], pad=1)
 
-    ! copy original
     m1beg = max(1, n1beg - 1)
     m1end = min(n1, n1end + 1)
     m2beg = max(1, n2beg - 1)
@@ -1218,6 +1217,7 @@ function andf_fed_3d_mpi_(v, param, aux, df11, df12, df13, df22, df23, df33, aco
     ! Compute FED step sizes
     call fine_fed_steps_by_process_time_(param%sigma**2/2.0_fp, param%niter, 0.5_fp, tau, nstep)
 
+    ! Diffusion
     do t = 1, param%niter
 
         d1u = 0.0

@@ -35,10 +35,9 @@
 #define rotate_principal_axis_      CONCAT(rotate_principal_axis, T)
 
 !
-!
 !> 3D rotation matrix along an arbitrary direction
 !
-function rotation_matrix_along_arbitrary_(theta, direction) result(r)
+pure function rotation_matrix_along_arbitrary_(theta, direction) result(r)
 
     !> Counter-clockwise rotation angle in radian
     TT, intent(in) :: theta
@@ -75,7 +74,7 @@ end function
 !> @param[in] axis character, = x, y or z to indicate the rotation axis
 !> @return r 3x3 rotation matrix
 !
-function rotation_matrix_along_axis_(theta, axis) result(r)
+pure function rotation_matrix_along_axis_(theta, axis) result(r)
 
     TT, intent(in) :: theta
     character(len=*), intent(in) :: axis
@@ -130,7 +129,7 @@ end function
 !
 !> Rotation matrix in 2D, just for convenience
 !
-function rotation_matrix_2d_(theta) result(r)
+pure function rotation_matrix_2d_(theta) result(r)
 
     TT, intent(in) :: theta
     TT, allocatable, dimension(:, :) :: r
@@ -144,7 +143,7 @@ end function
 !
 !> Rotation matrix in 3D with polar and azimuth angles only
 !
-function rotation_matrix_3d_spherical_(theta, phi) result(r)
+pure function rotation_matrix_3d_spherical_(theta, phi) result(r)
 
     TT, intent(in) :: theta, phi
     TT, allocatable, dimension(:, :) :: r
@@ -160,7 +159,7 @@ end function
 !
 !> Rotation matrix in 3D with full angles and order
 !
-function rotation_matrix_3d_euler_(angle, order) result(r)
+pure function rotation_matrix_3d_euler_(angle, order) result(r)
 
     TT, dimension(1:3), intent(in) :: angle
     character(len=*), intent(in) :: order
@@ -174,17 +173,17 @@ function rotation_matrix_3d_euler_(angle, order) result(r)
 
     select case (order)
         case ('xyz')
-            r = matx(rz, matx(ry, rx))
+            r = matmul(rz, matmul(ry, rx))
         case ('xzy')
-            r = matx(ry, matx(rz, rx))
+            r = matmul(ry, matmul(rz, rx))
         case ('yxz')
-            r = matx(rz, matx(rx, ry))
+            r = matmul(rz, matmul(rx, ry))
         case ('yzx')
-            r = matx(rx, matx(rz, ry))
+            r = matmul(rx, matmul(rz, ry))
         case ('zxy')
-            r = matx(ry, matx(rx, rz))
+            r = matmul(ry, matmul(rx, rz))
         case ('zyx')
-            r = matx(rx, matx(ry, rz))
+            r = matmul(rx, matmul(ry, rz))
     end select
 
 end function
@@ -276,9 +275,6 @@ function rotate_points_3d_(p, angle, origin, order) result(pr)
 
     n = size(p, 1)
     pr = p
-
-    print *, size(p, 1)
-    print *, shape(p)
 
     select case (order)
         case ('xyz')

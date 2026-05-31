@@ -681,10 +681,10 @@ module libflit_andffilt
     end interface
 
     interface andf_filt_mpi
-        module procedure :: andf_fed_2d_float
-        module procedure :: andf_fed_3d_float
-        module procedure :: andf_fed_2d_double
-        module procedure :: andf_fed_3d_double
+        module procedure :: andf_fed_2d_mpi_float
+        module procedure :: andf_fed_3d_mpi_float
+        module procedure :: andf_fed_2d_mpi_double
+        module procedure :: andf_fed_3d_mpi_double
     end interface
 
     interface compute_structure_tensor
