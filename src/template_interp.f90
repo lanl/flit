@@ -524,8 +524,8 @@ end subroutine interp_cubic_spline_1d_
 
 !
 !> Biharmonic interpolation; could be very slow and also memory-intensive
-!> because needs to solve a large linear system;
-!> https://doi.org/10.1029/GL014i002p00139
+!> because the algorithm needs to solve a large linear system.
+!> See https://doi.org/10.1029/GL014i002p00139
 !
 subroutine interp_biharmonic_1d_(n_, x, y, nn, xx, yy)
 
@@ -765,6 +765,8 @@ end subroutine interp_sinc_1d_
 
 !
 !> Multi-level B-spline interpolation
+!> By defualt, level-related information is disabled (mba_verbose = .false.).
+!> One can turn it on/off with mba_verbose = .true./.false.
 !
 subroutine interp_mba_1d_(n, x, v, nn, xx, vv)
 
@@ -785,7 +787,7 @@ subroutine interp_mba_1d_(n, x, v, nn, xx, vv)
     pts(1, :) = x
     q = dble(v)
 
-    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=.false.)
+    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=mba_verbose)
 
     pts = zeros(1, nn)
     pts(1, :) = xx
@@ -818,7 +820,7 @@ subroutine interp_mba_2d_(n, x, y, v, nn, xx, yy, vv)
     pts(2, :) = y
     q = dble(v)
 
-    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=.true.)
+    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=mba_verbose)
 
     pts = zeros(2, nn)
     pts(1, :) = xx
@@ -853,7 +855,7 @@ subroutine interp_mba_3d_(n, x, y, z, v, nn, xx, yy, zz, vv)
     pts(3, :) = z
     q = dble(v)
 
-    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=.true.)
+    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=mba_verbose)
 
     pts = zeros(3, nn)
     pts(1, :) = xx
@@ -873,10 +875,10 @@ end subroutine interp_mba_3d_
 !
 function reg_to_reg_interp_1d_(f, n1, d1, o1, nn1, dd1, oo1, method) result(ff)
 
-    TTT, dimension(:) :: f
-    integer :: n1, nn1
-    TT :: d1, dd1, o1, oo1
-    character(len=*), optional :: method
+    TTT, dimension(:), intent(in) :: f
+    integer, intent(in) :: n1, nn1
+    TT , intent(in):: d1, dd1, o1, oo1
+    character(len=*), optional, intent(in) :: method
     TTT, allocatable, dimension(:) :: ff
 
     TT, allocatable, dimension(:) :: x, xx
@@ -938,10 +940,10 @@ end function reg_to_reg_interp_1d_
 
 function reg_to_reg_interp_2d_(f, n, d, o, nn, dd, oo, method) result(ff)
 
-    TTT, dimension(:, :) :: f
-    integer, dimension(:) :: n, nn
-    TT, dimension(1:2) :: d, dd, o, oo
-    character(len=*), dimension(1:2), optional :: method
+    TTT, dimension(:, :), intent(in) :: f
+    integer, dimension(:), intent(in) :: n, nn
+    TT, dimension(1:2), intent(in) :: d, dd, o, oo
+    character(len=*), dimension(1:2), optional, intent(in) :: method
     TTT, allocatable, dimension(:, :) :: ff
 
     character(len=24), dimension(1:2) :: interp_method
@@ -980,10 +982,10 @@ end function reg_to_reg_interp_2d_
 
 function reg_to_reg_interp_3d_(f, n, d, o, nn, dd, oo, method) result(ff)
 
-    TTT, dimension(:, :, :) :: f
-    integer, dimension(:) :: n, nn
-    TT, dimension(1:3) :: d, dd, o, oo
-    character(len=*), dimension(:), optional :: method
+    TTT, dimension(:, :, :), intent(in) :: f
+    integer, dimension(:), intent(in) :: n, nn
+    TT, dimension(1:3), intent(in) :: d, dd, o, oo
+    character(len=*), dimension(:), optional, intent(in) :: method
     TTT, allocatable, dimension(:, :, :) :: ff
 
     character(len=24), dimension(1:3) :: interp_method
@@ -1272,7 +1274,7 @@ function irreg_to_irreg_interp_1d_(x, f, xx, method) result(ff)
     TT, dimension(:), intent(in) :: x, xx
     TTT, dimension(:), intent(in) :: f
     TTT, allocatable, dimension(:) :: ff
-    character(len=*), optional :: method
+    character(len=*), intent(in), optional :: method
 
     character(len=24) :: interp_method
     integer :: n, nn
@@ -1313,7 +1315,7 @@ function irreg_to_irreg_interp_2d_(x, y, f, xx, yy, method) result(ff)
     TT, dimension(:), intent(in) :: x, y, xx, yy
     TTT, dimension(:), intent(in) :: f
     TTT, allocatable, dimension(:) :: ff
-    character(len=*), optional :: method
+    character(len=*), intent(in), optional :: method
 
     character(len=24) :: interp_method
     integer :: n, nn
@@ -1341,10 +1343,10 @@ end function irreg_to_irreg_interp_2d_
 
 function irreg_to_irreg_interp_3d_(x, y, z, f, xx, yy, zz, method) result(ff)
 
-    TT, dimension(:) :: x, y, z, xx, yy, zz
-    TTT, dimension(:) :: f
+    TT, dimension(:), intent(in) :: x, y, z, xx, yy, zz
+    TTT, dimension(:), intent(in) :: f
     TTT, allocatable, dimension(:) :: ff
-    character(len=*), optional :: method
+    character(len=*), intent(in), optional :: method
 
     character(len=24) :: interp_method
     integer :: n, nn
@@ -1530,12 +1532,12 @@ end function meshgrid_3d_
 !
 function irreg_to_reg_interp_1d_(x, f, n, d, o, method) result(ff)
 
-    TT, dimension(:) :: x
-    TTT, dimension(:) :: f
-    integer :: n
-    TT :: d, o
+    TT, dimension(:), intent(in) :: x
+    TTT, dimension(:), intent(in) :: f
+    integer, intent(in) :: n
+    TT, intent(in) :: d, o
     TTT, allocatable, dimension(:) :: ff
-    character(len=*), optional :: method
+    character(len=*), intent(in), optional :: method
 
     character(len=24) :: interp_method
     integer :: l
@@ -1575,12 +1577,12 @@ end function irreg_to_reg_interp_1d_
 
 function irreg_to_reg_interp_2d_(x, y, f, n, d, o, method) result(ff)
 
-    TT, dimension(:) :: x, y
-    TTT, dimension(:) :: f
-    integer, dimension(1:2) :: n
-    TT, dimension(1:2) :: d, o
+    TT, dimension(:), intent(in) :: x, y
+    TTT, dimension(:), intent(in) :: f
+    integer, dimension(1:2), intent(in) :: n
+    TT, dimension(1:2), intent(in) :: d, o
     TTT, allocatable, dimension(:, :) :: ff
-    character(len=*), optional :: method
+    character(len=*), intent(in), optional :: method
 
     character(len=24) :: interp_method
     integer :: nn, l
@@ -1615,12 +1617,12 @@ end function irreg_to_reg_interp_2d_
 
 function irreg_to_reg_interp_3d_(x, y, z, f, n, d, o, method) result(ff)
 
-    TT, dimension(:) :: x, y, z
-    TTT, dimension(:) :: f
-    integer, dimension(1:3) :: n
-    TT, dimension(1:3) :: d, o
+    TT, dimension(:), intent(in) :: x, y, z
+    TTT, dimension(:), intent(in) :: f
+    integer, dimension(1:3), intent(in) :: n
+    TT, dimension(1:3), intent(in) :: d, o
     TTT, allocatable, dimension(:, :, :) :: ff
-    character(len=*), optional :: method
+    character(len=*), intent(in), optional :: method
 
     character(len=24) :: interp_method
     integer :: nn, l
@@ -1660,7 +1662,7 @@ end function irreg_to_reg_interp_3d_
 function inpaint_1d_(w, method) result(ww)
 
     TTT, dimension(:), intent(in) :: w
-    character(len=*), optional :: method
+    character(len=*), intent(in), optional :: method
     TTT, allocatable, dimension(:) :: ww
 
     character(len=24) :: interp_method
@@ -1726,7 +1728,7 @@ end function inpaint_1d_
 function inpaint_2d_(w, method) result(ww)
 
     TTT, dimension(:, :), intent(in) :: w
-    character(len=*), optional :: method
+    character(len=*), intent(in), optional :: method
     TTT, allocatable, dimension(:, :) :: ww
 
     character(len=24) :: interp_method
@@ -1787,7 +1789,7 @@ end function inpaint_2d_
 function inpaint_3d_(w, method) result(ww)
 
     TTT, dimension(:, :, :), intent(in) :: w
-    character(len=*), optional :: method
+    character(len=*), intent(in), optional :: method
     TTT, allocatable, dimension(:, :, :) :: ww
 
     character(len=24) :: interp_method
@@ -1852,6 +1854,9 @@ function inpaint_3d_(w, method) result(ww)
 
 end function inpaint_3d_
 
+!
+!> Interpolation for a point
+!
 function point_interp_linear_1d_(x, f, xx) result(ff)
 
     TT, dimension(:) :: x

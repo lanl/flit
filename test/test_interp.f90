@@ -2,7 +2,40 @@
 program test
 
     use libflit
-
+    
+    ! Test irregular interpolation
+    block
+    
+		real, allocatable, dimension(:) :: x, y, f, xx, yy, ff
+		integer :: n
+		
+		n = 3000
+		
+		x = random(n, range=[0.0, 100.0])
+		y = random(n, range=[0.0, 100.0])
+		f = sin(0.1*x + 0.2*y)
+		
+		xx = meshgrid([100, 100], [1.0, 1.0], [0.0, 0.0], dim=1)
+		yy = meshgrid([100, 100], [1.0, 1.0], [0.0, 0.0], dim=2)
+		mba_verbose = .true.
+		ff = ginterp(x, y, f, xx, yy, method='mba')
+		
+		print *, 'verbose = .true.'
+		
+		x = random(n, range=[0.0, 100.0])
+		y = random(n, range=[0.0, 100.0])
+		f = sin(0.1*x + 0.2*y)
+		
+		xx = meshgrid([100, 100], [1.0, 1.0], [0.0, 0.0], dim=1)
+		yy = meshgrid([100, 100], [1.0, 1.0], [0.0, 0.0], dim=2)
+		mba_verbose = .false.
+		ff = ginterp(x, y, f, xx, yy, method='mba')
+		
+		call output_array(ff, './ff_mba.bin')
+		
+	end block
+	
+	! Test regular interpoaltion
     block
 
         real, allocatable, dimension(:) :: w0, w, ww
@@ -79,8 +112,5 @@ program test
         call output_array(w - ww, './w2.bin', append=.true.)
 
     end block
-
-    stop
-
 
 end program test

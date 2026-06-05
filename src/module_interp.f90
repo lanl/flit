@@ -120,6 +120,8 @@ module libflit_interp
         module procedure :: point_interp_barycentric_3d_double
     end interface point_interp_barycentric
 
+    logical :: mba_verbose = .false.
+
     private
 
     public :: interp
@@ -131,6 +133,8 @@ module libflit_interp
     public :: inpaint
     public :: point_interp_linear
     public :: point_interp_barycentric
+
+    public :: mba_verbose
 
 contains
 
