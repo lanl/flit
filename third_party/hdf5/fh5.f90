@@ -666,6 +666,22 @@ contains
         end if
     end subroutine
 
+    subroutine ensure_obj_exists(fid, path, e)
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: path
+        integer, intent(out) :: e
+        logical :: exists
+        integer(hid_t) :: gid
+        e = 0
+        call h5lexists_f(fid, trim(path), exists, e)
+        if (e /= 0) return
+        if (.not. exists) then
+            call h5gcreate_f(fid, trim(path), gid, e)
+            if (e /= 0) return
+            call h5gclose_f(gid, e)
+        end if
+    end subroutine
+
     subroutine get_dims(fid, path, nd, dims, e)
         integer(hid_t), intent(in) :: fid
         character(*), intent(in) :: path
@@ -3283,13 +3299,15 @@ contains
     end subroutine rd_c64_6
 
     subroutine wa_i32(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        integer(i32), intent(in)::val
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        integer(i32), intent(in) :: val
         integer, intent(out), optional::error
-        integer(hid_t)::oid, sid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, sid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
+        call ensure_obj_exists(fid, obj, e)
+        if (bail(e, "wa_i32_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_i32", error)) return
         call h5screate_f(H5S_SCALAR_F, sid, e)
@@ -3302,13 +3320,15 @@ contains
         call chk(e, "wa_i32", error)
     end subroutine
     subroutine wa_i64(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        integer(i64), intent(in)::val
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        integer(i64), intent(in) :: val
         integer, intent(out), optional::error
-        integer(hid_t)::oid, sid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, sid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
+        call ensure_obj_exists(fid, obj, e)
+        if (bail(e, "wa_i64_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_i64", error)) return
         call h5screate_f(H5S_SCALAR_F, sid, e)
@@ -3321,13 +3341,15 @@ contains
         call chk(e, "wa_i64", error)
     end subroutine
     subroutine wa_r32(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        real(r32), intent(in)::val
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        real(r32), intent(in) :: val
         integer, intent(out), optional::error
-        integer(hid_t)::oid, sid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, sid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
+        call ensure_obj_exists(fid, obj, e)
+        if (bail(e, "wa_r32_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_r32", error)) return
         call h5screate_f(H5S_SCALAR_F, sid, e)
@@ -3340,13 +3362,15 @@ contains
         call chk(e, "wa_r32", error)
     end subroutine
     subroutine wa_r64(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        real(r64), intent(in)::val
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        real(r64), intent(in) :: val
         integer, intent(out), optional::error
-        integer(hid_t)::oid, sid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, sid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
+        call ensure_obj_exists(fid, obj, e)
+        if (bail(e, "wa_r64_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_r64", error)) return
         call h5screate_f(H5S_SCALAR_F, sid, e)
@@ -3359,13 +3383,15 @@ contains
         call chk(e, "wa_r64", error)
     end subroutine
     subroutine wa_str(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name, val
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name, val
         integer, intent(out), optional::error
-        integer(hid_t)::oid, sid, aid, tid
-        integer(hsize_t)::dims(1)
-        integer(size_t)::slen
+        integer(hid_t) :: oid, sid, aid, tid
+        integer(hsize_t) :: dims(1)
+        integer(size_t) :: slen
         integer::e
+        call ensure_obj_exists(fid, obj, e)
+        if (bail(e, "wa_str_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_str", error)) return
         call h5screate_f(H5S_SCALAR_F, sid, e)
@@ -3382,14 +3408,16 @@ contains
         call chk(e, "wa_str", error)
     end subroutine
     subroutine wa_i32_1(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        integer(i32), intent(in)::val(:)
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        integer(i32), intent(in) :: val(:)
         integer, intent(out), optional::error
-        integer(hid_t)::oid, sid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, sid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
         dims = shape(val, kind=hsize_t)
+        call ensure_obj_exists(fid, obj, e)
+        if (bail(e, "wa_i32_1_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_i32_1", error)) return
         call h5screate_simple_f(1, dims, sid, e)
@@ -3401,14 +3429,16 @@ contains
         call chk(e, "wa_i32_1", error)
     end subroutine
     subroutine wa_i64_1(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        integer(i64), intent(in)::val(:)
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        integer(i64), intent(in) :: val(:)
         integer, intent(out), optional::error
-        integer(hid_t)::oid, sid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, sid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
         dims = shape(val, kind=hsize_t)
+        call ensure_obj_exists(fid, obj, e)
+        if (bail(e, "wa_i64_1_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_i64_1", error)) return
         call h5screate_simple_f(1, dims, sid, e)
@@ -3420,14 +3450,16 @@ contains
         call chk(e, "wa_i64_1", error)
     end subroutine
     subroutine wa_r32_1(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        real(r32), intent(in)::val(:)
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        real(r32), intent(in) :: val(:)
         integer, intent(out), optional::error
-        integer(hid_t)::oid, sid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, sid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
         dims = shape(val, kind=hsize_t)
+        call ensure_obj_exists(fid, obj, e)
+        if (bail(e, "wa_r32_1_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_r32_1", error)) return
         call h5screate_simple_f(1, dims, sid, e)
@@ -3439,14 +3471,16 @@ contains
         call chk(e, "wa_r32_1", error)
     end subroutine
     subroutine wa_r64_1(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        real(r64), intent(in)::val(:)
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        real(r64), intent(in) :: val(:)
         integer, intent(out), optional::error
-        integer(hid_t)::oid, sid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, sid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
         dims = shape(val, kind=hsize_t)
+        call ensure_obj_exists(fid, obj, e)
+        if (bail(e, "wa_r64_1_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_r64_1", error)) return
         call h5screate_simple_f(1, dims, sid, e)
@@ -3462,12 +3496,12 @@ contains
     ! ATTRIBUTE READ
     !================================================================
     subroutine ra_i32(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        integer(i32), intent(out)::val
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        integer(i32), intent(out) :: val
         integer, intent(out), optional::error
-        integer(hid_t)::oid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
         dims = [1_hsize_t]
         call open_obj(fid, obj, oid, e)
@@ -3479,12 +3513,12 @@ contains
         call chk(e, "ra_i32", error)
     end subroutine
     subroutine ra_i64(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        integer(i64), intent(out)::val
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        integer(i64), intent(out) :: val
         integer, intent(out), optional::error
-        integer(hid_t)::oid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
         dims = [1_hsize_t]
         call open_obj(fid, obj, oid, e)
@@ -3496,12 +3530,12 @@ contains
         call chk(e, "ra_i64", error)
     end subroutine
     subroutine ra_r32(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        real(r32), intent(out)::val
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        real(r32), intent(out) :: val
         integer, intent(out), optional::error
-        integer(hid_t)::oid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
         dims = [1_hsize_t]
         call open_obj(fid, obj, oid, e)
@@ -3513,12 +3547,12 @@ contains
         call chk(e, "ra_r32", error)
     end subroutine
     subroutine ra_r64(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        real(r64), intent(out)::val
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        real(r64), intent(out) :: val
         integer, intent(out), optional::error
-        integer(hid_t)::oid, aid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, aid
+        integer(hsize_t) :: dims(1)
         integer::e
         dims = [1_hsize_t]
         call open_obj(fid, obj, oid, e)
@@ -3530,12 +3564,12 @@ contains
         call chk(e, "ra_r64", error)
     end subroutine
     subroutine ra_str(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
-        character(*), intent(out)::val
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
+        character(*), intent(out) :: val
         integer, intent(out), optional::error
-        integer(hid_t)::oid, aid, tid
-        integer(hsize_t)::dims(1)
+        integer(hid_t) :: oid, aid, tid
+        integer(hsize_t) :: dims(1)
         integer::e
         dims = [1_hsize_t]
         val = ''
@@ -3550,12 +3584,12 @@ contains
         call chk(e, "ra_str", error)
     end subroutine
     subroutine ra_i32_1(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
         integer(i32), intent(out), allocatable::val(:)
         integer, intent(out), optional::error
-        integer(hid_t)::oid, aid, sid
-        integer(hsize_t)::dims(1), md(1)
+        integer(hid_t) :: oid, aid, sid
+        integer(hsize_t) :: dims(1), md(1)
         integer::e, nd
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_i32_1", error)) return
@@ -3571,12 +3605,12 @@ contains
         call chk(e, "ra_i32_1", error)
     end subroutine
     subroutine ra_i64_1(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
         integer(i64), intent(out), allocatable::val(:)
         integer, intent(out), optional::error
-        integer(hid_t)::oid, aid, sid
-        integer(hsize_t)::dims(1), md(1)
+        integer(hid_t) :: oid, aid, sid
+        integer(hsize_t) :: dims(1), md(1)
         integer::e, nd
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_i64_1", error)) return
@@ -3592,12 +3626,12 @@ contains
         call chk(e, "ra_i64_1", error)
     end subroutine
     subroutine ra_r32_1(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
         real(r32), intent(out), allocatable::val(:)
         integer, intent(out), optional::error
-        integer(hid_t)::oid, aid, sid
-        integer(hsize_t)::dims(1), md(1)
+        integer(hid_t) :: oid, aid, sid
+        integer(hsize_t) :: dims(1), md(1)
         integer::e, nd
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_r32_1", error)) return
@@ -3613,12 +3647,12 @@ contains
         call chk(e, "ra_r32_1", error)
     end subroutine
     subroutine ra_r64_1(fid, obj, name, val, error)
-        integer(hid_t), intent(in)::fid
-        character(*), intent(in)::obj, name
+        integer(hid_t), intent(in) :: fid
+        character(*), intent(in) :: obj, name
         real(r64), intent(out), allocatable::val(:)
         integer, intent(out), optional::error
-        integer(hid_t)::oid, aid, sid
-        integer(hsize_t)::dims(1), md(1)
+        integer(hid_t) :: oid, aid, sid
+        integer(hsize_t) :: dims(1), md(1)
         integer::e, nd
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_r64_1", error)) return
