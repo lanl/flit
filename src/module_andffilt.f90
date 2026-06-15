@@ -701,6 +701,8 @@ module libflit_andffilt
         module procedure :: compute_structure_tensor_eigens_3d_double
     end interface
 
+    private
+
     public :: andf_param
     public :: andf_filt
     public :: andf_filt_mpi
