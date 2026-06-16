@@ -18,6 +18,7 @@
 
 module libflit_dip
 
+    use libflit_constants
     use libflit_array
     use libflit_array_extension
     use libflit_array_operation
