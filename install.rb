@@ -84,7 +84,7 @@ end
 
 def default_hdf5_url(version)
   #"https://support.hdfgroup.org/releases/hdf5/#{version}/downloads/hdf5-#{version}.tar.gz"
-  "https://github.com/HDFGroup/hdf5/releases/download/#{version}/hdf5-2.1.0.tar.gz"
+  "https://github.com/HDFGroup/hdf5/releases/download/#{version}/hdf5-#{version}.tar.gz"
 end
 
 def executable_available?(command)
