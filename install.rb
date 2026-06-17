@@ -17,6 +17,7 @@
 #   FLIT_HDF5_SOURCE=/path/to/hdf5-source-or-archive
 #   FLIT_JOBS=16
 #   FLIT_CLEAN=auto|true|false
+#   SHELL_CONFIG=/path/to/shell/startup/file
 #   FC=ifx CC=icx CXX=icpx MAKE=make CMAKE=cmake
 
 require "etc"
@@ -381,6 +382,10 @@ def parse_options
 
     parser.on("--build-root PATH", "Temporary build/download directory") do |value|
       options[:build_root] = expand_path(value)
+    end
+
+    parser.on("--shell-config PATH", "Shell startup file to patch with HDF5 paths") do |value|
+      options[:shell_config] = expand_path(value)
     end
 
     parser.on("-j", "--jobs N", Integer, "Parallel build jobs") do |value|

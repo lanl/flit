@@ -3,6 +3,7 @@
 set -eu
 
 patch_shell=false
+shell_config=
 
 usage() {
     cat <<'EOF'
@@ -18,6 +19,8 @@ Environment overrides:
                    default: $HOME/tool/intel/oneapi
   FLIT_INTEL_ROOT  Compact FLIT Intel root used by Makefile.in
                    default: $HOME/intel
+  FLIT_SHELL_CONFIG
+                   Shell startup file to patch when --patch-shell is used
 
 Options:
   --intel-base PATH  Full Intel oneAPI installation root
@@ -25,6 +28,10 @@ Options:
   --intel-root PATH  Compact FLIT Intel root used by Makefile.in
   --intel-root=PATH  Same as above
   --patch-shell    Append the right source command to your login shell rc file
+  --shell-config PATH
+                   Shell startup file to patch with --patch-shell
+  --shell-config=PATH
+                   Same as above
   -h, --help       Show this help
 EOF
 }
@@ -57,6 +64,7 @@ expand_home_path() {
 
 intel_base=${FLIT_INTEL_BASE:-"$HOME/tool/intel/oneapi"}
 intel_root=${FLIT_INTEL_ROOT:-"$HOME/intel"}
+shell_config=${FLIT_SHELL_CONFIG:-}
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -85,6 +93,17 @@ while [ "$#" -gt 0 ]; do
         --patch-shell)
             patch_shell=true
             ;;
+        --shell-config=*)
+            shell_config=${1#*=}
+            ;;
+        --shell-config)
+            shift
+            if [ "$#" -eq 0 ]; then
+                echo "--shell-config requires a path" >&2
+                exit 1
+            fi
+            shell_config=$1
+            ;;
         -h|--help)
             usage
             exit 0
@@ -100,6 +119,9 @@ done
 
 intel_base=$(expand_home_path "$intel_base")
 intel_root=$(expand_home_path "$intel_root")
+if [ -n "$shell_config" ]; then
+    shell_config=$(expand_home_path "$shell_config")
+fi
 
 home_relative_path() {
     case "$1" in
@@ -234,8 +256,9 @@ echo "  $env_csh"
 source_temp_env
 
 if [ "$patch_shell" = true ]; then
-    shell_rc=$(startup_file_for_shell)
+    shell_rc=${shell_config:-$(startup_file_for_shell)}
 
+    mkdir -p "$(dirname "$shell_rc")"
     touch "$shell_rc"
     append_startup_block_for_shell "$shell_rc"
 else
@@ -247,6 +270,8 @@ else
     echo
     echo "For persistent login-shell setup, run:"
     echo "  ./set_intel_paths.sh --patch-shell [options]"
+    echo "or choose an explicit startup file:"
+    echo "  ./set_intel_paths.sh --patch-shell --shell-config ~/.bash_profile [options]"
 fi
 
 cleanup_env_files
