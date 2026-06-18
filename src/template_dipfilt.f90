@@ -44,18 +44,18 @@ subroutine gst_local_dip_2d_(w, dip, k1, k2)
     n1 = size(w, 1)
     n2 = size(w, 2)
 
-    ! compute structure tensor
+    ! Compute structure tensor
     allocate (s11(1:n1, 1:n2))
     allocate (s12(1:n1, 1:n2))
     allocate (s22(1:n1, 1:n2))
     call compute_structure_tensor(w, s11, s12, s22)
 
-    ! smooth structure tensor with a sigma=1 Gaussian filter
+    ! Smooth structure tensor with a sigma=1 Gaussian filter
     s11 = gauss_filt(s11, real([1.0, 1.0], fp))
     s12 = gauss_filt(s12, real([1.0, 1.0], fp))
     s22 = gauss_filt(s22, real([1.0, 1.0], fp))
 
-    ! compute eigenvectors
+    ! Compute eigenvectors
     allocate (ev1(1:n1, 1:n2))
     allocate (ev2(1:n1, 1:n2))
     allocate (ea1(1:n1, 1:n2))
@@ -70,7 +70,7 @@ subroutine gst_local_dip_2d_(w, dip, k1, k2)
         call alloc_array(k2, [1, n1, 1, n2])
     end if
 
-    ! compute local dips
+    ! Compute local dips
     !$omp parallel do private(i,j)
     do j = 1, size(w, 2)
         do i = 1, size(w, 1)
@@ -106,10 +106,16 @@ subroutine gst_local_dip_3d_(w, dip1, dip2, k1, k2, k3)
     n2 = size(w, 2)
     n3 = size(w, 3)
 
-    ! compute structure tensor
+    ! Compute structure tensor
+    allocate (s11(1:n1, 1:n2, 1:n3))
+    allocate (s12(1:n1, 1:n2, 1:n3))
+    allocate (s13(1:n1, 1:n2, 1:n3))
+    allocate (s22(1:n1, 1:n2, 1:n3))
+    allocate (s23(1:n1, 1:n2, 1:n3))
+    allocate (s33(1:n1, 1:n2, 1:n3))
     call compute_structure_tensor(w, s11, s12, s13, s22, s23, s33)
 
-    ! smooth structure tensor with a sigma=1 Gaussian filter
+    ! Smooth structure tensor with a sigma=1 Gaussian filter
     s11 = gauss_filt(s11, real([1.0, 1.0, 1.0], fp))
     s12 = gauss_filt(s12, real([1.0, 1.0, 1.0], fp))
     s13 = gauss_filt(s13, real([1.0, 1.0, 1.0], fp))
@@ -117,7 +123,13 @@ subroutine gst_local_dip_3d_(w, dip1, dip2, k1, k2, k3)
     s23 = gauss_filt(s23, real([1.0, 1.0, 1.0], fp))
     s33 = gauss_filt(s33, real([1.0, 1.0, 1.0], fp))
 
-    ! compute eigenvectors
+    ! Compute eigenvectors
+    allocate (ev1(1:n1, 1:n2, 1:n3))
+    allocate (ev2(1:n1, 1:n2, 1:n3))
+    allocate (ev3(1:n1, 1:n2, 1:n3))
+    allocate (ea1(1:n1, 1:n2, 1:n3))
+    allocate (ea2(1:n1, 1:n2, 1:n3))
+    allocate (ea3(1:n1, 1:n2, 1:n3))
     call compute_structure_tensor_eigens(s11, s12, s13, s22, s23, s33, ev1, ev2, ev3, ea1, ea2, ea3)
 
     call alloc_array(dip1, [1, n1, 1, n2, 1, n3])
@@ -132,7 +144,7 @@ subroutine gst_local_dip_3d_(w, dip1, dip2, k1, k2, k3)
         call alloc_array(k3, [1, n1, 1, n2, 1, n3])
     end if
 
-    ! compute local dips
+    ! Compute local dips
     !$omp parallel do private(i,j,k)
     do k = 1, size(w, 3)
         do j = 1, size(w, 2)
