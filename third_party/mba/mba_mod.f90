@@ -4,7 +4,15 @@
 ! Scattered-data interpolation / approximation in 1-D, 2-D and 3-D using a
 ! hierarchy of uniform cubic-B-spline control lattices.
 !
-! Algorithm (per level h):
+! Algorithm:
+!   0. Fit a least-squares linear trend  T(x) = c0 + sum_d c_d x_d  to the
+!      data and subtract it; the B-spline hierarchy fits the residual and
+!      T is added back on evaluation.  This makes the result invariant to
+!      constant/linear shifts of the data and keeps data gaps, domain
+!      edges and extrapolated regions anchored to the data trend instead
+!      of decaying toward zero (unsupported control points are zero).
+!
+! Then per level h:
 !   1. Lay out a uniform (m_h+3) [x (n_h+3)] [x (p_h+3)] control lattice
 !      over the data bounding box, where m_h = m0 * 2^h.
 !   2. For each data point at scaled coords (s,t[,u]) in [0,m_h] x ... :
@@ -26,9 +34,10 @@
 !   where the spline is extrapolating beyond the data's convex hull.
 !
 ! Memory note (3-D):
-!   Lattice at level h is (m0*2^h + 3)^3 doubles. With m0=4 and 8 bytes
-!   per double that's level5=17 MB, level6=135 MB, level7=1 GB. The
-!   build_3d routine warns if a level would exceed ~4 GB.
+!   Lattice at level h is (m0*2^h + 3)^3 doubles, and the solver needs
+!   3x that at its peak (phi + delta + omega work arrays). With m0=4
+!   that's level5=50 MB, level6=400 MB, level7=3 GB peak. The build_3d
+!   routine warns and stops if a level's peak would exceed ~4 GB.
 !
 !==============================================================================
 
@@ -82,6 +91,10 @@ module mba_mod
         integer :: nlevels = 0       ! number of levels actually built
         integer :: m0 = 4       ! base lattice cells per axis
         real(DP)    :: bbox(2, 3) = 0.0d0  ! (min/max, dim) bounding box (with margin)
+
+        ! Linear trend T(x) = trend(0) + sum_d trend(d) * xhat_d, where
+        ! xhat_d = (x_d - mid_d)/halfrange_d is the bbox-normalized coordinate.
+        real(DP)    :: trend(0:3) = 0.0d0
 
         type(lat1d_t), allocatable :: l1(:)
         type(lat2d_t), allocatable :: l2(:)
@@ -217,6 +230,9 @@ contains
         ! Domain bounding box with a small margin so points never sit on edges
         call compute_bbox(pts, nd, self%bbox)
 
+        ! Least-squares linear trend; the spline hierarchy fits the residual
+        call fit_trend(self)
+
         if (nd == 1) then
             call build_1d_impl(self, nlev_default, tol, vb)
         else if (nd == 2) then
@@ -247,6 +263,101 @@ contains
         end do
     end subroutine compute_bbox
 
+    !--------------------------------------------------------------------------
+    ! Least-squares linear trend fit  T(x) = c0 + sum_d c_d * xhat_d,
+    ! with xhat_d the bbox-normalized coordinate in [-1, 1].  Solved via
+    ! normal equations (at most 4x4).  Falls back to the mean if the
+    ! system is (near-)singular, e.g. degenerate point configurations.
+    !--------------------------------------------------------------------------
+    subroutine fit_trend(self)
+        type(mba), intent(inout) :: self
+
+        integer :: nd, np, i, d, r, c, piv
+        real(DP)    :: a(0:3, 0:4), basis(0:3), mid(3), hr(3), f, pmax
+
+        nd = self%ndim
+        np = size(self%data_val)
+        self%trend = 0.0d0
+
+        mid(1:nd) = 0.5d0*(self%bbox(1, 1:nd) + self%bbox(2, 1:nd))
+        hr(1:nd) = 0.5d0*(self%bbox(2, 1:nd) - self%bbox(1, 1:nd))
+
+        ! Accumulate normal equations; column nd+1 is the RHS
+        a = 0.0d0
+        do i = 1, np
+            basis(0) = 1.0d0
+            do d = 1, nd
+                basis(d) = (self%data_pts(d, i) - mid(d))/hr(d)
+            end do
+            do c = 0, nd
+                do r = 0, nd
+                    a(r, c) = a(r, c) + basis(r)*basis(c)
+                end do
+                a(c, nd + 1) = a(c, nd + 1) + basis(c)*self%data_val(i)
+            end do
+        end do
+
+        ! Gaussian elimination with partial pivoting
+        do c = 0, nd
+            piv = c
+            pmax = abs(a(c, c))
+            do r = c + 1, nd
+                if (abs(a(r, c)) > pmax) then
+                    piv = r
+                    pmax = abs(a(r, c))
+                end if
+            end do
+            if (pmax <= 1.0d-10*real(np, DP)) then
+                ! Near-singular: fall back to mean-only trend
+                self%trend = 0.0d0
+                self%trend(0) = sum(self%data_val)/real(np, DP)
+                return
+            end if
+            if (piv /= c) then
+                do d = c, nd + 1
+                    f = a(c, d)
+                    a(c, d) = a(piv, d)
+                    a(piv, d) = f
+                end do
+            end if
+            do r = c + 1, nd
+                f = a(r, c)/a(c, c)
+                a(r, c:nd + 1) = a(r, c:nd + 1) - f*a(c, c:nd + 1)
+            end do
+        end do
+
+        ! Back substitution
+        do r = nd, 0, -1
+            f = a(r, nd + 1)
+            do c = r + 1, nd
+                f = f - a(r, c)*self%trend(c)
+            end do
+            self%trend(r) = f/a(r, r)
+        end do
+    end subroutine fit_trend
+
+    !-- Evaluate the linear trend at given query points (any ndim)
+    subroutine eval_trend(self, qpts, tvals)
+        type(mba), intent(in)  :: self
+        real(DP), intent(in)  :: qpts(:, :)
+        real(DP), intent(out) :: tvals(:)
+
+        integer :: nd, i, d
+        real(DP)    :: mid(3), hr(3), v
+
+        nd = self%ndim
+        mid(1:nd) = 0.5d0*(self%bbox(1, 1:nd) + self%bbox(2, 1:nd))
+        hr(1:nd) = 0.5d0*(self%bbox(2, 1:nd) - self%bbox(1, 1:nd))
+
+        do i = 1, size(qpts, 2)
+            v = self%trend(0)
+            do d = 1, nd
+                v = v + self%trend(d)*(qpts(d, i) - mid(d))/hr(d)
+            end do
+            tvals(i) = v
+        end do
+    end subroutine eval_trend
+
     !==========================================================================
     ! 1-D builder
     !==========================================================================
@@ -263,7 +374,8 @@ contains
         allocate (self%l1(max_lev))
         np = size(self%data_val)
         allocate (resid(np), pred(np))
-        resid = self%data_val
+        call eval_trend(self, self%data_pts, pred)
+        resid = self%data_val - pred
 
         if (verbose) then
             write (*, '(a)') &
@@ -412,7 +524,8 @@ contains
         allocate (self%l2(max_lev))
         np = size(self%data_val)
         allocate (resid(np), pred(np))
-        resid = self%data_val
+        call eval_trend(self, self%data_pts, pred)
+        resid = self%data_val - pred
 
         if (verbose) then
             write (*, '(a)') &
@@ -596,7 +709,8 @@ contains
         allocate (self%l3(max_lev))
         np = size(self%data_val)
         allocate (resid(np), pred(np))
-        resid = self%data_val
+        call eval_trend(self, self%data_pts, pred)
+        resid = self%data_val - pred
 
         if (verbose) then
             write (*, '(a)') &
@@ -608,8 +722,9 @@ contains
             h = lev - 1
             m = self%m0*(2**h)
 
-            ! Estimate this level's lattice memory (cubic)
-            mem_gb = 8.0d0*real(m + 3, DP)**3/GB
+            ! Estimate this level's peak memory: phi plus the delta and
+            ! omega work arrays in solve_level_3d, all (m+3)^3 doubles
+            mem_gb = 3.0d0*8.0d0*real(m + 3, DP)**3/GB
             if (mem_gb > 4.0d0) then
                 write (*, '(a,i0,a,f6.2,a)') &
                     '[mba 3D] WARNING: level ', lev, &
@@ -800,8 +915,10 @@ contains
         !!
         !! For points inside (or near) the data bounding box this returns the
         !! MBA approximation (essentially interpolating at data points).  For
-        !! points well outside the data domain the spline extrapolates and
-        !! results may be unreliable -- use %nearest_data_distance to mask them.
+        !! points outside the data bounding box the B-spline part is clamped
+        !! to its boundary value (per-axis) while the fitted linear trend
+        !! extrapolates linearly; results far from the data may still be
+        !! unreliable -- use %nearest_data_distance to mask them.
         class(mba), intent(inout) :: self
         real(DP), intent(in)    :: qpts(:, :)
         real(DP), intent(out)   :: qvals(:)
@@ -819,10 +936,16 @@ contains
             qvals = 0.0d0
             return
         end if
+        if (size(qvals) /= size(qpts, 2)) then
+            write (*, '(a,i0,a,i0)') '[mba] ERROR: size(qvals)=', size(qvals), &
+                ' but size(qpts,2)=', size(qpts, 2)
+            qvals = 0.0d0
+            return
+        end if
 
         nq = int(size(qpts, 2), IP)
         allocate (tmp(nq))
-        qvals = 0.0d0
+        call eval_trend(self, qpts, qvals)
         if (self%ndim == 1) then
             do lev = 1, self%nlevels
                 call eval_level_1d_at_pts(self, lev, qpts, tmp)
@@ -973,6 +1096,7 @@ contains
         self%nlevels = 0
         self%m0 = 4
         self%bbox = 0.0d0
+        self%trend = 0.0d0
     end subroutine mba_free
 
 end module mba_mod
