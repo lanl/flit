@@ -26,6 +26,7 @@ module libflit_interp
     use libflit_unique
     use libflit_linear_algebra
     use libflit_error
+    use libflit_sort
     use libflit_string
     use libflit_utility
     use libflit_calculus

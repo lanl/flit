@@ -26,6 +26,7 @@
 #define interp_nearest_2d_     CONCAT(interp_nearest_2d, T)
 #define interp_nearest_3d_     CONCAT(interp_nearest_3d, T)
 #define interp_linear_1d_     CONCAT(interp_linear_1d, T)
+#define ensure_ascending_1d_     CONCAT(ensure_ascending_1d, T)
 #define interp_cubic_spline_1d_     CONCAT(interp_cubic_spline_1d, T)
 #define interp_biharmonic_1d_     CONCAT(interp_biharmonic_1d, T)
 #define interp_biharmonic_2d_     CONCAT(interp_biharmonic_2d, T)
@@ -225,6 +226,30 @@ subroutine interp_linear_1d_(n, x, y, nn, xx, yy)
     end do
 
 end subroutine interp_linear_1d_
+
+!
+!> Sort 1-D scattered data into ascending-x order if not already sorted.
+!> The bracketing interpolators (nearest, linear, cubic, hermite, pchip)
+!> assume ascending x and silently return wrong values (mostly zeros)
+!> for unsorted input.
+!
+subroutine ensure_ascending_1d_(x, f)
+
+    TT, allocatable, dimension(:), intent(inout) :: x
+    TTT, allocatable, dimension(:), intent(inout) :: f
+
+    integer, allocatable, dimension(:) :: idx
+    integer :: i
+
+    do i = 2, size(x)
+        if (x(i) < x(i - 1)) then
+            call sort_index(x, idx)
+            f = f(idx)
+            return
+        end if
+    end do
+
+end subroutine ensure_ascending_1d_
 
 !
 !> Cubic spline interpolation for 1D data; contains three methods:
@@ -787,7 +812,9 @@ subroutine interp_mba_1d_(n, x, v, nn, xx, vv)
     pts(1, :) = x
     q = dble(v)
 
-    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=mba_verbose)
+    ! tol_rms is absolute in mba_mod, so scale it by the data range
+    call m%build(pts, q, m0=4, max_levels=8, &
+        tol_rms=max(1.0d-6*(maxval(q) - minval(q)), 1.0d-12), verbose=mba_verbose)
 
     pts = zeros(1, nn)
     pts(1, :) = xx
@@ -820,7 +847,9 @@ subroutine interp_mba_2d_(n, x, y, v, nn, xx, yy, vv)
     pts(2, :) = y
     q = dble(v)
 
-    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=mba_verbose)
+    ! tol_rms is absolute in mba_mod, so scale it by the data range
+    call m%build(pts, q, m0=4, max_levels=8, &
+        tol_rms=max(1.0d-6*(maxval(q) - minval(q)), 1.0d-12), verbose=mba_verbose)
 
     pts = zeros(2, nn)
     pts(1, :) = xx
@@ -855,7 +884,9 @@ subroutine interp_mba_3d_(n, x, y, z, v, nn, xx, yy, zz, vv)
     pts(3, :) = z
     q = dble(v)
 
-    call m%build(pts, q, m0=4, max_levels=8, tol_rms=1.0d-6, verbose=mba_verbose)
+    ! tol_rms is absolute in mba_mod, so scale it by the data range
+    call m%build(pts, q, m0=4, max_levels=8, &
+        tol_rms=max(1.0d-6*(maxval(q) - minval(q)), 1.0d-12), verbose=mba_verbose)
 
     pts = zeros(3, nn)
     pts(1, :) = xx
@@ -1278,34 +1309,44 @@ function irreg_to_irreg_interp_1d_(x, f, xx, method) result(ff)
 
     character(len=24) :: interp_method
     integer :: n, nn
+    TT, allocatable, dimension(:) :: xs
+    TTT, allocatable, dimension(:) :: fs
 
     if (present(method)) then
         interp_method = method
     else
-        interp_method = 'mba'
+        ! In 1-D, exact bracketing interpolation is always possible, so
+        ! linear is a better default than the approximating mba
+        interp_method = 'linear'
     end if
 
     n = size(x)
     nn = size(xx)
     allocate (ff(1:nn))
 
+    ! Irregular data may arrive unsorted; the bracketing methods need
+    ! ascending x (harmless for mba/biharmonic)
+    xs = x
+    fs = f
+    call ensure_ascending_1d_(xs, fs)
+
     select case (interp_method)
         case ('nearest')
-            call interp_nearest_1d_(n, x, f, nn, xx, ff)
+            call interp_nearest_1d_(n, xs, fs, nn, xx, ff)
         case ('linear')
-            call interp_linear_1d_(n, x, f, nn, xx, ff)
+            call interp_linear_1d_(n, xs, fs, nn, xx, ff)
         case ('mba')
-            call interp_mba_1d_(n, x, f, nn, xx, ff)
+            call interp_mba_1d_(n, xs, fs, nn, xx, ff)
         case ('biharmonic')
-            call interp_biharmonic_1d_(n, x, f, nn, xx, ff)
+            call interp_biharmonic_1d_(n, xs, fs, nn, xx, ff)
         case ('cubic')
-            call interp_cubic_spline_1d_(n, x, f, nn, xx, ff, method='c2')
+            call interp_cubic_spline_1d_(n, xs, fs, nn, xx, ff, method='c2')
         case ('hermite')
-            call interp_cubic_spline_1d_(n, x, f, nn, xx, ff, method='hermite')
+            call interp_cubic_spline_1d_(n, xs, fs, nn, xx, ff, method='hermite')
         case ('pchip')
-            call interp_cubic_spline_1d_(n, x, f, nn, xx, ff, method='monotonic')
+            call interp_cubic_spline_1d_(n, xs, fs, nn, xx, ff, method='monotonic')
         case default
-            call interp_linear_1d_(n, x, f, nn, xx, ff)
+            call interp_linear_1d_(n, xs, fs, nn, xx, ff)
     end select
 
 end function irreg_to_irreg_interp_1d_
@@ -1541,7 +1582,8 @@ function irreg_to_reg_interp_1d_(x, f, n, d, o, method) result(ff)
 
     character(len=24) :: interp_method
     integer :: l
-    TT, allocatable, dimension(:) :: xx
+    TT, allocatable, dimension(:) :: xx, xs
+    TTT, allocatable, dimension(:) :: fs
 
     if (present(method)) then
         interp_method = method
@@ -1554,23 +1596,29 @@ function irreg_to_reg_interp_1d_(x, f, n, d, o, method) result(ff)
     xx = regspace(o, d, o + (n - 1)*d)
     ff = zeros(n)
 
+    ! Irregular data may arrive unsorted; the bracketing methods need
+    ! ascending x (harmless for mba/biharmonic)
+    xs = x
+    fs = f
+    call ensure_ascending_1d_(xs, fs)
+
     select case (interp_method)
         case ('nearest')
-            call interp_nearest_1d_(l, x, f, n, xx, ff)
+            call interp_nearest_1d_(l, xs, fs, n, xx, ff)
         case ('linear')
-            call interp_linear_1d_(l, x, f, n, xx, ff)
+            call interp_linear_1d_(l, xs, fs, n, xx, ff)
         case ('mba')
-            call interp_mba_1d_(l, x, f, n, xx, ff)
+            call interp_mba_1d_(l, xs, fs, n, xx, ff)
         case ('biharmonic')
-            call interp_biharmonic_1d_(l, x, f, n, xx, ff)
+            call interp_biharmonic_1d_(l, xs, fs, n, xx, ff)
         case ('cubic')
-            call interp_cubic_spline_1d_(l, x, f, n, xx, ff, method='c2')
+            call interp_cubic_spline_1d_(l, xs, fs, n, xx, ff, method='c2')
         case ('hermite')
-            call interp_cubic_spline_1d_(l, x, f, n, xx, ff, method='hermite')
+            call interp_cubic_spline_1d_(l, xs, fs, n, xx, ff, method='hermite')
         case ('pchip')
-            call interp_cubic_spline_1d_(l, x, f, n, xx, ff, method='monotonic')
+            call interp_cubic_spline_1d_(l, xs, fs, n, xx, ff, method='monotonic')
         case default
-            call interp_linear_1d_(l, x, f, n, xx, ff)
+            call interp_linear_1d_(l, xs, fs, n, xx, ff)
     end select
 
 end function irreg_to_reg_interp_1d_
@@ -2015,6 +2063,7 @@ end function point_interp_barycentric_3d_
 #undef interp_nearest_2d_
 #undef interp_nearest_3d_
 #undef interp_linear_1d_
+#undef ensure_ascending_1d_
 #undef interp_cubic_spline_1d_
 #undef interp_biharmonic_1d_
 #undef interp_biharmonic_2d_
