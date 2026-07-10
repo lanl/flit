@@ -5,20 +5,23 @@
 
 **FLIT: A Generic Fortran Library based on Interfaces and Templates**
 
-`FLIT` is a generic Fortran library mainly for
- - Single- and multi-dimensional array manipulation
+`FLIT` is a generic Fortran library that provides functionality for
+ - Single- and multi-dimensional array initialization, manipulation, and operations
  - Flexible parameter reading from text files or command-line arguments
  - Signal and image filtering and processing
- - Integral transforms
- - Interpolation
- - Statistical functions
- - etc. 
- 
-We provide user-friendly interfaces for similar functionality across different data types, attempting to demonstrate the possibility of accelerating scientific application development using modern Fortran. `FLIT` may be useful for developing applications in computational physics, computational seismology, applied geophysics, signal and image processing, and related fields. 
+ - Integral transforms and spectral analysis
+ - Interpolation and function fitting
+ - Statistics and random number generation
+ - Linear algebra, sorting, clustering, and computational geometry
+ - String manipulation, file I/O, and date/time utilities
+ - User-friendly HDF5 I/O through a single-file HDF5 module, with unified interfaces for reading/writing scalars, multi-dimensional arrays, and attributes of various data types
+ - MPI-based parallel communication and domain decomposition
 
-This work is supported by Los Alamos National Laboratory's (LANL's) Laboratory Directed Research and Development (LDRD) project 20240322ER. LANL is operated by Triad National Security, LLC, for the National Nuclear Security Administration (NNSA) of the U.S. Department of Energy (DOE) under Contract No. 89233218CNA000001. This research used high-performance computing resources provided by LANL's Institutional Computing program. 
+`FLIT` offers consistent, user-friendly interfaces for the same functionality across different data types, demonstrating how modern Fortran can accelerate scientific application development. It may be useful for developing applications in computational physics, computational seismology, applied geophysics, signal and image processing, and related fields. 
 
-This work is approved for public release by LANL's Feynman Center for Innovation (FCI) under reference #O4767.
+This work is supported by Los Alamos National Laboratory's (LANL's) Laboratory Directed Research and Development (LDRD) projects. LANL is operated by Triad National Security, LLC, for the National Nuclear Security Administration (NNSA) of the U.S. Department of Energy (DOE) under Contract No. 89233218CNA000001. This research used high-performance computing resources provided by LANL's Institutional Computing program. 
+
+This work is approved for public release by LANL's Feynman Center for Innovation (FCI) under record number #O4767.
 
 # Requirements
  - Platform: Linux
@@ -26,7 +29,7 @@ This work is approved for public release by LANL's Feynman Center for Innovation
  - (Optional) HDF5 
 
 # Use
-The user can use `test_install.sh` to install `FLIT` and its dependencies and set the relevant environment variables. The compiled `FLIT` files will be in `lib`, including module/submodule files and a single static library file, `libflit.a`. 
+Use `test_install.sh` to install `FLIT` and its dependencies and to set the relevant environment variables. The compiled `FLIT` files will be placed in `lib`, including module/submodule files and a single static library file, `libflit.a`. 
 
 To run examples:
 ```
@@ -34,14 +37,14 @@ cd test
 bash test.sh
 ```
 
-The [Makefile](src/Makefile) in the [test](test) directory can serve as an example of how to use `FLIT` in your code, including include paths and linking the compiled library. 
+The [Makefile](test/Makefile) in the [test](test) directory can serve as an example of how to use `FLIT` in your code, including setting include paths and linking against the compiled library. 
 
 Third-party code is included in [third_party](third_party). Please refer to [third_party/README](third_party/README.md) for details. 
 
 # License
 &copy; 2024-2026. Triad National Security, LLC. All rights reserved. 
 
-This program is open source under the BSD-3 License.
+This program is open source under the BSD 3-Clause License.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -62,4 +65,4 @@ Kai Gao, <kaigao@lanl.gov>
 We welcome feedback and bug reports. 
 
 If you use this package in your research and find it useful, please cite it as:
-* Kai Gao, Ting Chen, 2024, FLIT: A Generic Fortran Library based on Interfaces and Templates, URL: [github.com/lanl/flit](https://github.com/lanl/flit)
+* Kai Gao, 2024, FLIT: A Generic Fortran Library based on Interfaces and Templates, URL: [github.com/lanl/flit](https://github.com/lanl/flit)
