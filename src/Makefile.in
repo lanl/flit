@@ -81,7 +81,7 @@ endif
 base_fflags = \
 	-O3 -fpp -traceback -warn unused -module $(moddir) -qmkl \
 	-assume byterecl -assume buffered_io -qopenmp -heap-arrays \
-	-gen-interfaces -xHost -fp-model=consistent -fpscomp logicals
+	-gen-interfaces -xHost -fp-model=consistent -fpscomp logicals -fPIC
 	#	-standard-semantics
 	#	-align all -falign-loops -xHost -fp-model precise \
 	#	-O0 -g -check bounds
@@ -92,13 +92,13 @@ ifeq ($(use_hdf5), on)
 endif
 
 base_cflags = \
-	-O3 -w -qopenmp -std=c17 \
+	-O3 -w -qopenmp -std=c17 -fPIC \
 	-Wno-implicit-function-declaration \
 	-Wno-implicit-int \
 	-Wno-pointer-to-int-cast
 	#	-U__STRICT_ANSI__
 
 base_cxxflags = \
-	-O3 -w -qopenmp -std=c++20 -lstdc++fs
+	-O3 -w -qopenmp -std=c++20 -lstdc++fs -fPIC
 
 
