@@ -24,6 +24,15 @@ make
 mpirun -np 1 ./exec_$mod
 mpirun -np 24 ./exec_$mod
 
+# tvfilt: TV and TGpV filters against ground-truth images, with convergence curves
+touch program_name
+mod="tvfilt"
+echo "program_name="$mod > program_name
+make clean
+make
+./exec_$mod
+python plot_tvfilt_convergence.py
+
 # interp
 touch program_name
 mod="interp"

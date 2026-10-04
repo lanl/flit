@@ -1,5 +1,5 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
 ! This program was produced under U.S. Government contract 89233218CNA000001
 ! for Los Alamos National Laboratory (LANL), which is operated by
@@ -117,7 +117,7 @@ function tv_iso_filt_1d_(f, mu, niter, verbose) result(u)
         do i = 1, n1
 
             if (i == n1) then
-                i1 = i - 1
+                i1 = i
                 i2 = i
             else
                 i1 = i
@@ -137,7 +137,7 @@ function tv_iso_filt_1d_(f, mu, niter, verbose) result(u)
         do i = 1, n1
 
             if (i == n1) then
-                i1 = i - 1
+                i1 = i
                 i2 = i
             else
                 i1 = i
@@ -265,7 +265,7 @@ function tv_iso_filt_2d_(f, mu, niter, verbose) result(u)
             do i = 1, n1
 
                 if (i == n1) then
-                    i1 = i - 1
+                    i1 = i
                     i2 = i
                 else
                     i1 = i
@@ -274,7 +274,7 @@ function tv_iso_filt_2d_(f, mu, niter, verbose) result(u)
                 tmpx = (u(i2, j) - u(i1, j)) + d1t(i, j)
 
                 if (j == n2) then
-                    j1 = j - 1
+                    j1 = j
                     j2 = j
                 else
                     j1 = j
@@ -297,7 +297,7 @@ function tv_iso_filt_2d_(f, mu, niter, verbose) result(u)
             do i = 1, n1
 
                 if (i == n1) then
-                    i1 = i - 1
+                    i1 = i
                     i2 = i
                 else
                     i1 = i
@@ -306,7 +306,7 @@ function tv_iso_filt_2d_(f, mu, niter, verbose) result(u)
                 d1t(i, j) = d1t(i, j) + (u(i2, j) - u(i1, j) - d1(i, j))
 
                 if (j == n2) then
-                    j1 = j - 1
+                    j1 = j
                     j2 = j
                 else
                     j1 = j
@@ -459,7 +459,7 @@ function tv_iso_filt_3d_(f, mu, niter, verbose) result(u)
                 do i = 1, n1
 
                     if (i == n1) then
-                        i1 = i - 1
+                        i1 = i
                         i2 = i
                     else
                         i1 = i
@@ -468,7 +468,7 @@ function tv_iso_filt_3d_(f, mu, niter, verbose) result(u)
                     tmpx = (u(i2, j, k) - u(i1, j, k)) + d1t(i, j, k)
 
                     if (j == n2) then
-                        j1 = j - 1
+                        j1 = j
                         j2 = j
                     else
                         j1 = j
@@ -477,7 +477,7 @@ function tv_iso_filt_3d_(f, mu, niter, verbose) result(u)
                     tmpy = (u(i, j2, k) - u(i, j1, k)) + d2t(i, j, k)
 
                     if (k == n3) then
-                        k1 = k - 1
+                        k1 = k
                         k2 = k
                     else
                         k1 = k
@@ -503,7 +503,7 @@ function tv_iso_filt_3d_(f, mu, niter, verbose) result(u)
                 do i = 1, n1
 
                     if (i == n1) then
-                        i1 = i - 1
+                        i1 = i
                         i2 = i
                     else
                         i1 = i
@@ -512,7 +512,7 @@ function tv_iso_filt_3d_(f, mu, niter, verbose) result(u)
                     d1t(i, j, k) = d1t(i, j, k) + (u(i2, j, k) - u(i1, j, k) - d1(i, j, k))
 
                     if (j == n2) then
-                        j1 = j - 1
+                        j1 = j
                         j2 = j
                     else
                         j1 = j
@@ -521,7 +521,7 @@ function tv_iso_filt_3d_(f, mu, niter, verbose) result(u)
                     d2t(i, j, k) = d2t(i, j, k) + (u(i, j2, k) - u(i, j1, k) - d2(i, j, k))
 
                     if (k == n3) then
-                        k1 = k - 1
+                        k1 = k
                         k2 = k
                     else
                         k1 = k
@@ -657,7 +657,7 @@ function tgpv_filt_1d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
                     ! w1
                     sumw1 = &
                         +lambda1*(i2*w1(ii2) + i1*w1(ii1)) &
-                        - lambda0*(d1(i) - d1t(i) - (i2*u(ii2) - u(i))) &
+                        - lambda0*(d1(i) - d1t(i) - i2*(u(ii2) - u(i))) &
                         + lambda1*(i1*s11(ii1) - i2*s11(i) - (i1*s11t(ii1) - i2*s11t(i)))
 
                     w1(i) = sumw1/(lambda0 + (2.0 - (1 - i1) - (1 - i2))*lambda1)
@@ -672,7 +672,7 @@ function tgpv_filt_1d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
             do i = 1, n1
 
                 if (i == n1) then
-                    i1 = i - 1
+                    i1 = i
                     i2 = i
                 else
                     i1 = i
@@ -691,7 +691,7 @@ function tgpv_filt_1d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
                 do i = 1, n1
 
                     if (i == n1) then
-                        i1 = i - 1
+                        i1 = i
                         i2 = i
                     else
                         i1 = i
@@ -713,7 +713,7 @@ function tgpv_filt_1d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
         do i = 1, n1
 
             if (i == n1) then
-                i1 = i - 1
+                i1 = i
                 i2 = i
             else
                 i1 = i
@@ -731,7 +731,7 @@ function tgpv_filt_1d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
             do i = 1, n1
 
                 if (i == n1) then
-                    i1 = i - 1
+                    i1 = i
                     i2 = i
                 else
                     i1 = i
@@ -885,7 +885,7 @@ function tgpv_filt_2d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
                     do i = 1, n1
 
                         if (i == n1) then
-                            i1 = i - 1
+                            i1 = i
                             i2 = i
                         else
                             i1 = i
@@ -893,7 +893,7 @@ function tgpv_filt_2d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
                         end if
 
                         if (j == n2) then
-                            j1 = j - 1
+                            j1 = j
                             j2 = j
                         else
                             j1 = j
@@ -946,7 +946,7 @@ function tgpv_filt_2d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
                         sumw1 = &
                             +lambda1*(i2*w1(ii2, j) + i1*w1(ii1, j)) &
                             + 0.5*lambda1*(j2*w1(i, jj2) + j1*w1(i, jj1)) &
-                            - lambda0*(d1(i, j) - d1t(i, j) - (i2*u(ii2, j) - u(i, j))) &
+                            - lambda0*(d1(i, j) - d1t(i, j) - i2*(u(ii2, j) - u(i, j))) &
                             + lambda1*(i1*s11(ii1, j) - i2*s11(i, j) - (i1*s11t(ii1, j) - i2*s11t(i, j))) &
                             + lambda1*(j1*s12(i, jj1) - j2*s12(i, j) - (j1*s12t(i, jj1) - j2*s12t(i, j)) - (j1*tmpd1w2(i, jj1) - j2*tmpd1w2(i, j)))
 
@@ -956,7 +956,7 @@ function tgpv_filt_2d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
                         sumw2 = &
                             +0.5*lambda1*(i2*w2(ii2, j) + i1*w2(ii1, j)) &
                             + lambda1*(j2*w2(i, jj2) + j1*w2(i, jj1)) &
-                            - lambda0*(d2(i, j) - d2t(i, j) - (j2*u(i, jj2) - u(i, j))) &
+                            - lambda0*(d2(i, j) - d2t(i, j) - j2*(u(i, jj2) - u(i, j))) &
                             + lambda1*(i1*s12(ii1, j) - i2*s12(i, j) - (i1*s12t(ii1, j) - i2*s12t(i, j)) - (i1*tmpd2w1(ii1, j) - i2*tmpd2w1(i, j))) &
                             + lambda1*(j1*s22(i, jj1) - j2*s22(i, j) - (j1*s22t(i, jj1) - j2*s22t(i, j)))
 
@@ -974,7 +974,7 @@ function tgpv_filt_2d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
                 do i = 1, n1
 
                     if (i == n1) then
-                        i1 = i - 1
+                        i1 = i
                         i2 = i
                     else
                         i1 = i
@@ -984,7 +984,7 @@ function tgpv_filt_2d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
                     d1(i, j) = max(1.0 - (lambda0/alpha0*abs(tmp))**(p - 2), 0.0)*tmp
 
                     if (j == n2) then
-                        j1 = j - 1
+                        j1 = j
                         j2 = j
                     else
                         j1 = j
@@ -1004,14 +1004,14 @@ function tgpv_filt_2d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
                     do i = 1, n1
 
                         if (i == n1) then
-                            i1 = i - 1
+                            i1 = i
                             i2 = i
                         else
                             i1 = i
                             i2 = i + 1
                         end if
                         if (j == n2) then
-                            j1 = j - 1
+                            j1 = j
                             j2 = j
                         else
                             j1 = j
@@ -1039,7 +1039,7 @@ function tgpv_filt_2d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
             do i = 1, n1
 
                 if (i == n1) then
-                    i1 = i - 1
+                    i1 = i
                     i2 = i
                 else
                     i1 = i
@@ -1048,7 +1048,7 @@ function tgpv_filt_2d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
                 d1t(i, j) = d1t(i, j) + (u(i2, j) - u(i1, j) - w1(i, j) - d1(i, j))
 
                 if (j == n2) then
-                    j1 = j - 1
+                    j1 = j
                     j2 = j
                 else
                     j1 = j
@@ -1067,14 +1067,14 @@ function tgpv_filt_2d_(f, mu, alpha0, alpha1, niter, p, verbose) result(u)
                 do i = 1, n1
 
                     if (i == n1) then
-                        i1 = i - 1
+                        i1 = i
                         i2 = i
                     else
                         i1 = i
                         i2 = i + 1
                     end if
                     if (j == n2) then
-                        j1 = j - 1
+                        j1 = j
                         j2 = j
                     else
                         j1 = j
@@ -1263,7 +1263,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                         do i = 1, n1
 
                             if (i == n1) then
-                                i1 = i - 1
+                                i1 = i
                                 i2 = i
                             else
                                 i1 = i
@@ -1271,7 +1271,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                             end if
 
                             if (j == n2) then
-                                j1 = j - 1
+                                j1 = j
                                 j2 = j
                             else
                                 j1 = j
@@ -1279,7 +1279,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                             end if
 
                             if (k == n3) then
-                                k1 = k - 1
+                                k1 = k
                                 k2 = k
                             else
                                 k1 = k
@@ -1353,7 +1353,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                                 +lambda1*(i2*w1(ii2, j, k) + i1*w1(ii1, j, k)) &
                                 + 0.5*lambda1*(j2*w1(i, jj2, k) + j1*w1(i, jj1, k)) &
                                 + 0.5*lambda1*(k2*w1(i, j, kk2) + k1*w1(i, j, kk1)) &
-                                - lambda0*(d1(i, j, k) - d1t(i, j, k) - (i2*u(ii2, j, k) - u(i, j, k))) &
+                                - lambda0*(d1(i, j, k) - d1t(i, j, k) - i2*(u(ii2, j, k) - u(i, j, k))) &
                                 + lambda1*(i1*s11(ii1, j, k) - i2*s11(i, j, k) - (i1*s11t(ii1, j, k) - i2*s11t(i, j, k))) &
                                 + lambda1*(j1*s12(i, jj1, k) - j2*s12(i, j, k) - (j1*s12t(i, jj1, k) - j2*s12t(i, j, k)) - (j1*tmpd1w2(i, jj1, k) - j2*tmpd1w2(i, j, k))) &
                                 + lambda1*(k1*s13(i, j, kk1) - k2*s13(i, j, k) - (k1*s13t(i, j, kk1) - k2*s13t(i, j, k)) - (k1*tmpd1w3(i, j, kk1) - k2*tmpd1w3(i, j, k)))
@@ -1365,7 +1365,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                                 +0.5*lambda1*(i2*w2(ii2, j, k) + i1*w2(ii1, j, k)) &
                                 + lambda1*(j2*w2(i, jj2, k) + j1*w2(i, jj1, k)) &
                                 + 0.5*lambda1*(k2*w2(i, j, kk2) + k1*w2(i, j, kk1)) &
-                                - lambda0*(d2(i, j, k) - d2t(i, j, k) - (j2*u(i, jj2, k) - u(i, j, k))) &
+                                - lambda0*(d2(i, j, k) - d2t(i, j, k) - j2*(u(i, jj2, k) - u(i, j, k))) &
                                 + lambda1*(i1*s12(ii1, j, k) - i2*s12(i, j, k) - (i1*s12t(ii1, j, k) - i2*s12t(i, j, k)) - (i1*tmpd2w1(ii1, j, k) - i2*tmpd2w1(i, j, k))) &
                                 + lambda1*(j1*s22(i, jj1, k) - j2*s22(i, j, k) - (j1*s22t(i, jj1, k) - j2*s22t(i, j, k))) &
                                 + lambda1*(k1*s23(i, j, kk1) - k2*s23(i, j, k) - (k1*s23t(i, j, kk1) - k2*s23t(i, j, k)) - (k1*tmpd2w3(i, j, kk1) - k2*tmpd2w3(i, j, k)))
@@ -1377,7 +1377,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                                 +0.5*lambda1*(i2*w3(ii2, j, k) + i1*w3(ii1, j, k)) &
                                 + 0.5*lambda1*(j2*w3(i, jj2, k) + j1*w3(i, jj1, k)) &
                                 + lambda1*(k2*w3(i, j, kk2) + k1*w3(i, j, kk1)) &
-                                - lambda0*(d3(i, j, k) - d3t(i, j, k) - (k2*u(i, j, kk2) - u(i, j, k))) &
+                                - lambda0*(d3(i, j, k) - d3t(i, j, k) - k2*(u(i, j, kk2) - u(i, j, k))) &
                                 + lambda1*(i1*s13(ii1, j, k) - i2*s13(i, j, k) - (i1*s13t(ii1, j, k) - i2*s13t(i, j, k)) - (i1*tmpd3w1(ii1, j, k) - i2*tmpd3w1(i, j, k))) &
                                 + lambda1*(j1*s23(i, jj1, k) - j2*s23(i, j, k) - (j1*s23t(i, jj1, k) - j2*s23t(i, j, k)) - (j1*tmpd3w2(i, jj1, k) - j2*tmpd3w2(i, j, k))) &
                                 + lambda1*(k1*s33(i, j, kk1) - k2*s33(i, j, k) - (k1*s33t(i, j, kk1) - k2*s33t(i, j, k)))
@@ -1397,7 +1397,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                     do i = 1, n1
 
                         if (i == n1) then
-                            i1 = i - 1
+                            i1 = i
                             i2 = i
                         else
                             i1 = i
@@ -1407,7 +1407,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                         d1(i, j, k) = max(1.0 - (lambda0/alpha0*abs(tmp))**(p - 2), 0.0)*tmp
 
                         if (j == n2) then
-                            j1 = j - 1
+                            j1 = j
                             j2 = j
                         else
                             j1 = j
@@ -1417,7 +1417,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                         d2(i, j, k) = max(1.0 - (lambda0/alpha0*abs(tmp))**(p - 2), 0.0)*tmp
 
                         if (k == n3) then
-                            k1 = k - 1
+                            k1 = k
                             k2 = k
                         else
                             k1 = k
@@ -1437,21 +1437,21 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                         do i = 1, n1
 
                             if (i == n1) then
-                                i1 = i - 1
+                                i1 = i
                                 i2 = i
                             else
                                 i1 = i
                                 i2 = i + 1
                             end if
                             if (j == n2) then
-                                j1 = j - 1
+                                j1 = j
                                 j2 = j
                             else
                                 j1 = j
                                 j2 = j + 1
                             end if
                             if (k == n3) then
-                                k1 = k - 1
+                                k1 = k
                                 k2 = k
                             else
                                 k1 = k
@@ -1485,7 +1485,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                 do i = 1, n1
 
                     if (i == n1) then
-                        i1 = i - 1
+                        i1 = i
                         i2 = i
                     else
                         i1 = i
@@ -1494,7 +1494,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                     d1t(i, j, k) = d1t(i, j, k) + (u(i2, j, k) - u(i1, j, k) - w1(i, j, k) - d1(i, j, k))
 
                     if (j == n2) then
-                        j1 = j - 1
+                        j1 = j
                         j2 = j
                     else
                         j1 = j
@@ -1503,7 +1503,7 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                     d2t(i, j, k) = d2t(i, j, k) + (u(i, j2, k) - u(i, j1, k) - w2(i, j, k) - d2(i, j, k))
 
                     if (k == n3) then
-                        k1 = k - 1
+                        k1 = k
                         k2 = k
                     else
                         k1 = k
@@ -1522,21 +1522,21 @@ function tgpv_filt_3d_(f, mu, alpha0, alpha1, niter, p) result(u)
                     do i = 1, n1
 
                         if (i == n1) then
-                            i1 = i - 1
+                            i1 = i
                             i2 = i
                         else
                             i1 = i
                             i2 = i + 1
                         end if
                         if (j == n2) then
-                            j1 = j - 1
+                            j1 = j
                             j2 = j
                         else
                             j1 = j
                             j2 = j + 1
                         end if
                         if (k == n3) then
-                            k1 = k - 1
+                            k1 = k
                             k2 = k
                         else
                             k1 = k
@@ -1712,7 +1712,7 @@ function tgpv_filt_2d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                     do i = n1beg, n1end
 
                         if (i == n1) then
-                            i1 = i - 1
+                            i1 = i
                             i2 = i
                         else
                             i1 = i
@@ -1720,7 +1720,7 @@ function tgpv_filt_2d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                         end if
 
                         if (j == n2) then
-                            j1 = j - 1
+                            j1 = j
                             j2 = j
                         else
                             j1 = j
@@ -1784,7 +1784,7 @@ function tgpv_filt_2d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                         sumw1 = &
                             +lambda1*(i2*w1(ii2, j) + i1*w1(ii1, j)) &
                             + 0.5*lambda1*(j2*w1(i, jj2) + j1*w1(i, jj1)) &
-                            - lambda0*(d1(i, j) - d1t(i, j) - (i2*u(ii2, j) - u(i, j))) &
+                            - lambda0*(d1(i, j) - d1t(i, j) - i2*(u(ii2, j) - u(i, j))) &
                             + lambda1*(i1*s11(ii1, j) - i2*s11(i, j) - (i1*s11t(ii1, j) - i2*s11t(i, j))) &
                             + lambda1*(j1*s12(i, jj1) - j2*s12(i, j) - (j1*s12t(i, jj1) - j2*s12t(i, j)) - (j1*tmpd1w2(i, jj1) - j2*tmpd1w2(i, j)))
 
@@ -1794,7 +1794,7 @@ function tgpv_filt_2d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                         sumw2 = &
                             +0.5*lambda1*(i2*w2(ii2, j) + i1*w2(ii1, j)) &
                             + lambda1*(j2*w2(i, jj2) + j1*w2(i, jj1)) &
-                            - lambda0*(d2(i, j) - d2t(i, j) - (j2*u(i, jj2) - u(i, j))) &
+                            - lambda0*(d2(i, j) - d2t(i, j) - j2*(u(i, jj2) - u(i, j))) &
                             + lambda1*(i1*s12(ii1, j) - i2*s12(i, j) - (i1*s12t(ii1, j) - i2*s12t(i, j)) - (i1*tmpd2w1(ii1, j) - i2*tmpd2w1(i, j))) &
                             + lambda1*(j1*s22(i, jj1) - j2*s22(i, j) - (j1*s22t(i, jj1) - j2*s22t(i, j)))
 
@@ -1811,7 +1811,7 @@ function tgpv_filt_2d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                 do i = n1beg, n1end
 
                     if (i == n1) then
-                        i1 = i - 1
+                        i1 = i
                         i2 = i
                     else
                         i1 = i
@@ -1821,7 +1821,7 @@ function tgpv_filt_2d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                     d1(i, j) = max(1.0 - (lambda0/alpha0*abs(tmp))**(p - 2), 0.0)*tmp
 
                     if (j == n2) then
-                        j1 = j - 1
+                        j1 = j
                         j2 = j
                     else
                         j1 = j
@@ -1844,14 +1844,14 @@ function tgpv_filt_2d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                     do i = n1beg, n1end
 
                         if (i == n1) then
-                            i1 = i - 1
+                            i1 = i
                             i2 = i
                         else
                             i1 = i
                             i2 = i + 1
                         end if
                         if (j == n2) then
-                            j1 = j - 1
+                            j1 = j
                             j2 = j
                         else
                             j1 = j
@@ -1879,7 +1879,7 @@ function tgpv_filt_2d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
             do i = n1beg, n1end
 
                 if (i == n1) then
-                    i1 = i - 1
+                    i1 = i
                     i2 = i
                 else
                     i1 = i
@@ -1888,7 +1888,7 @@ function tgpv_filt_2d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                 d1t(i, j) = d1t(i, j) + (u(i2, j) - u(i1, j) - w1(i, j) - d1(i, j))
 
                 if (j == n2) then
-                    j1 = j - 1
+                    j1 = j
                     j2 = j
                 else
                     j1 = j
@@ -1905,14 +1905,14 @@ function tgpv_filt_2d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                 do i = n1beg, n1end
 
                     if (i == n1) then
-                        i1 = i - 1
+                        i1 = i
                         i2 = i
                     else
                         i1 = i
                         i2 = i + 1
                     end if
                     if (j == n2) then
-                        j1 = j - 1
+                        j1 = j
                         j2 = j
                     else
                         j1 = j
@@ -2143,7 +2143,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                         do i = n1beg, n1end
 
                             if (i == n1) then
-                                i1 = i - 1
+                                i1 = i
                                 i2 = i
                             else
                                 i1 = i
@@ -2151,7 +2151,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                             end if
 
                             if (j == n2) then
-                                j1 = j - 1
+                                j1 = j
                                 j2 = j
                             else
                                 j1 = j
@@ -2159,7 +2159,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                             end if
 
                             if (k == n3) then
-                                k1 = k - 1
+                                k1 = k
                                 k2 = k
                             else
                                 k1 = k
@@ -2255,7 +2255,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                                 +lambda1*(i2*w1(ii2, j, k) + i1*w1(ii1, j, k)) &
                                 + 0.5*lambda1*(j2*w1(i, jj2, k) + j1*w1(i, jj1, k)) &
                                 + 0.5*lambda1*(k2*w1(i, j, kk2) + k1*w1(i, j, kk1)) &
-                                - lambda0*(d1(i, j, k) - d1t(i, j, k) - (i2*u(ii2, j, k) - u(i, j, k))) &
+                                - lambda0*(d1(i, j, k) - d1t(i, j, k) - i2*(u(ii2, j, k) - u(i, j, k))) &
                                 + lambda1*(i1*s11(ii1, j, k) - i2*s11(i, j, k) - (i1*s11t(ii1, j, k) - i2*s11t(i, j, k))) &
                                 + lambda1*(j1*s12(i, jj1, k) - j2*s12(i, j, k) - (j1*s12t(i, jj1, k) - j2*s12t(i, j, k)) - (j1*tmpd1w2(i, jj1, k) - j2*tmpd1w2(i, j, k))) &
                                 + lambda1*(k1*s13(i, j, kk1) - k2*s13(i, j, k) - (k1*s13t(i, j, kk1) - k2*s13t(i, j, k)) - (k1*tmpd1w3(i, j, kk1) - k2*tmpd1w3(i, j, k)))
@@ -2267,7 +2267,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                                 +0.5*lambda1*(i2*w2(ii2, j, k) + i1*w2(ii1, j, k)) &
                                 + lambda1*(j2*w2(i, jj2, k) + j1*w2(i, jj1, k)) &
                                 + 0.5*lambda1*(k2*w2(i, j, kk2) + k1*w2(i, j, kk1)) &
-                                - lambda0*(d2(i, j, k) - d2t(i, j, k) - (j2*u(i, jj2, k) - u(i, j, k))) &
+                                - lambda0*(d2(i, j, k) - d2t(i, j, k) - j2*(u(i, jj2, k) - u(i, j, k))) &
                                 + lambda1*(i1*s12(ii1, j, k) - i2*s12(i, j, k) - (i1*s12t(ii1, j, k) - i2*s12t(i, j, k)) - (i1*tmpd2w1(ii1, j, k) - i2*tmpd2w1(i, j, k))) &
                                 + lambda1*(j1*s22(i, jj1, k) - j2*s22(i, j, k) - (j1*s22t(i, jj1, k) - j2*s22t(i, j, k))) &
                                 + lambda1*(k1*s23(i, j, kk1) - k2*s23(i, j, k) - (k1*s23t(i, j, kk1) - k2*s23t(i, j, k)) - (k1*tmpd2w3(i, j, kk1) - k2*tmpd2w3(i, j, k)))
@@ -2279,7 +2279,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                                 +0.5*lambda1*(i2*w3(ii2, j, k) + i1*w3(ii1, j, k)) &
                                 + 0.5*lambda1*(j2*w3(i, jj2, k) + j1*w3(i, jj1, k)) &
                                 + lambda1*(k2*w3(i, j, kk2) + k1*w3(i, j, kk1)) &
-                                - lambda0*(d3(i, j, k) - d3t(i, j, k) - (k2*u(i, j, kk2) - u(i, j, k))) &
+                                - lambda0*(d3(i, j, k) - d3t(i, j, k) - k2*(u(i, j, kk2) - u(i, j, k))) &
                                 + lambda1*(i1*s13(ii1, j, k) - i2*s13(i, j, k) - (i1*s13t(ii1, j, k) - i2*s13t(i, j, k)) - (i1*tmpd3w1(ii1, j, k) - i2*tmpd3w1(i, j, k))) &
                                 + lambda1*(j1*s23(i, jj1, k) - j2*s23(i, j, k) - (j1*s23t(i, jj1, k) - j2*s23t(i, j, k)) - (j1*tmpd3w2(i, jj1, k) - j2*tmpd3w2(i, j, k))) &
                                 + lambda1*(k1*s33(i, j, kk1) - k2*s33(i, j, k) - (k1*s33t(i, j, kk1) - k2*s33t(i, j, k)))
@@ -2299,7 +2299,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                     do i = n1beg, n1end
 
                         if (i == n1) then
-                            i1 = i - 1
+                            i1 = i
                             i2 = i
                         else
                             i1 = i
@@ -2309,7 +2309,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                         d1(i, j, k) = max(1.0 - (lambda0/alpha0*abs(tmp))**(p - 2), 0.0)*tmp
 
                         if (j == n2) then
-                            j1 = j - 1
+                            j1 = j
                             j2 = j
                         else
                             j1 = j
@@ -2319,7 +2319,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                         d2(i, j, k) = max(1.0 - (lambda0/alpha0*abs(tmp))**(p - 2), 0.0)*tmp
 
                         if (k == n3) then
-                            k1 = k - 1
+                            k1 = k
                             k2 = k
                         else
                             k1 = k
@@ -2345,21 +2345,21 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                         do i = n1beg, n1end
 
                             if (i == n1) then
-                                i1 = i - 1
+                                i1 = i
                                 i2 = i
                             else
                                 i1 = i
                                 i2 = i + 1
                             end if
                             if (j == n2) then
-                                j1 = j - 1
+                                j1 = j
                                 j2 = j
                             else
                                 j1 = j
                                 j2 = j + 1
                             end if
                             if (k == n3) then
-                                k1 = k - 1
+                                k1 = k
                                 k2 = k
                             else
                                 k1 = k
@@ -2395,7 +2395,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                 do i = n1beg, n1end
 
                     if (i == n1) then
-                        i1 = i - 1
+                        i1 = i
                         i2 = i
                     else
                         i1 = i
@@ -2404,7 +2404,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                     d1t(i, j, k) = d1t(i, j, k) + (u(i2, j, k) - u(i1, j, k) - w1(i, j, k) - d1(i, j, k))
 
                     if (j == n2) then
-                        j1 = j - 1
+                        j1 = j
                         j2 = j
                     else
                         j1 = j
@@ -2413,7 +2413,7 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                     d2t(i, j, k) = d2t(i, j, k) + (u(i, j2, k) - u(i, j1, k) - w2(i, j, k) - d2(i, j, k))
 
                     if (k == n3) then
-                        k1 = k - 1
+                        k1 = k
                         k2 = k
                     else
                         k1 = k
@@ -2432,21 +2432,21 @@ function tgpv_filt_3d_mpi_(f0, mu, alpha0, alpha1, niter, p) result(u0)
                     do i = n1beg, n1end
 
                         if (i == n1) then
-                            i1 = i - 1
+                            i1 = i
                             i2 = i
                         else
                             i1 = i
                             i2 = i + 1
                         end if
                         if (j == n2) then
-                            j1 = j - 1
+                            j1 = j
                             j2 = j
                         else
                             j1 = j
                             j2 = j + 1
                         end if
                         if (k == n3) then
-                            k1 = k - 1
+                            k1 = k
                             k2 = k
                         else
                             k1 = k
@@ -2593,7 +2593,7 @@ function sparse_tv_filt_1d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
             do i = 1, n1
 
                 if (i == n1) then
-                    i1 = i - 1
+                    i1 = i
                     i2 = i
                 else
                     i1 = i
@@ -2625,7 +2625,7 @@ function sparse_tv_filt_1d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
         do i = 1, n1
 
             if (i == n1) then
-                i1 = i - 1
+                i1 = i
                 i2 = i
             else
                 i1 = i
@@ -2776,7 +2776,7 @@ function sparse_tv_filt_2d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
                 do i = 1, n1
 
                     if (i == n1) then
-                        i1 = i - 1
+                        i1 = i
                         i2 = i
                     else
                         i1 = i
@@ -2785,7 +2785,7 @@ function sparse_tv_filt_2d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
                     tmpx = (u(i2, j) - u(i1, j)) + d1t(i, j)
 
                     if (j == n2) then
-                        j1 = j - 1
+                        j1 = j
                         j2 = j
                     else
                         j1 = j
@@ -2822,7 +2822,7 @@ function sparse_tv_filt_2d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
             do i = 1, n1
 
                 if (i == n1) then
-                    i1 = i - 1
+                    i1 = i
                     i2 = i
                 else
                     i1 = i
@@ -2831,7 +2831,7 @@ function sparse_tv_filt_2d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
                 d1t(i, j) = d1t(i, j) + (u(i2, j) - u(i1, j) - d1(i, j))
 
                 if (j == n2) then
-                    j1 = j - 1
+                    j1 = j
                     j2 = j
                 else
                     j1 = j
@@ -3009,7 +3009,7 @@ function sparse_tv_filt_3d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
                     do i = 1, n1
 
                         if (i == n1) then
-                            i1 = i - 1
+                            i1 = i
                             i2 = i
                         else
                             i1 = i
@@ -3018,7 +3018,7 @@ function sparse_tv_filt_3d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
                         tmpx = (u(i2, j, k) - u(i1, j, k)) + d1t(i, j, k)
 
                         if (j == n2) then
-                            j1 = j - 1
+                            j1 = j
                             j2 = j
                         else
                             j1 = j
@@ -3027,7 +3027,7 @@ function sparse_tv_filt_3d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
                         tmpy = (u(i, j2, k) - u(i, j1, k)) + d2t(i, j, k)
 
                         if (k == n3) then
-                            k1 = k - 1
+                            k1 = k
                             k2 = k
                         else
                             k1 = k
@@ -3069,7 +3069,7 @@ function sparse_tv_filt_3d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
                 do i = 1, n1
 
                     if (i == n1) then
-                        i1 = i - 1
+                        i1 = i
                         i2 = i
                     else
                         i1 = i
@@ -3078,7 +3078,7 @@ function sparse_tv_filt_3d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
                     d1t(i, j, k) = d1t(i, j, k) + (u(i2, j, k) - u(i1, j, k) - d1(i, j, k))
 
                     if (j == n2) then
-                        j1 = j - 1
+                        j1 = j
                         j2 = j
                     else
                         j1 = j
@@ -3087,7 +3087,7 @@ function sparse_tv_filt_3d_(f, mu, l_sparse, l_tv, niter, verbose) result(u)
                     d2t(i, j, k) = d2t(i, j, k) + (u(i, j2, k) - u(i, j1, k) - d2(i, j, k))
 
                     if (k == n3) then
-                        k1 = k - 1
+                        k1 = k
                         k2 = k
                     else
                         k1 = k
