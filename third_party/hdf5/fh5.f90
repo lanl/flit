@@ -3494,6 +3494,8 @@ contains
 
     !================================================================
     ! ATTRIBUTE READ
+    ! An error in opening or reading the attribute, e.g., a missing
+    ! attribute, is the result; the close calls do not overwrite it.
     !================================================================
     subroutine ra_i32(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3502,15 +3504,17 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         dims = [1_hsize_t]
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_i32", error)) return
         call h5aopen_f(oid, trim(name), aid, e)
-        call h5aread_f(aid, h5kind_to_type(i32, H5_INTEGER_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "ra_i32", error)
+        if (e == 0) then
+            call h5aread_f(aid, h5kind_to_type(i32, H5_INTEGER_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5oclose_f(oid, ec)
+        call chk(e, "ra_i32: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine ra_i64(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3519,15 +3523,17 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         dims = [1_hsize_t]
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_i64", error)) return
         call h5aopen_f(oid, trim(name), aid, e)
-        call h5aread_f(aid, h5kind_to_type(i64, H5_INTEGER_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "ra_i64", error)
+        if (e == 0) then
+            call h5aread_f(aid, h5kind_to_type(i64, H5_INTEGER_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5oclose_f(oid, ec)
+        call chk(e, "ra_i64: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine ra_r32(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3536,15 +3542,17 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         dims = [1_hsize_t]
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_r32", error)) return
         call h5aopen_f(oid, trim(name), aid, e)
-        call h5aread_f(aid, h5kind_to_type(r32, H5_REAL_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "ra_r32", error)
+        if (e == 0) then
+            call h5aread_f(aid, h5kind_to_type(r32, H5_REAL_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5oclose_f(oid, ec)
+        call chk(e, "ra_r32: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine ra_r64(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3553,15 +3561,17 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         dims = [1_hsize_t]
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_r64", error)) return
         call h5aopen_f(oid, trim(name), aid, e)
-        call h5aread_f(aid, h5kind_to_type(r64, H5_REAL_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "ra_r64", error)
+        if (e == 0) then
+            call h5aread_f(aid, h5kind_to_type(r64, H5_REAL_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5oclose_f(oid, ec)
+        call chk(e, "ra_r64: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine ra_str(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3570,18 +3580,20 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, aid, tid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         dims = [1_hsize_t]
         val = ''
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_str", error)) return
         call h5aopen_f(oid, trim(name), aid, e)
-        call h5aget_type_f(aid, tid, e)
-        call h5aread_f(aid, tid, val, dims, e)
-        call h5tclose_f(tid, e)
-        call h5aclose_f(aid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "ra_str", error)
+        if (e == 0) then
+            call h5aget_type_f(aid, tid, e)
+            call h5aread_f(aid, tid, val, dims, e)
+            call h5tclose_f(tid, ec)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5oclose_f(oid, ec)
+        call chk(e, "ra_str: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine ra_i32_1(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3590,19 +3602,21 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, aid, sid
         integer(hsize_t) :: dims(1), md(1)
-        integer::e, nd
+        integer::e, ec, nd
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_i32_1", error)) return
         call h5aopen_f(oid, trim(name), aid, e)
-        call h5aget_space_f(aid, sid, e)
-        call h5sget_simple_extent_ndims_f(sid, nd, e)
-        call h5sget_simple_extent_dims_f(sid, dims, md, e)
-        call h5sclose_f(sid, e)
-        allocate (val(dims(1)))
-        call h5aread_f(aid, h5kind_to_type(i32, H5_INTEGER_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "ra_i32_1", error)
+        if (e == 0) then
+            call h5aget_space_f(aid, sid, e)
+            call h5sget_simple_extent_ndims_f(sid, nd, e)
+            call h5sget_simple_extent_dims_f(sid, dims, md, e)
+            call h5sclose_f(sid, e)
+            allocate (val(dims(1)))
+            call h5aread_f(aid, h5kind_to_type(i32, H5_INTEGER_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5oclose_f(oid, ec)
+        call chk(e, "ra_i32_1: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine ra_i64_1(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3611,19 +3625,21 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, aid, sid
         integer(hsize_t) :: dims(1), md(1)
-        integer::e, nd
+        integer::e, ec, nd
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_i64_1", error)) return
         call h5aopen_f(oid, trim(name), aid, e)
-        call h5aget_space_f(aid, sid, e)
-        call h5sget_simple_extent_ndims_f(sid, nd, e)
-        call h5sget_simple_extent_dims_f(sid, dims, md, e)
-        call h5sclose_f(sid, e)
-        allocate (val(dims(1)))
-        call h5aread_f(aid, h5kind_to_type(i64, H5_INTEGER_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "ra_i64_1", error)
+        if (e == 0) then
+            call h5aget_space_f(aid, sid, e)
+            call h5sget_simple_extent_ndims_f(sid, nd, e)
+            call h5sget_simple_extent_dims_f(sid, dims, md, e)
+            call h5sclose_f(sid, e)
+            allocate (val(dims(1)))
+            call h5aread_f(aid, h5kind_to_type(i64, H5_INTEGER_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5oclose_f(oid, ec)
+        call chk(e, "ra_i64_1: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine ra_r32_1(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3632,19 +3648,21 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, aid, sid
         integer(hsize_t) :: dims(1), md(1)
-        integer::e, nd
+        integer::e, ec, nd
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_r32_1", error)) return
         call h5aopen_f(oid, trim(name), aid, e)
-        call h5aget_space_f(aid, sid, e)
-        call h5sget_simple_extent_ndims_f(sid, nd, e)
-        call h5sget_simple_extent_dims_f(sid, dims, md, e)
-        call h5sclose_f(sid, e)
-        allocate (val(dims(1)))
-        call h5aread_f(aid, h5kind_to_type(r32, H5_REAL_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "ra_r32_1", error)
+        if (e == 0) then
+            call h5aget_space_f(aid, sid, e)
+            call h5sget_simple_extent_ndims_f(sid, nd, e)
+            call h5sget_simple_extent_dims_f(sid, dims, md, e)
+            call h5sclose_f(sid, e)
+            allocate (val(dims(1)))
+            call h5aread_f(aid, h5kind_to_type(r32, H5_REAL_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5oclose_f(oid, ec)
+        call chk(e, "ra_r32_1: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine ra_r64_1(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3653,19 +3671,21 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, aid, sid
         integer(hsize_t) :: dims(1), md(1)
-        integer::e, nd
+        integer::e, ec, nd
         call open_obj(fid, obj, oid, e)
         if (bail(e, "ra_r64_1", error)) return
         call h5aopen_f(oid, trim(name), aid, e)
-        call h5aget_space_f(aid, sid, e)
-        call h5sget_simple_extent_ndims_f(sid, nd, e)
-        call h5sget_simple_extent_dims_f(sid, dims, md, e)
-        call h5sclose_f(sid, e)
-        allocate (val(dims(1)))
-        call h5aread_f(aid, h5kind_to_type(r64, H5_REAL_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "ra_r64_1", error)
+        if (e == 0) then
+            call h5aget_space_f(aid, sid, e)
+            call h5sget_simple_extent_ndims_f(sid, nd, e)
+            call h5sget_simple_extent_dims_f(sid, dims, md, e)
+            call h5sclose_f(sid, e)
+            allocate (val(dims(1)))
+            call h5aread_f(aid, h5kind_to_type(r64, H5_REAL_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5oclose_f(oid, ec)
+        call chk(e, "ra_r64_1: "//trim(obj)//"@"//trim(name), error)
     end subroutine
 
     !=================================================================
