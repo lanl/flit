@@ -46,6 +46,10 @@ module libflit_gaussfilt
         module procedure :: gauss_filt_3d_double
     end interface
 
+    !> Below this sigma, the recursive spectral filter ('rsf') approximates the Gaussian poorly (below about 0.38 its
+    !> kernel sharpens), so 'rsf' convolves with the sampled Gaussian instead
+    real, parameter :: rsgf_sigma_min = 1.0
+
     private
     public :: gauss_filt
 

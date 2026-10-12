@@ -1,5 +1,5 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
 ! This program was produced under U.S. Government contract 89233218CNA000001
 ! for Los Alamos National Laboratory (LANL), which is operated by
@@ -34,6 +34,7 @@
 #define attail_      CONCAT(attail, T)
 #define compute_rsgf_coef_      CONCAT(compute_rsgf_coef, T)
 #define rsgf_1d_      CONCAT(rsgf_1d, T)
+#define sampled_gaussian_filt_1d_      CONCAT(sampled_gaussian_filt_1d, T)
 #define spectral_gaussian_filt_1d_      CONCAT(spectral_gaussian_filt_1d, T)
 #define spectral_gaussian_filt_2d_      CONCAT(spectral_gaussian_filt_2d, T)
 #define spectral_gaussian_filt_3d_      CONCAT(spectral_gaussian_filt_3d, T)
@@ -445,6 +446,10 @@ end subroutine dct_gaussian_filt_3d_
 ! See Sugimoto and Kamata, 2013, Fast Gaussian filter with second-order shift property of DCT-5
 ! https://ieeexplore.ieee.org/document/6738106/
 !
+! The coefficients and the running sums are in double precision for both kinds: in single precision,
+! cos(phi) rounds toward 1 for a large radius, and the recursion over the 6 sigma samples of the extended
+! copy of a short array drifts (errors up to 20% at sigma = 1e6)
+!
 pure function athead_(x) result(xx)
 
     integer, intent(in) :: x
@@ -468,9 +473,9 @@ subroutine compute_rsgf_coef_(sigma, accuracy, radius, spectrum, table)
     TT, intent(in) :: sigma
     integer, intent(in) :: accuracy
     integer, intent(inout) :: radius
-    TT, allocatable, dimension(:), intent(inout) :: spectrum, table
+    double precision, allocatable, dimension(:), intent(inout) :: spectrum, table
 
-    TT :: phi
+    double precision :: phi
     integer :: k, u
 
     ! estimate radius
@@ -508,27 +513,42 @@ subroutine compute_rsgf_coef_(sigma, accuracy, radius, spectrum, table)
 
 end subroutine compute_rsgf_coef_
 
-subroutine rsgf_1d_(w, k, r, spectrum, table)
+recursive subroutine rsgf_1d_(w, k, r, spectrum, table)
 
     TT, dimension(:), intent(inout) :: w
     integer, intent(in) :: k, r ! accuracy and radius
-    TT, dimension(0:), intent(in) :: spectrum, table
+    double precision, dimension(0:), intent(in) :: spectrum, table
 
     integer :: n
-    TT :: norm
-    TT :: cf11, cf12, cfR1, cfR2
-    TT :: sum, a1, a2, b1, b2
-    TT :: dA, dB, delta
-    TT :: sumA, sumB
+    double precision :: norm
+    double precision :: cf11, cf12, cfR1, cfR2
+    double precision :: sum, a1, a2, b1, b2
+    double precision :: dA, dB, delta
+    double precision :: sumA, sumB
     TT, allocatable, dimension(:) :: buf
     integer :: x, u
 
     n = size(w)
-    if (n == 1) then
+    ! compute_rsgf_coef_ gives a zero radius, r = nint(3 sigma + 0.3), for sigma < 1/15; the table is then
+    ! too short for the recursion, and a Gaussian that narrow is the identity to about 1e-49 (gauss_filt sends
+    ! sigma < rsgf_sigma_min to sampled_gaussian_filt_1d_, so this guards direct calls only)
+    if (n <= 1 .or. r == 0) then
         return
     end if
 
-    norm = 1.0/(r + 1 + r)
+    ! The indices are reflected only once at each end, which requires r <= n - 2;
+    ! a shorter array is filtered as a copy extended by repeated mirror reflection
+    if (r > n - 2) then
+        allocate (buf(0:n + 2*r - 1))
+        do x = 0, n + 2*r - 1
+            buf(x) = w(n - abs(n - 1 - modulo(x - r, 2*(n - 1))))
+        end do
+        call rsgf_1d_(buf, k, r, spectrum, table)
+        w = buf(r:r + n - 1)
+        return
+    end if
+
+    norm = 1.0d0/(r + 1 + r)
     cf11 = table(k*1 + 0)*2.0/spectrum(0)
     cf12 = table(k*1 + 1)*2.0/spectrum(1)
     cfR1 = table(k*r + 0)
@@ -609,17 +629,55 @@ subroutine rsgf_1d_(w, k, r, spectrum, table)
 
 end subroutine rsgf_1d_
 
+!
+!> Gaussian filter by direct convolution with the sampled Gaussian (radius 6 sigma, which leaves out less
+!> than 2e-9 of the weight), for sigma < rsgf_sigma_min, where the recursive spectral filter approximates
+!> the Gaussian poorly; the boundary is the repeated mirror reflection of rsgf_1d_
+!
+subroutine sampled_gaussian_filt_1d_(w, sigma)
+
+    TT, dimension(:), intent(inout) :: w
+    TT, intent(in) :: sigma
+
+    integer :: n, r, x, u
+    TT, allocatable, dimension(:) :: g, buf
+
+    n = size(w)
+    r = ceiling(6*sigma)
+    if (n <= 1 .or. r == 0) then
+        return
+    end if
+
+    allocate (g(-r:r))
+    do u = -r, r
+        g(u) = exp(-0.5d0*u**2/sigma**2)
+    end do
+    g = g/sum(g)
+
+    allocate (buf(0:n + 2*r - 1))
+    do x = 0, n + 2*r - 1
+        buf(x) = w(n - abs(n - 1 - modulo(x - r, 2*(n - 1))))
+    end do
+
+    do x = 1, n
+        w(x) = sum(g*buf(x - 1:x - 1 + 2*r))
+    end do
+
+end subroutine sampled_gaussian_filt_1d_
+
 subroutine spectral_gaussian_filt_1d_(w, sigma)
 
     TT, dimension(:), intent(inout) :: w
     TT, intent(in) :: sigma
 
     integer :: radius
-    TT, allocatable, dimension(:) :: spectrum, table
+    double precision, allocatable, dimension(:) :: spectrum, table
 
-    if (sigma > 0) then
+    if (sigma >= rsgf_sigma_min) then
         call compute_rsgf_coef_(sigma, 2, radius, spectrum, table)
         call rsgf_1d_(w, 2, radius, spectrum, table)
+    else if (sigma > 0) then
+        call sampled_gaussian_filt_1d_(w, sigma)
     end if
 
 end subroutine spectral_gaussian_filt_1d_
@@ -630,28 +688,39 @@ subroutine spectral_gaussian_filt_2d_(w, sigma)
     TT, dimension(:), intent(in) :: sigma
 
     integer :: radius1, radius2
-    TT, allocatable, dimension(:) :: spectrum1, table1
-    TT, allocatable, dimension(:) :: spectrum2, table2
+    double precision, allocatable, dimension(:) :: spectrum1, table1
+    double precision, allocatable, dimension(:) :: spectrum2, table2
     integer :: i, j, n1, n2
 
     n1 = size(w, 1)
     n2 = size(w, 2)
 
-    ! along 2
-    if (sigma(2) > 0) then
+    if (sigma(2) >= rsgf_sigma_min) then
         call compute_rsgf_coef_(sigma(2), 2, radius2, spectrum2, table2)
         !$omp parallel do private(i)
         do i = 1, n1
             call rsgf_1d_(w(i, :), 2, radius2, spectrum2, table2)
         end do
         !$omp end parallel do
+    else if (sigma(2) > 0) then
+        !$omp parallel do private(i)
+        do i = 1, n1
+            call sampled_gaussian_filt_1d_(w(i, :), sigma(2))
+        end do
+        !$omp end parallel do
     end if
 
-    if (sigma(1) > 0) then
+    if (sigma(1) >= rsgf_sigma_min) then
         call compute_rsgf_coef_(sigma(1), 2, radius1, spectrum1, table1)
         !$omp parallel do private(j)
         do j = 1, n2
             call rsgf_1d_(w(:, j), 2, radius1, spectrum1, table1)
+        end do
+        !$omp end parallel do
+    else if (sigma(1) > 0) then
+        !$omp parallel do private(j)
+        do j = 1, n2
+            call sampled_gaussian_filt_1d_(w(:, j), sigma(1))
         end do
         !$omp end parallel do
     end if
@@ -664,16 +733,16 @@ subroutine spectral_gaussian_filt_3d_(w, sigma)
     TT, dimension(:), intent(in) :: sigma
 
     integer :: radius1, radius2, radius3
-    TT, allocatable, dimension(:) :: spectrum1, table1
-    TT, allocatable, dimension(:) :: spectrum2, table2
-    TT, allocatable, dimension(:) :: spectrum3, table3
+    double precision, allocatable, dimension(:) :: spectrum1, table1
+    double precision, allocatable, dimension(:) :: spectrum2, table2
+    double precision, allocatable, dimension(:) :: spectrum3, table3
     integer :: i, j, k, n1, n2, n3
 
     n1 = size(w, 1)
     n2 = size(w, 2)
     n3 = size(w, 3)
 
-    if (sigma(3) > 0) then
+    if (sigma(3) >= rsgf_sigma_min) then
         call compute_rsgf_coef_(sigma(3), 2, radius3, spectrum3, table3)
         !$omp parallel do private(i, j)
         do j = 1, n2
@@ -682,9 +751,17 @@ subroutine spectral_gaussian_filt_3d_(w, sigma)
             end do
         end do
         !$omp end parallel do
+    else if (sigma(3) > 0) then
+        !$omp parallel do private(i, j)
+        do j = 1, n2
+            do i = 1, n1
+                call sampled_gaussian_filt_1d_(w(i, j, :), sigma(3))
+            end do
+        end do
+        !$omp end parallel do
     end if
 
-    if (sigma(2) > 0) then
+    if (sigma(2) >= rsgf_sigma_min) then
         call compute_rsgf_coef_(sigma(2), 2, radius2, spectrum2, table2)
         !$omp parallel do private(i, k)
         do k = 1, n3
@@ -693,14 +770,30 @@ subroutine spectral_gaussian_filt_3d_(w, sigma)
             end do
         end do
         !$omp end parallel do
+    else if (sigma(2) > 0) then
+        !$omp parallel do private(i, k)
+        do k = 1, n3
+            do i = 1, n1
+                call sampled_gaussian_filt_1d_(w(i, :, k), sigma(2))
+            end do
+        end do
+        !$omp end parallel do
     end if
 
-    if (sigma(1) > 0) then
+    if (sigma(1) >= rsgf_sigma_min) then
         call compute_rsgf_coef_(sigma(1), 2, radius1, spectrum1, table1)
         !$omp parallel do private(j, k)
         do k = 1, n3
             do j = 1, n2
                 call rsgf_1d_(w(:, j, k), 2, radius1, spectrum1, table1)
+            end do
+        end do
+        !$omp end parallel do
+    else if (sigma(1) > 0) then
+        !$omp parallel do private(j, k)
+        do k = 1, n3
+            do j = 1, n2
+                call sampled_gaussian_filt_1d_(w(:, j, k), sigma(1))
             end do
         end do
         !$omp end parallel do
@@ -1067,6 +1160,7 @@ end function gauss_filt_3d_
 #undef attail_
 #undef compute_rsgf_coef_
 #undef rsgf_1d_
+#undef sampled_gaussian_filt_1d_
 #undef spectral_gaussian_filt_1d_
 #undef spectral_gaussian_filt_2d_
 #undef spectral_gaussian_filt_3d_

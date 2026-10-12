@@ -1,5 +1,5 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
 ! This program was produced under U.S. Government contract 89233218CNA000001 
 ! for Los Alamos National Laboratory (LANL), which is operated by 
@@ -35,50 +35,50 @@ module libflit_constants
     complex, parameter :: const_dcomplex_zero = dcmplx(0.0d0, 0.0d0)
 
     ! Constant Pi
-    double precision, parameter :: const_pi = 3.141592653589793238462643
-    double precision, parameter :: const_pi_half = 1.570796326794896619231321
-    double precision, parameter :: const_pi_inv = 0.318309886183790671537767
-    double precision, parameter :: const_pi_sqr = 9.869604401089358618834491
-    double precision, parameter :: const_pi_sqrt = 1.772453850905516027298167
-    double precision, parameter :: const_pi_ln = 1.144729885849400174143427
-    double precision, parameter :: const_pi_log10 = 0.497149872694133854351268
+    double precision, parameter :: const_pi = 3.141592653589793238462643d0
+    double precision, parameter :: const_pi_half = 1.570796326794896619231321d0
+    double precision, parameter :: const_pi_inv = 0.318309886183790671537767d0
+    double precision, parameter :: const_pi_sqr = 9.869604401089358618834491d0
+    double precision, parameter :: const_pi_sqrt = 1.772453850905516027298167d0
+    double precision, parameter :: const_pi_ln = 1.144729885849400174143427d0
+    double precision, parameter :: const_pi_log10 = 0.497149872694133854351268d0
 
     ! Euler's number e
-    double precision, parameter :: const_ee = 2.71828182845904523560287
-    double precision, parameter :: const_ee_inv = 0.367879441171442321595523
-    double precision, parameter :: const_ee_sqr = 7.389056098930650227230427
-    double precision, parameter :: const_ee_log10 = 0.434294481903251827651129
+    double precision, parameter :: const_ee = 2.71828182845904523560287d0
+    double precision, parameter :: const_ee_inv = 0.367879441171442321595523d0
+    double precision, parameter :: const_ee_sqr = 7.389056098930650227230427d0
+    double precision, parameter :: const_ee_log10 = 0.434294481903251827651129d0
 
     ! sqrt(2)
-    double precision, parameter :: const_sqrt2 = 1.4142135623730951
-    double precision, parameter :: const_sqrt2_inv = 0.7071067811865475
+    double precision, parameter :: const_sqrt2 = 1.4142135623730951d0
+    double precision, parameter :: const_sqrt2_inv = 0.7071067811865475d0
 
     ! sqrt(3)
-    double precision, parameter :: const_sqrt3 = 1.7320508075688772
-    double precision, parameter :: const_sqrt3_inv = 0.5773502691896258
+    double precision, parameter :: const_sqrt3 = 1.7320508075688772d0
+    double precision, parameter :: const_sqrt3_inv = 0.5773502691896258d0
 
     ! sqrt(5)
-    double precision, parameter :: const_sqrt5 = 2.23606797749979
-    double precision, parameter :: const_sqrt5_inv = 0.4472135954999579
+    double precision, parameter :: const_sqrt5 = 2.23606797749979d0
+    double precision, parameter :: const_sqrt5_inv = 0.4472135954999579d0
 
     ! degree radian
-    double precision, parameter :: const_deg2rad = 0.017453292519943295
-    double precision, parameter :: const_rad2deg = 57.29577951308232
+    double precision, parameter :: const_deg2rad = 0.017453292519943295d0
+    double precision, parameter :: const_rad2deg = 57.29577951308232d0
 
     ! Volumes
-    double precision, parameter :: const_oz2cbm = 0.0000295703125
-    double precision, parameter :: const_cbm2oz = 33817.70145310435931307794
+    double precision, parameter :: const_oz2cbm = 0.0000295703125d0
+    double precision, parameter :: const_cbm2oz = 33817.70145310435931307794d0
 
     ! Length
     real, parameter :: const_ft2m = 0.3048
     real, parameter :: const_m2ft = 3.28084
 
     ! Area
-    double precision, parameter :: const_sqft2sqm = 0.09290304
-    double precision, parameter :: const_sqm2sqft = 10.76391041670972230833
+    double precision, parameter :: const_sqft2sqm = 0.09290304d0
+    double precision, parameter :: const_sqm2sqft = 10.76391041670972230833d0
 
     ! golden ratio
-    double precision, parameter :: const_golden = 1.618033988749894
+    double precision, parameter :: const_golden = 1.618033988749894d0
 
     ! light in vacuum
     real, parameter :: const_lightc = 299752458.0
@@ -96,8 +96,8 @@ module libflit_constants
     double precision, parameter :: const_elementary_charge = 1.602176634d-19
 
     ! Fine structure constant
-    double precision, parameter :: const_fine_structure = 0.00729735256278713575
-    double precision, parameter :: const_fine_structure_reciprocial = 137.035999206
+    double precision, parameter :: const_fine_structure = 0.00729735256278713575d0
+    double precision, parameter :: const_fine_structure_reciprocial = 137.035999206d0
 
     ! Scales
     double precision, parameter :: const_yotta = 1.0d24

@@ -144,3 +144,13 @@ python compare_iir_with_obspy.py \
     --input-file x.txt \
     --output-file y.txt \
     --no-show
+
+# gaussfilt: gauss_filt on short arrays and for small to huge sigma (1D, 2D, 3D, single and double precision),
+# checked against a direct convolution of the same kernels; the cases go to gaussfilt_out/
+touch program_name
+mod="gaussfilt"
+echo "program_name="$mod > program_name
+make clean
+make
+./exec_$mod
+python check_gaussfilt.py
