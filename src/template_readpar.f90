@@ -55,7 +55,7 @@ subroutine readpar_(filename, parname, par, default_value, required)
         if (tidy(line) == 'exit') exit
         if (len(tidy(line)) > 0) then
             eqindex = index(line, '=')
-            if (to_lower(tidy(line(1:eqindex - 1))) == to_lower(tidy(parname))) then
+            if (to_lower(tidy(line(1:eqindex - 1))) == to_lower(tidy(parname)) .and. len(tidy(line(eqindex + 1:))) > 0) then
                 par = extract_TT(tidy(line(eqindex + 1:)))
                 npar = npar + 1
             end if
@@ -113,7 +113,7 @@ subroutine readnpar_(filename, parname, par, default_value, required, separator)
         if (tidy(line) == 'exit') exit
         if (len(tidy(line)) > 0) then
             eqindex = index(line, '=')
-            if (to_lower(tidy(line(1:eqindex - 1))) == to_lower(tidy(parname))) then
+            if (to_lower(tidy(line(1:eqindex - 1))) == to_lower(tidy(parname)) .and. len(tidy(line(eqindex + 1:))) > 0) then
                 call extract_nTT(tidy(line(eqindex + 1:)), sepr(1:max(1, len_trim(sepr))), par)
                 npar = npar + 1
             end if
@@ -179,7 +179,7 @@ subroutine readxpar_(filename, parname, par, default_value, var, required)
         if (tidy(line) == 'exit') exit
         if (len(tidy(line)) > 0) then
             eqindex = index(line, '=')
-            if (to_lower(tidy(line(1:eqindex - 1))) == to_lower(tidy(parname))) then
+            if (to_lower(tidy(line(1:eqindex - 1))) == to_lower(tidy(parname)) .and. len(tidy(line(eqindex + 1:))) > 0) then
                 call extract_nstring(tidy(line(eqindex + 1:)), ',', tmpar)
                 npar = npar + 1
             end if
@@ -543,7 +543,7 @@ subroutine parsepar_(source, parname, par, default_value, required)
             end if
         end do
         eqindex = index(arg, '=')
-        if (to_lower(tidy(arg(1:eqindex - 1))) == to_lower(tidy(parname))) then
+        if (to_lower(tidy(arg(1:eqindex - 1))) == to_lower(tidy(parname)) .and. len(tidy(arg(eqindex + 1:))) > 0) then
             par = extract_TT(tidy(arg(eqindex + 1:)))
             parsepar_success = .true.
         end if
@@ -605,7 +605,7 @@ subroutine parsenpar_(source, parname, par, default_value, separator, required)
             end if
         end do
         eqindex = index(arg, '=')
-        if (to_lower(tidy(arg(1:eqindex - 1))) == to_lower(tidy(parname))) then
+        if (to_lower(tidy(arg(1:eqindex - 1))) == to_lower(tidy(parname)) .and. len(tidy(arg(eqindex + 1:))) > 0) then
             call extract_nTT(tidy(arg(eqindex + 1:)), sepr(1:max(1, len_trim(sepr))), par)
             parsepar_success = .true.
         end if
@@ -670,7 +670,7 @@ subroutine parsexpar_(source, parname, par, default_value, var, required)
             end if
         end do
         eqindex = index(arg, '=')
-        if (to_lower(tidy(arg(1:eqindex - 1))) == to_lower(tidy(parname))) then
+        if (to_lower(tidy(arg(1:eqindex - 1))) == to_lower(tidy(parname)) .and. len(tidy(arg(eqindex + 1:))) > 0) then
             call extract_nstring(tidy(arg(eqindex + 1:)), ',', tmpar)
             parsepar_success = .true.
         end if

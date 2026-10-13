@@ -29,6 +29,10 @@ par3 = 1.2, 2.3, 3.4
 # Test readpar separator, where values are separated by spaces
 par4 = 1.0 2.0 3.0
 
+# Test readpar empty value, where epar takes the default value and spar4 is an empty string
+epar =
+spar4 = ''
+
 # Test readpar high-precision float, where dpar1 to dpar5 are read as double
 fpar1 = 1.0000001
 fpar2 = 0.9999999

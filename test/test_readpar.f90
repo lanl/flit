@@ -315,6 +315,45 @@ program test
     block
 
         character(len=1024) :: file_parameter
+        integer :: ipar
+        real :: par
+        character(len=16) :: spar
+        real, allocatable, dimension(:) :: pars
+
+        file_parameter = './tmp.txt'
+
+        print *, repeat('-', 60)
+        print *, 'readpar -- empty value'
+        print *, repeat('-', 60)
+
+        ! epar has no value in the file, so each read returns the default value
+        call readpar_int(file_parameter, 'epar', ipar, 7)
+        print *, ipar, merge('PASS', 'FAIL', ipar == 7)
+
+        call readpar_float(file_parameter, 'epar', par, 7.0)
+        print *, par, merge('PASS', 'FAIL', par == 7.0)
+
+        call readpar_string(file_parameter, 'epar', spar, 'abc')
+        print *, spar, merge('PASS', 'FAIL', spar == 'abc')
+
+        call readpar_nfloat(file_parameter, 'epar', pars, [7.0, 7.0])
+        print *, pars, merge('PASS', 'FAIL', size(pars) == 2 .and. all(pars == 7.0))
+
+        call readpar_xfloat(file_parameter, 'epar', par, 7.0, 3.0)
+        print *, par, merge('PASS', 'FAIL', par == 7.0)
+
+        call parsepar_int(['epar ='], 'epar', ipar, 7)
+        print *, ipar, merge('PASS', 'FAIL', ipar == 7)
+
+        ! A quoted empty string is a value, so spar4 is an empty string
+        call readpar_string(file_parameter, 'spar4', spar, 'abc')
+        print *, '"'//trim(spar)//'" ', merge('PASS', 'FAIL', spar == '')
+
+    end block
+
+    block
+
+        character(len=1024) :: file_parameter
         real, allocatable, dimension(:) :: pars
 
         file_parameter = './tmp.txt'
@@ -362,7 +401,7 @@ program test
         print *, 'checkpar'
         print *, repeat('-', 60)
 
-        valid = [character(len=8) :: 'spar1', 'spar2', 'spar3', &
+        valid = [character(len=8) :: 'spar1', 'spar2', 'spar3', 'spar4', 'epar', &
             'ipar1', 'ipar2', 'ipar3', 'ipar4', 'ipar5', 'ipar6', 'ipar7', 'ipar8', 'ipar9', &
             'par1', 'par2', 'par3', 'par4', 'fpar1', 'fpar2', 'fpar3', 'fpar4', 'fpar5', &
             'dpar1', 'dpar2', 'dpar3', 'dpar4', 'dpar5', 'opar1', 'opar2', 'opar3', 'opar4', 'opar5', 'opar6', &

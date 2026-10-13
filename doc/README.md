@@ -68,7 +68,7 @@ For parameter input from an ASCII file, `FLIT` provides the following interfaces
   call readpar_#type(parameter_file, parameter_name, target_variable, default_value, required)
   ```
 
-  where `parameter_file` is the ASCII file that holds the parameters, `parameter_name` is the name of the parameter, `target_variable` is the variable that stores the parameter value, `default_value` is the value of the parameter if it is not in the parameter file, and `required` is an optional logical argument that states whether the parameter is required. If a required parameter is not in the parameter file, the program reports an error and stops.
+  where `parameter_file` is the ASCII file that holds the parameters, `parameter_name` is the name of the parameter, `target_variable` is the variable that stores the parameter value, `default_value` is the value of the parameter if it is not in the parameter file or has an empty value (e.g., `n =`), and `required` is an optional logical argument that states whether the parameter is required. If a required parameter is not in the parameter file, the program reports an error and stops.
 - Read multiple values into an allocatable array:
 
   ```fortran
