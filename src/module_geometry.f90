@@ -77,9 +77,9 @@ module libflit_geometry
         module procedure :: distance_between_line_segments_double
     end interface
 
-    interface point_distance_to_line_segement
-        module procedure :: point_distance_to_line_segement_float
-        module procedure :: point_distance_to_line_segement_double
+    interface point_distance_to_line_segment
+        module procedure :: point_distance_to_line_segment_float
+        module procedure :: point_distance_to_line_segment_double
     end interface
 
     interface point_distance_to_line
@@ -124,7 +124,7 @@ module libflit_geometry
     public :: rotate_point
     public :: rotation_matrix
     public :: distance_between_line_segments
-    public :: point_distance_to_line_segement
+    public :: point_distance_to_line_segment
     public :: point_distance_to_line
     public :: point_signed_distance_to_line
     public :: gaussian_curvature

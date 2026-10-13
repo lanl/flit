@@ -30,7 +30,7 @@
 #define distance_between_line_segments_      CONCAT(distance_between_line_segments, T)
 #define point_distance_to_line_      CONCAT(point_distance_to_line, T)
 #define point_signed_distance_to_line_      CONCAT(point_signed_distance_to_line, T)
-#define point_distance_to_line_segement_      CONCAT(point_distance_to_line_segement, T)
+#define point_distance_to_line_segment_      CONCAT(point_distance_to_line_segment, T)
 #define polygon_contains_point_      CONCAT(polygon_contains_point, T)
 #define fit_curve_      CONCAT(fit_curve, T)
 #define fit_surface_      CONCAT(fit_surface, T)
@@ -303,7 +303,7 @@ function point_signed_distance_to_line_(p1, p2, p) result(dist_signed)
 end function
 
 !
-!> Compute point distance to a line segement and the nearest point on the line segment
+!> Compute point distance to a line segment and the nearest point on the line segment
 !>
 !> Original author:
 !>      John Burkardt, 2005
@@ -324,7 +324,7 @@ end function
 !    Output, real (kind = real_kind ) T, the relative position of the point PN
 !    to the points P1 and P2.
 !
-subroutine point_distance_to_line_segement_(p1, p2, p, pn, dist, t)
+subroutine point_distance_to_line_segment_(p1, p2, p, pn, dist, t)
 
     TT, dimension(:), intent(in) :: p, p1, p2
     TT, dimension(:), intent(out) :: pn
@@ -848,7 +848,7 @@ end subroutine
 #undef distance_between_line_segments_
 #undef point_distance_to_line_
 #undef point_signed_distance_to_line_
-#undef point_distance_to_line_segement_
+#undef point_distance_to_line_segment_
 #undef polygon_contains_point_
 #undef fit_curve_
 #undef fit_surface_

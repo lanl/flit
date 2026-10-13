@@ -1,8 +1,21 @@
 
+# Test readpar string
+spar1 = model.bin
+spar2 = 0~2:vp.bin, 5~10:vs.bin
+spar3 = vp, vs, rho
+
 # Test readpar integer
 ipar1 = 1234
 ipar2 = 0:0, 10:1, 11~20:2
 ipar3 = 2, 3, 4, 5, 6
+
+# Test readpar large integer, where ipar6 and ipar8 need 8 bytes, and ipar9 has exponent and decimal forms
+ipar4 = 16777217
+ipar5 = 123456789, 2000000001
+ipar6 = 3000000000
+ipar7 = 2147483647, -2147483648
+ipar8 = 9007199254740993, 9223372036854775807, -9223372036854775808
+ipar9 = 2.147483647e9, -2.147483648e9, 1e3, 2.5
 
 # Test readpar float
 par1 = 0.12345
@@ -12,6 +25,30 @@ par3 = 1.2, 2.3, 3.4
 par1 = 0.2222
 par2 = 0:0, 10:1, 11~20:2
 par3 = 1.2, 2.3, 3.4
+
+# Test readpar separator, where values are separated by spaces
+par4 = 1.0 2.0 3.0
+
+# Test readpar high-precision float, where dpar1 to dpar5 are read as double
+fpar1 = 1.0000001
+fpar2 = 0.9999999
+fpar3 = 1.0000000
+fpar4 = 1.00000006
+fpar5 = 3000000000
+dpar1 = 1.0000000000000002
+dpar2 = 0.9999999999999999
+dpar3 = 1.0000001
+dpar4 = 1.2345678901234567890123e-10
+dpar5 = 1.0000000000000002, 0.9999999999999999, 1.2345678901234567890e-10
+
+# Test readpar out-of-range integer, where reading each value must stop with an error
+# (opar1 as 2 bytes, opar2 to opar4 as 4 bytes, opar5 and opar6 as 8 bytes)
+opar1 = 32768
+opar2 = 2147483648
+opar3 = 1e10
+opar4 = 3.0e9
+opar5 = 9223372036854775808
+opar6 = 1e19
 
 # Test readpar complex
 zcpar1 = 0.12345 + 0.1i

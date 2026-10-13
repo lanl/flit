@@ -51,11 +51,11 @@ module libflit_constants
 
     ! sqrt(2)
     double precision, parameter :: const_sqrt2 = 1.4142135623730951d0
-    double precision, parameter :: const_sqrt2_inv = 0.7071067811865475d0
+    double precision, parameter :: const_sqrt2_inv = 0.7071067811865476d0
 
     ! sqrt(3)
     double precision, parameter :: const_sqrt3 = 1.7320508075688772d0
-    double precision, parameter :: const_sqrt3_inv = 0.5773502691896258d0
+    double precision, parameter :: const_sqrt3_inv = 0.5773502691896257d0
 
     ! sqrt(5)
     double precision, parameter :: const_sqrt5 = 2.23606797749979d0
@@ -78,7 +78,7 @@ module libflit_constants
     double precision, parameter :: const_sqm2sqft = 10.76391041670972230833d0
 
     ! golden ratio
-    double precision, parameter :: const_golden = 1.618033988749894d0
+    double precision, parameter :: const_golden = 1.618033988749895d0
 
     ! light in vacuum
     real, parameter :: const_lightc = 299752458.0
@@ -221,7 +221,7 @@ contains
 
         real :: x
 
-        x = sqrt(-1.0)
+        x = ieee_value(x, ieee_quiet_nan)
 
     end function nan
 

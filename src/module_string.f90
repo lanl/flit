@@ -1,5 +1,5 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
 ! This program was produced under U.S. Government contract 89233218CNA000001
 ! for Los Alamos National Laboratory (LANL), which is operated by
@@ -715,7 +715,7 @@ contains
 
         character(len=:), allocatable :: str
         double precision :: var
-        integer :: var_int
+        integer(kind=8) :: var_int
         integer :: pos_dot, pos_les, pos_ues
         character(len=256) :: var_char
 
@@ -733,14 +733,14 @@ contains
             ! If the input stream is in the form of xxxxexxxx,
             ! then add a .0 to the string to convert it to xxxx.0exxxx
             var_char = str(1:pos_les - 1)//'.0'//str(pos_les:len_trim(str))
-            read (var_char, '(g)') var
+            read (var_char, '(g256.0)') var
         else if (pos_dot == 0 .and. pos_les == 0 .and. pos_ues /= 0) then
             ! If the input stream is in the form of xxxxExxxx,
             ! then add a .0 to the string to convert it to xxxx.0Exxxx
             var_char = str(1:pos_ues - 1)//'.0'//str(pos_ues:len_trim(str))
-            read (var_char, '(g)') var
+            read (var_char, '(g256.0)') var
         else
-            read (str, '(g)') var
+            read (str, '(g256.0)') var
         end if
 
         f = real(var)
@@ -757,7 +757,7 @@ contains
 
         character(len=:), allocatable :: str
         double precision :: var
-        integer :: var_int
+        integer(kind=8) :: var_int
         integer :: pos_dot, pos_les, pos_ues
         character(len=256) :: var_char
 
@@ -775,14 +775,14 @@ contains
             ! If the input stream is in the form of xxxxexxxx,
             ! then add a .0 to the string to convert it to xxxx.0exxxx
             var_char = str(1:pos_les - 1)//'.0'//str(pos_les:len_trim(str))
-            read (var_char, '(g)') var
+            read (var_char, '(g256.0)') var
         else if (pos_dot == 0 .and. pos_les == 0 .and. pos_ues /= 0) then
             ! If the input stream is in the form of xxxxExxxx,
             ! then add a .0 to the string to convert it to xxxx.0Exxxx
             var_char = str(1:pos_ues - 1)//'.0'//str(pos_ues:len_trim(str))
-            read (var_char, '(g)') var
+            read (var_char, '(g256.0)') var
         else
-            read (str, '(g)') var
+            read (str, '(g256.0)') var
         end if
 
         f = var
@@ -798,10 +798,22 @@ contains
         integer(kind=2) :: extract_int2
 
         character(len=:), allocatable :: str
+        double precision :: var
 
         str = trim(adjustl(str_))
 
-        extract_int2 = int(extract_float(str), kind=2)
+        if (verify(str, '+-0123456789') == 0) then
+            ! read a plain integer directly to keep all its digits
+            read (str, *) extract_int2
+        else
+            ! read other forms, e.g., 1e3 or 2.5, as double and truncate
+            var = extract_double(str)
+            if (.not. (var >= -2.0d0**15 .and. var < 2.0d0**15)) then
+                write (error_unit, *) ' <extract_int2> Error: '//str//' is out of range for a 2-byte integer. '
+                error stop
+            end if
+            extract_int2 = int(var, kind=2)
+        end if
 
     end function extract_int2
 
@@ -814,10 +826,22 @@ contains
         integer(kind=4) :: extract_int4
 
         character(len=:), allocatable :: str
+        double precision :: var
 
         str = trim(adjustl(str_))
 
-        extract_int4 = int(extract_float(str), kind=4)
+        if (verify(str, '+-0123456789') == 0) then
+            ! read a plain integer directly to keep all its digits
+            read (str, *) extract_int4
+        else
+            ! read other forms, e.g., 1e3 or 2.5, as double and truncate
+            var = extract_double(str)
+            if (.not. (var >= -2.0d0**31 .and. var < 2.0d0**31)) then
+                write (error_unit, *) ' <extract_int4> Error: '//str//' is out of range for a 4-byte integer. '
+                error stop
+            end if
+            extract_int4 = int(var, kind=4)
+        end if
 
     end function extract_int4
 
@@ -830,10 +854,22 @@ contains
         integer(kind=8) :: extract_int8
 
         character(len=:), allocatable :: str
+        double precision :: var
 
         str = trim(adjustl(str_))
 
-        extract_int8 = int(extract_float(str), kind=8)
+        if (verify(str, '+-0123456789') == 0) then
+            ! read a plain integer directly to keep all its digits
+            read (str, *) extract_int8
+        else
+            ! read other forms, e.g., 1e3 or 2.5, as double and truncate
+            var = extract_double(str)
+            if (.not. (var >= -2.0d0**63 .and. var < 2.0d0**63)) then
+                write (error_unit, *) ' <extract_int8> Error: '//str//' is out of range for an 8-byte integer. '
+                error stop
+            end if
+            extract_int8 = int(var, kind=8)
+        end if
 
     end function extract_int8
 
@@ -1094,7 +1130,7 @@ contains
         integer(kind=2), allocatable, dimension(:), intent(inout) :: var
 
         integer :: i, n
-        character(len=24), allocatable, dimension(:) :: vars
+        character(len=:), allocatable, dimension(:) :: vars
 
         vars = split_string(str, separator)
         n = size(vars)
@@ -1104,7 +1140,7 @@ contains
         end if
         allocate (var(1:n))
         do i = 1, n
-            var(i) = int(extract_float(vars(i)), kind=2)
+            var(i) = extract_int2(vars(i))
         end do
 
     end subroutine extract_nint2
@@ -1118,7 +1154,7 @@ contains
         integer(kind=4), allocatable, dimension(:), intent(inout) :: var
 
         integer :: i, n
-        character(len=24), allocatable, dimension(:) :: vars
+        character(len=:), allocatable, dimension(:) :: vars
 
         vars = split_string(str, separator)
         n = size(vars)
@@ -1128,7 +1164,7 @@ contains
         end if
         allocate (var(1:n))
         do i = 1, n
-            var(i) = int(extract_float(vars(i)), kind=4)
+            var(i) = extract_int4(vars(i))
         end do
 
     end subroutine extract_nint4
@@ -1142,7 +1178,7 @@ contains
         integer(kind=8), allocatable, dimension(:), intent(inout) :: var
 
         integer :: i, n
-        character(len=24), allocatable, dimension(:) :: vars
+        character(len=:), allocatable, dimension(:) :: vars
 
         vars = split_string(str, separator)
         n = size(vars)
@@ -1152,7 +1188,7 @@ contains
         end if
         allocate (var(1:n))
         do i = 1, n
-            var(i) = int(extract_float(vars(i)), kind=8)
+            var(i) = extract_int8(vars(i))
         end do
 
     end subroutine extract_nint8
@@ -1166,7 +1202,7 @@ contains
         real, allocatable, dimension(:), intent(inout) :: var
 
         integer :: i, n
-        character(len=24), allocatable, dimension(:) :: vars
+        character(len=:), allocatable, dimension(:) :: vars
 
         vars = split_string(str, separator)
         n = size(vars)
@@ -1190,7 +1226,7 @@ contains
         double precision, allocatable, dimension(:), intent(inout) :: var
 
         integer :: i, n
-        character(len=24), allocatable, dimension(:) :: vars
+        character(len=:), allocatable, dimension(:) :: vars
 
         vars = split_string(str, separator)
         n = size(vars)
@@ -1214,7 +1250,7 @@ contains
         complex, allocatable, dimension(:), intent(inout) :: var
 
         integer :: i, n
-        character(len=48), allocatable, dimension(:) :: vars
+        character(len=:), allocatable, dimension(:) :: vars
 
         vars = split_string(str, separator)
         n = size(vars)
@@ -1238,7 +1274,7 @@ contains
         double complex, allocatable, dimension(:), intent(inout) :: var
 
         integer :: i, n
-        character(len=48), allocatable, dimension(:) :: vars
+        character(len=:), allocatable, dimension(:) :: vars
 
         vars = split_string(str, separator)
         n = size(vars)

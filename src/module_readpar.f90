@@ -1,5 +1,5 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
 ! This program was produced under U.S. Government contract 89233218CNA000001
 ! for Los Alamos National Laboratory (LANL), which is operated by
@@ -258,6 +258,7 @@ module libflit_readpar
     public :: getpar_complex
     public :: getpar_ncomplex
     public :: getpar_xcomplex
+    public :: getpar_dcomplex
     public :: getpar_ndcomplex
     public :: getpar_xdcomplex
     public :: getpar_logical
@@ -279,6 +280,7 @@ module libflit_readpar
     public :: parsepar_complex
     public :: parsepar_ncomplex
     public :: parsepar_xcomplex
+    public :: parsepar_dcomplex
     public :: parsepar_ndcomplex
     public :: parsepar_xdcomplex
     public :: parsepar_logical
@@ -306,6 +308,7 @@ contains
         integer :: ioerr
         logical :: invalid
 
+        invalid = .false.
         open (newunit=funit, file=tidy(filename), status='old', action='read')
         do
             read (funit, '(a)', iostat=ioerr) line

@@ -1,5 +1,5 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
 ! This program was produced under U.S. Government contract 89233218CNA000001
 ! for Los Alamos National Laboratory (LANL), which is operated by
@@ -100,7 +100,7 @@ subroutine readnpar_(filename, parname, par, default_value, required, separator)
     integer :: ioerr
 
     if (present(separator)) then
-        sepr = separator
+        sepr = adjustl(separator)
     else
         sepr = ','
     end if
@@ -114,7 +114,7 @@ subroutine readnpar_(filename, parname, par, default_value, required, separator)
         if (len(tidy(line)) > 0) then
             eqindex = index(line, '=')
             if (to_lower(tidy(line(1:eqindex - 1))) == to_lower(tidy(parname))) then
-                call extract_nTT(tidy(line(eqindex + 1:)), trim(adjustl(sepr)), par)
+                call extract_nTT(tidy(line(eqindex + 1:)), sepr(1:max(1, len_trim(sepr))), par)
                 npar = npar + 1
             end if
         end if
@@ -132,9 +132,8 @@ subroutine readnpar_(filename, parname, par, default_value, required, separator)
                 ! if not required then set to default
                 if (allocated(par)) then
                     deallocate (par)
-                else
-                    par = default_value
                 end if
+                par = default_value
             end if
         else
             ! if not required then set to default value
@@ -348,7 +347,7 @@ subroutine getnpar_(parname, par, default_value, separator, required)
     getpar_success = .false.
     len_par = len_trim(parname)
     if (present(separator)) then
-        sepr = separator
+        sepr = adjustl(separator)
     else
         sepr = ','
     end if
@@ -361,7 +360,7 @@ subroutine getnpar_(parname, par, default_value, separator, required)
         if (len_arg > len_par + 1) then
             ! For getpar, the parname must be followed by = without any space.
             if (to_lower(tidy(arg(1:len_par + 1))) == to_lower(tidy(parname))//'=') then
-                call extract_nTT(arg(len_par + 2:len_arg), trim(adjustl(sepr)), par)
+                call extract_nTT(arg(len_par + 2:len_arg), sepr(1:max(1, len_trim(sepr))), par)
                 getpar_success = .true.
             end if
         end if
@@ -592,7 +591,7 @@ subroutine parsenpar_(source, parname, par, default_value, separator, required)
 
     parsepar_success = .false.
     if (present(separator)) then
-        sepr = separator
+        sepr = adjustl(separator)
     else
         sepr = ','
     end if
@@ -607,7 +606,7 @@ subroutine parsenpar_(source, parname, par, default_value, separator, required)
         end do
         eqindex = index(arg, '=')
         if (to_lower(tidy(arg(1:eqindex - 1))) == to_lower(tidy(parname))) then
-            call extract_nTT(tidy(arg(eqindex + 1:)), trim(adjustl(sepr)), par)
+            call extract_nTT(tidy(arg(eqindex + 1:)), sepr(1:max(1, len_trim(sepr))), par)
             parsepar_success = .true.
         end if
 
@@ -644,8 +643,8 @@ subroutine parsexpar_(source, parname, par, default_value, var, required)
 
     character(len=*), dimension(:), intent(in) :: source
     character(len=*), intent(in) :: parname
-    TT, allocatable, dimension(:), intent(out) :: par
-    TT, dimension(:), intent(in) :: default_value
+    TT, intent(inout) :: par
+    TT, intent(in) :: default_value
     real, intent(in) :: var
     logical, intent(in), optional :: required
 
