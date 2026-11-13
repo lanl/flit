@@ -36,6 +36,9 @@ module fh5
 
     logical, save :: lib_open = .false.
 
+    ! Longest string attribute shown in full by fh5_print_attr and fh5_print_tree
+    integer, parameter :: attr_str_len = 1024
+
     integer(hid_t) :: fh5_fid
 
     ! Public API
@@ -171,13 +174,23 @@ contains
         integer, intent(out), optional :: error
         integer(hid_t) :: did, tid
         integer(hsize_t) :: dims(1)
+        integer(size_t) :: slen
+        character(len=:), allocatable :: tmp
         integer :: e
         d = ''
         call h5dopen_f(fid, trim(path), did, e)
         if (bail(e, "fh5_read_str", error)) return
         call h5dget_type_f(did, tid, e)
+        call h5tget_size_f(tid, slen, e)
         dims = [1_hsize_t]
-        call h5dread_f(did, tid, d, dims, e)
+        ! Read the whole string, then assign it, which truncates it to the length of d
+        if (e == 0) then
+            allocate (character(len=slen) :: tmp)
+            call h5dread_f(did, tid, tmp, dims, e)
+        end if
+        if (e == 0) then
+            d = tmp
+        end if
         call h5tclose_f(tid, e)
         call h5dclose_f(did, e)
         call chk(e, "fh5_read_str", error)
@@ -466,7 +479,7 @@ contains
     !> Format an open attribute handle as a short string
     function attr_val_str(aid) result(s)
         integer(hid_t), intent(in) :: aid
-        character(len=128) :: s
+        character(len=attr_str_len + 2) :: s
         integer(hid_t) :: tid, sid
         integer :: e, tc, nd, i
         integer(size_t) :: tsz
@@ -475,7 +488,8 @@ contains
         integer(i64), allocatable :: ai64(:)
         real(r32), allocatable :: ar32(:)
         real(r64), allocatable :: ar64(:)
-        character(len=64) :: vs
+        character(len=attr_str_len) :: vs
+        character(len=:), allocatable :: tmp
         s = '?'
         call h5aget_type_f(aid, tid, e)
         call h5aget_space_f(aid, sid, e)
@@ -497,6 +511,10 @@ contains
                 else
                     s = "["
                     do i = 1, ntot
+                        if (len_trim(s) > len(s) - 32) then
+                            s = trim(s)//", ..."
+                            exit
+                        end if
                         if (i > 1) then
                             s = trim(s)//","
                         end if
@@ -512,6 +530,10 @@ contains
                 else
                     s = "["
                     do i = 1, ntot
+                        if (len_trim(s) > len(s) - 32) then
+                            s = trim(s)//", ..."
+                            exit
+                        end if
                         if (i > 1) then
                             s = trim(s)//","
                         end if
@@ -529,6 +551,10 @@ contains
                 else
                     s = "["
                     do i = 1, ntot
+                        if (len_trim(s) > len(s) - 32) then
+                            s = trim(s)//", ..."
+                            exit
+                        end if
                         if (i > 1) then
                             s = trim(s)//","
                         end if
@@ -544,6 +570,10 @@ contains
                 else
                     s = "["
                     do i = 1, ntot
+                        if (len_trim(s) > len(s) - 32) then
+                            s = trim(s)//", ..."
+                            exit
+                        end if
                         if (i > 1) then
                             s = trim(s)//","
                         end if
@@ -554,8 +584,16 @@ contains
             end if
         else if (tc == H5T_STRING_F) then
             vs = ''
+            allocate (character(len=tsz) :: tmp)
             dims(1) = 1_hsize_t
-            call h5aread_f(aid, tid, vs, dims(1:1), e)
+            call h5aread_f(aid, tid, tmp, dims(1:1), e)
+            if (e == 0) then
+                vs = tmp
+                ! Mark a string longer than the display length
+                if (len_trim(tmp) > len(vs)) then
+                    vs(len(vs) - 3:) = ' ...'
+                end if
+            end if
             s = '"'//trim(vs)//'"'
         else
             write (s, '(A,I0)') "type_class=", tc
@@ -704,6 +742,19 @@ contains
         integer(hid_t), intent(out) :: oid
         integer, intent(out) :: e
         call h5oopen_f(fid, trim(obj_path), oid, e)
+    end subroutine
+
+    !> Delete attribute name of object oid if it exists, so that a new write overwrites it
+    subroutine drop_attr(oid, name)
+        integer(hid_t), intent(in) :: oid
+        character(*), intent(in) :: name
+        logical :: exists
+        integer :: e
+        exists = .false.
+        call h5aexists_f(oid, trim(name), exists, e)
+        if (exists) then
+            call h5adelete_f(oid, trim(name), e)
+        end if
     end subroutine
 
     subroutine wr_i8_0(fid, path, d, error)
@@ -3298,6 +3349,14 @@ contains
         call chk(0, 'rd_c64_6', error)
     end subroutine rd_c64_6
 
+    !================================================================
+    ! ATTRIBUTE WRITE
+    ! Writing an existing attribute overwrites it.
+    ! Argument error reports whether creating or writing the attribute
+    ! failed. The close calls keep their status in ec, not in e, so a
+    ! successful close does not reset a failure to zero. Without error,
+    ! a failure stops the program.
+    !================================================================
     subroutine wa_i32(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
         character(*), intent(in) :: obj, name
@@ -3305,19 +3364,22 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, sid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         call ensure_obj_exists(fid, obj, e)
         if (bail(e, "wa_i32_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_i32", error)) return
+        call drop_attr(oid, name)
         call h5screate_f(H5S_SCALAR_F, sid, e)
         call h5acreate_f(oid, trim(name), h5kind_to_type(i32, H5_INTEGER_KIND), sid, aid, e)
-        dims = [1_hsize_t]
-        call h5awrite_f(aid, h5kind_to_type(i32, H5_INTEGER_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5sclose_f(sid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "wa_i32", error)
+        if (e == 0) then
+            dims = [1_hsize_t]
+            call h5awrite_f(aid, h5kind_to_type(i32, H5_INTEGER_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5sclose_f(sid, ec)
+        call h5oclose_f(oid, ec)
+        call chk(e, "wa_i32: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine wa_i64(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3326,19 +3388,22 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, sid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         call ensure_obj_exists(fid, obj, e)
         if (bail(e, "wa_i64_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_i64", error)) return
+        call drop_attr(oid, name)
         call h5screate_f(H5S_SCALAR_F, sid, e)
         call h5acreate_f(oid, trim(name), h5kind_to_type(i64, H5_INTEGER_KIND), sid, aid, e)
-        dims = [1_hsize_t]
-        call h5awrite_f(aid, h5kind_to_type(i64, H5_INTEGER_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5sclose_f(sid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "wa_i64", error)
+        if (e == 0) then
+            dims = [1_hsize_t]
+            call h5awrite_f(aid, h5kind_to_type(i64, H5_INTEGER_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5sclose_f(sid, ec)
+        call h5oclose_f(oid, ec)
+        call chk(e, "wa_i64: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine wa_r32(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3347,19 +3412,22 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, sid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         call ensure_obj_exists(fid, obj, e)
         if (bail(e, "wa_r32_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_r32", error)) return
+        call drop_attr(oid, name)
         call h5screate_f(H5S_SCALAR_F, sid, e)
         call h5acreate_f(oid, trim(name), h5kind_to_type(r32, H5_REAL_KIND), sid, aid, e)
-        dims = [1_hsize_t]
-        call h5awrite_f(aid, h5kind_to_type(r32, H5_REAL_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5sclose_f(sid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "wa_r32", error)
+        if (e == 0) then
+            dims = [1_hsize_t]
+            call h5awrite_f(aid, h5kind_to_type(r32, H5_REAL_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5sclose_f(sid, ec)
+        call h5oclose_f(oid, ec)
+        call chk(e, "wa_r32: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine wa_r64(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3368,19 +3436,22 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, sid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         call ensure_obj_exists(fid, obj, e)
         if (bail(e, "wa_r64_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_r64", error)) return
+        call drop_attr(oid, name)
         call h5screate_f(H5S_SCALAR_F, sid, e)
         call h5acreate_f(oid, trim(name), h5kind_to_type(r64, H5_REAL_KIND), sid, aid, e)
-        dims = [1_hsize_t]
-        call h5awrite_f(aid, h5kind_to_type(r64, H5_REAL_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5sclose_f(sid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "wa_r64", error)
+        if (e == 0) then
+            dims = [1_hsize_t]
+            call h5awrite_f(aid, h5kind_to_type(r64, H5_REAL_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5sclose_f(sid, ec)
+        call h5oclose_f(oid, ec)
+        call chk(e, "wa_r64: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine wa_str(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3389,23 +3460,26 @@ contains
         integer(hid_t) :: oid, sid, aid, tid
         integer(hsize_t) :: dims(1)
         integer(size_t) :: slen
-        integer::e
+        integer::e, ec
         call ensure_obj_exists(fid, obj, e)
         if (bail(e, "wa_str_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_str", error)) return
+        call drop_attr(oid, name)
         call h5screate_f(H5S_SCALAR_F, sid, e)
         call h5tcopy_f(H5T_NATIVE_CHARACTER, tid, e)
         slen = max(1_size_t, int(len_trim(val), size_t))
         call h5tset_size_f(tid, slen, e)
         call h5acreate_f(oid, trim(name), tid, sid, aid, e)
-        dims = [1_hsize_t]
-        call h5awrite_f(aid, tid, trim(val), dims, e)
-        call h5aclose_f(aid, e)
-        call h5tclose_f(tid, e)
-        call h5sclose_f(sid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "wa_str", error)
+        if (e == 0) then
+            dims = [1_hsize_t]
+            call h5awrite_f(aid, tid, trim(val), dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5tclose_f(tid, ec)
+        call h5sclose_f(sid, ec)
+        call h5oclose_f(oid, ec)
+        call chk(e, "wa_str: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine wa_i32_1(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3414,19 +3488,22 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, sid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         dims = shape(val, kind=hsize_t)
         call ensure_obj_exists(fid, obj, e)
         if (bail(e, "wa_i32_1_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_i32_1", error)) return
+        call drop_attr(oid, name)
         call h5screate_simple_f(1, dims, sid, e)
         call h5acreate_f(oid, trim(name), h5kind_to_type(i32, H5_INTEGER_KIND), sid, aid, e)
-        call h5awrite_f(aid, h5kind_to_type(i32, H5_INTEGER_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5sclose_f(sid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "wa_i32_1", error)
+        if (e == 0) then
+            call h5awrite_f(aid, h5kind_to_type(i32, H5_INTEGER_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5sclose_f(sid, ec)
+        call h5oclose_f(oid, ec)
+        call chk(e, "wa_i32_1: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine wa_i64_1(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3435,19 +3512,22 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, sid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         dims = shape(val, kind=hsize_t)
         call ensure_obj_exists(fid, obj, e)
         if (bail(e, "wa_i64_1_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_i64_1", error)) return
+        call drop_attr(oid, name)
         call h5screate_simple_f(1, dims, sid, e)
         call h5acreate_f(oid, trim(name), h5kind_to_type(i64, H5_INTEGER_KIND), sid, aid, e)
-        call h5awrite_f(aid, h5kind_to_type(i64, H5_INTEGER_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5sclose_f(sid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "wa_i64_1", error)
+        if (e == 0) then
+            call h5awrite_f(aid, h5kind_to_type(i64, H5_INTEGER_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5sclose_f(sid, ec)
+        call h5oclose_f(oid, ec)
+        call chk(e, "wa_i64_1: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine wa_r32_1(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3456,19 +3536,22 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, sid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         dims = shape(val, kind=hsize_t)
         call ensure_obj_exists(fid, obj, e)
         if (bail(e, "wa_r32_1_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_r32_1", error)) return
+        call drop_attr(oid, name)
         call h5screate_simple_f(1, dims, sid, e)
         call h5acreate_f(oid, trim(name), h5kind_to_type(r32, H5_REAL_KIND), sid, aid, e)
-        call h5awrite_f(aid, h5kind_to_type(r32, H5_REAL_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5sclose_f(sid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "wa_r32_1", error)
+        if (e == 0) then
+            call h5awrite_f(aid, h5kind_to_type(r32, H5_REAL_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5sclose_f(sid, ec)
+        call h5oclose_f(oid, ec)
+        call chk(e, "wa_r32_1: "//trim(obj)//"@"//trim(name), error)
     end subroutine
     subroutine wa_r64_1(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3477,25 +3560,30 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, sid, aid
         integer(hsize_t) :: dims(1)
-        integer::e
+        integer::e, ec
         dims = shape(val, kind=hsize_t)
         call ensure_obj_exists(fid, obj, e)
         if (bail(e, "wa_r64_1_ensure", error)) return
         call open_obj(fid, obj, oid, e)
         if (bail(e, "wa_r64_1", error)) return
+        call drop_attr(oid, name)
         call h5screate_simple_f(1, dims, sid, e)
         call h5acreate_f(oid, trim(name), h5kind_to_type(r64, H5_REAL_KIND), sid, aid, e)
-        call h5awrite_f(aid, h5kind_to_type(r64, H5_REAL_KIND), val, dims, e)
-        call h5aclose_f(aid, e)
-        call h5sclose_f(sid, e)
-        call h5oclose_f(oid, e)
-        call chk(e, "wa_r64_1", error)
+        if (e == 0) then
+            call h5awrite_f(aid, h5kind_to_type(r64, H5_REAL_KIND), val, dims, e)
+            call h5aclose_f(aid, ec)
+        end if
+        call h5sclose_f(sid, ec)
+        call h5oclose_f(oid, ec)
+        call chk(e, "wa_r64_1: "//trim(obj)//"@"//trim(name), error)
     end subroutine
 
     !================================================================
     ! ATTRIBUTE READ
-    ! An error in opening or reading the attribute, e.g., a missing
-    ! attribute, is the result; the close calls do not overwrite it.
+    ! Argument error reports whether opening or reading the attribute
+    ! failed, e.g., for a missing attribute. The close calls keep their
+    ! status in ec, not in e, so a successful close does not reset a
+    ! failure to zero. Without error, a failure stops the program.
     !================================================================
     subroutine ra_i32(fid, obj, name, val, error)
         integer(hid_t), intent(in) :: fid
@@ -3580,6 +3668,8 @@ contains
         integer, intent(out), optional::error
         integer(hid_t) :: oid, aid, tid
         integer(hsize_t) :: dims(1)
+        integer(size_t) :: slen
+        character(len=:), allocatable :: tmp
         integer::e, ec
         dims = [1_hsize_t]
         val = ''
@@ -3588,7 +3678,15 @@ contains
         call h5aopen_f(oid, trim(name), aid, e)
         if (e == 0) then
             call h5aget_type_f(aid, tid, e)
-            call h5aread_f(aid, tid, val, dims, e)
+            call h5tget_size_f(tid, slen, e)
+            ! Read the whole string, then assign it, which truncates it to the length of val
+            if (e == 0) then
+                allocate (character(len=slen) :: tmp)
+                call h5aread_f(aid, tid, tmp, dims, e)
+            end if
+            if (e == 0) then
+                val = tmp
+            end if
             call h5tclose_f(tid, ec)
             call h5aclose_f(aid, ec)
         end if

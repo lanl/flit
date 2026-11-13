@@ -286,6 +286,68 @@ program test
         print '(A,A)', "  title=", trim(title)
     end block
     call fh5_close(fh5_fid)
+
+    !------------------------------------------------------------
+    ! 11. Long string attribute (a note of about 1000 characters)
+    !------------------------------------------------------------
+    print '(/,A)', "=== Long string attribute ==="
+    block
+        ! A sequence type keeps the guard right after the text,
+        ! so a read that overflows the text changes the guard
+        type :: buffer_t
+            sequence
+            character(len=100) :: text
+            character(len=1000) :: guard
+        end type
+        type(buffer_t) :: short_buf
+        character(len=:), allocatable :: note
+        character(len=2000) :: long_buf, line
+        integer :: u
+
+        note = "This note tests a long string attribute of about 1000 characters, the length of a short "// &
+            "paragraph. The program test_hdf5.f90 writes the file demo_v2.h5 to test the fh5 module of FLIT. "// &
+            "The group /scalars holds one scalar of each of the eight supported types. The group /arrays "// &
+            "holds arrays of rank 1 to 6 with mixed types. The program deletes /arrays/r32_2d and copies "// &
+            "/arrays/r64_3d to /arrays/r64_3d_backup. The group /meta holds the title and the version of the "// &
+            "demo as string datasets, and this note as an attribute. The group /wavefield holds a complex "// &
+            "snapshot with three attributes: the time step, the time interval and the component. The "// &
+            "routines fh5_print_attr and fh5_print_tree show a string attribute of up to 1024 characters in "// &
+            "full. A longer string shows its first 1020 characters and an ellipsis. The routine "// &
+            "fh5_read_attr reads the note into a buffer of any length. A longer buffer receives the whole "// &
+            "note, padded with blanks. A shorter buffer receives the beginning of the note."
+
+        ! Write the note as an attribute of group /meta
+        call fh5_open("demo_v2.h5", fh5_fid, mode='a')
+        call fh5_write_attr(fh5_fid, "/meta", "note", note)
+        call fh5_close(fh5_fid)
+        print '(A,I0,A)', "  wrote /meta@note, ", len(note), " characters"
+
+        ! Both print routines show the whole note
+        call fh5_open("demo_v2.h5", fh5_fid, mode='r')
+        call fh5_print_attr(fh5_fid, "/meta", "note")
+        call fh5_print_tree(fh5_fid, "/meta")
+        open (newunit=u, status='scratch', recl=4096)
+        call fh5_print_attr(fh5_fid, "/meta", "note", u)
+        rewind (u)
+        read (u, '(A)') line
+        close (u)
+        print '(A)', "  "//merge('PASS', 'FAIL', line == '/meta@note = "'//note//'"')// &
+            "  fh5_print_attr shows the whole note"
+
+        ! A longer buffer receives the whole note, padded with blanks
+        call fh5_read_attr(fh5_fid, "/meta", "note", long_buf)
+        print '(A)', "  "//merge('PASS', 'FAIL', long_buf == note)// &
+            "  a 2000-character buffer receives the whole note"
+
+        ! A shorter buffer receives the beginning of the note, and the guard stays intact
+        short_buf%guard = repeat('#', len(short_buf%guard))
+        call fh5_read_attr(fh5_fid, "/meta", "note", short_buf%text)
+        print '(A)', "  "//merge('PASS', 'FAIL', short_buf%text == note(1:100) .and. &
+            short_buf%guard == repeat('#', len(short_buf%guard)))// &
+            "  a 100-character buffer receives the first 100 characters"
+        call fh5_close(fh5_fid)
+    end block
+
     call fh5_finalize()
     print '(/,A)', "=== ALL PASSED ==="
 

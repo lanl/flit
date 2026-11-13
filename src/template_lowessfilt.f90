@@ -35,7 +35,7 @@ recursive function lowess_1d_(x, y, xx, order, window, kernel, robust) result(yy
     TT, allocatable, dimension(:) :: yy
 
     TT, allocatable, dimension(:, :) :: b, btwb, btw
-    TT, allocatable, dimension(:) :: w, beta, bb
+    TT, allocatable, dimension(:) :: w, beta
     integer :: n, nn, i, j
     integer :: lowess_order
     TT :: lowess_window
@@ -75,9 +75,6 @@ recursive function lowess_1d_(x, y, xx, order, window, kernel, robust) result(yy
 
     b = zeros(n, lowess_order + 1)
     b(:, 1) = 1.0
-    do i = 1, lowess_order
-        b(:, i + 1) = x**i
-    end do
 
     w = zeros(n)
     yy = zeros(nn)
@@ -89,6 +86,12 @@ recursive function lowess_1d_(x, y, xx, order, window, kernel, robust) result(yy
         rw = return_normal(kernel_bisquare(residual))
     end if
     do i = 1, nn
+
+        ! Polynomial basis centered at the output point and scaled by the window,
+        ! which keeps the normal equations well conditioned
+        do j = 1, lowess_order
+            b(:, j + 1) = ((x - xx(i))/rx)**j
+        end do
 
         w = abs(xx(i) - x)/rx
         select case(lowess_kernel)
@@ -108,11 +111,8 @@ recursive function lowess_1d_(x, y, xx, order, window, kernel, robust) result(yy
 
         beta = matx(solve(btwb, btw), y)
 
-        bb = [1.0]
-        do j = 1, lowess_order
-            bb = [bb, xx(i)**j]
-        end do
-        yy(i) = dot_product(bb, beta)
+        ! All basis functions except the constant one are zero at the output point
+        yy(i) = beta(1)
 
     end do
 
@@ -128,7 +128,7 @@ recursive function lowess_2d_(x, y, z, xx, yy, order, window, kernel, robust) re
     TT, allocatable, dimension(:) :: zz
 
     TT, allocatable, dimension(:, :) :: b, btwb, btw
-    TT, allocatable, dimension(:) :: w, beta, bb
+    TT, allocatable, dimension(:) :: w, beta
     integer :: n, nn, i, j
     integer :: lowess_order
     TT, dimension(1:2) :: lowess_window
@@ -169,10 +169,6 @@ recursive function lowess_2d_(x, y, z, xx, yy, order, window, kernel, robust) re
 
     b = zeros(n, 2*lowess_order + 1)
     b(:, 1) = 1.0
-    do i = 1, lowess_order
-        b(:, 1 + 2*(i - 1) + 1) = x**i
-        b(:, 1 + 2*i) = y**i
-    end do
 
     w = zeros(n)
     zz = zeros(nn)
@@ -186,6 +182,13 @@ recursive function lowess_2d_(x, y, z, xx, yy, order, window, kernel, robust) re
     end if
 
     do i = 1, nn
+
+        ! Polynomial basis centered at the output point and scaled by the window,
+        ! which keeps the normal equations well conditioned
+        do j = 1, lowess_order
+            b(:, 1 + 2*(j - 1) + 1) = ((x - xx(i))/rx)**j
+            b(:, 1 + 2*j) = ((y - yy(i))/ry)**j
+        end do
 
         w = sqrt(((xx(i) - x)/rx)**2 + ((yy(i) - y)/ry)**2)
         select case(lowess_kernel)
@@ -205,11 +208,8 @@ recursive function lowess_2d_(x, y, z, xx, yy, order, window, kernel, robust) re
 
         beta = matx(solve(btwb, btw), z)
 
-        bb = [1.0]
-        do j = 1, lowess_order
-            bb = [bb, xx(i)**j, yy(i)**j]
-        end do
-        zz(i) = dot_product(bb, beta)
+        ! All basis functions except the constant one are zero at the output point
+        zz(i) = beta(1)
 
     end do
 
@@ -225,7 +225,7 @@ recursive function lowess_3d_(x, y, z, v, xx, yy, zz, order, window, kernel, rob
     TT, allocatable, dimension(:) :: vv
 
     TT, allocatable, dimension(:, :) :: b, btwb, btw
-    TT, allocatable, dimension(:) :: w, beta, bb
+    TT, allocatable, dimension(:) :: w, beta
     integer :: n, nn, i, j
     integer :: lowess_order
     TT, dimension(1:3) :: lowess_window
@@ -267,11 +267,6 @@ recursive function lowess_3d_(x, y, z, v, xx, yy, zz, order, window, kernel, rob
 
     b = zeros(n, 3*lowess_order + 1)
     b(:, 1) = 1.0
-    do i = 1, lowess_order
-        b(:, 1 + 3*(i - 1) + 1) = x**i
-        b(:, 1 + 3*(i - 1) + 2) = y**i
-        b(:, 1 + 3*i) = z**i
-    end do
 
     w = zeros(n)
     vv = zeros(nn)
@@ -285,6 +280,14 @@ recursive function lowess_3d_(x, y, z, v, xx, yy, zz, order, window, kernel, rob
     end if
 
     do i = 1, nn
+
+        ! Polynomial basis centered at the output point and scaled by the window,
+        ! which keeps the normal equations well conditioned
+        do j = 1, lowess_order
+            b(:, 1 + 3*(j - 1) + 1) = ((x - xx(i))/rx)**j
+            b(:, 1 + 3*(j - 1) + 2) = ((y - yy(i))/ry)**j
+            b(:, 1 + 3*j) = ((z - zz(i))/rz)**j
+        end do
 
         w = sqrt(((xx(i) - x)/rx)**2 + ((yy(i) - y)/ry)**2 + ((zz(i) - z)/rz)**2)
         select case(lowess_kernel)
@@ -304,11 +307,8 @@ recursive function lowess_3d_(x, y, z, v, xx, yy, zz, order, window, kernel, rob
 
         beta = matx(solve(btwb, btw), v)
 
-        bb = [1.0]
-        do j = 1, lowess_order
-            bb = [bb, xx(i)**j, yy(i)**j, zz(i)**j]
-        end do
-        vv(i) = dot_product(bb, beta)
+        ! All basis functions except the constant one are zero at the output point
+        vv(i) = beta(1)
 
     end do
 

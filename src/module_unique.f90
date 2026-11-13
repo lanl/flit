@@ -1,5 +1,5 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
 ! This program was produced under U.S. Government contract 89233218CNA000001 
 ! for Los Alamos National Laboratory (LANL), which is operated by 
@@ -31,12 +31,14 @@ module libflit_unique
         module procedure :: unique_1d_double
         module procedure :: unique_1d_complex
         module procedure :: unique_1d_dcomplex
+        module procedure :: unique_1d_logical
         module procedure :: unique_1d_string
         module procedure :: unique_2d_int
         module procedure :: unique_2d_float
         module procedure :: unique_2d_double
         module procedure :: unique_2d_complex
         module procedure :: unique_2d_dcomplex
+        module procedure :: unique_2d_logical
         module procedure :: unique_2d_string
     end interface unique
 

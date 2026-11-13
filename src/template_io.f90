@@ -1,5 +1,5 @@
 !
-! © 2024. Triad National Security, LLC. All rights reserved.
+! © 2024-2026. Triad National Security, LLC. All rights reserved.
 !
 ! This program was produced under U.S. Government contract 89233218CNA000001 
 ! for Los Alamos National Laboratory (LANL), which is operated by 
@@ -395,13 +395,19 @@ subroutine output_array_1d_(w, filename, append, ascii, format)
     character(len=*), optional :: format
 
     integer :: funit, i
-    logical :: output_ascii
+    logical :: output_ascii, output_append
     character(len=12) :: output_format
 
     if (present(ascii)) then
         output_ascii = ascii
     else
         output_ascii = .false.
+    end if
+
+    if (present(append)) then
+        output_append = append
+    else
+        output_append = .false.
     end if
 
     if (present(format)) then
@@ -413,12 +419,10 @@ subroutine output_array_1d_(w, filename, append, ascii, format)
     if (output_ascii) then
         ! Output ASCII
 
-        if (present(append)) then
-            if (append) then
-                open (newunit=funit, file=tidy(filename), &
-                    form='formatted', action='write', access='stream', &
-                    status='old', position='append')
-            end if
+        if (output_append) then
+            open (newunit=funit, file=tidy(filename), &
+                form='formatted', action='write', access='stream', &
+                status='old', position='append')
         else
             open (newunit=funit, file=tidy(filename), access='stream', &
                 form='formatted', action='write', &
@@ -431,12 +435,10 @@ subroutine output_array_1d_(w, filename, append, ascii, format)
     else
         ! Output binary
 
-        if (present(append)) then
-            if (append) then
-                open (newunit=funit, file=tidy(filename), &
-                    form='unformatted', action='write', access='stream', &
-                    status='old', position='append')
-            end if
+        if (output_append) then
+            open (newunit=funit, file=tidy(filename), &
+                form='unformatted', action='write', access='stream', &
+                status='old', position='append')
         else
             open (newunit=funit, file=tidy(filename), &
                 form='unformatted', action='write', access='stream', &
@@ -456,7 +458,7 @@ subroutine stdout_array_1d_(w, append, ascii, format)
     logical, intent(in), optional :: append, ascii
     character(len=*), optional :: format
 
-    logical :: output_ascii
+    logical :: output_ascii, output_append
     integer :: i
     character(len=12) :: output_format
 
@@ -464,6 +466,12 @@ subroutine stdout_array_1d_(w, append, ascii, format)
         output_ascii = ascii
     else
         output_ascii = .false.
+    end if
+
+    if (present(append)) then
+        output_append = append
+    else
+        output_append = .false.
     end if
 
     if (present(format)) then
@@ -477,12 +485,10 @@ subroutine stdout_array_1d_(w, append, ascii, format)
     if (output_ascii) then
         ! Output ASCII
 
-        if (present(append)) then
-            if (append) then
-                open (unit=output_unit, &
-                    form='formatted', action='write', access='stream', &
-                    status='old', position='append')
-            end if
+        if (output_append) then
+            open (unit=output_unit, &
+                form='formatted', action='write', access='stream', &
+                status='old', position='append')
         else
             open (unit=output_unit, &
                 form='formatted', action='write', access='stream', &
@@ -494,12 +500,10 @@ subroutine stdout_array_1d_(w, append, ascii, format)
 
     else
 
-        if (present(append)) then
-            if (append) then
-                open (unit=output_unit, &
-                    form='unformatted', action='write', access='stream', &
-                    status='old', position='append')
-            end if
+        if (output_append) then
+            open (unit=output_unit, &
+                form='unformatted', action='write', access='stream', &
+                status='old', position='append')
         else
             open (unit=output_unit, &
                 form='unformatted', action='write', access='stream', &
@@ -519,13 +523,19 @@ subroutine output_array_2d_(w, filename, transp, append, ascii, format)
     character(len=*), optional :: format
 
     integer :: funit, i
-    logical :: output_ascii
+    logical :: output_ascii, output_append
     character(len=12) :: output_format
 
     if (present(ascii)) then
         output_ascii = ascii
     else
         output_ascii = .false.
+    end if
+
+    if (present(append)) then
+        output_append = append
+    else
+        output_append = .false.
     end if
 
     if (present(format)) then
@@ -537,12 +547,10 @@ subroutine output_array_2d_(w, filename, transp, append, ascii, format)
     if (output_ascii) then
         ! Output ASCII
 
-        if (present(append)) then
-            if (append) then
-                open (newunit=funit, file=tidy(filename), &
-                    form='formatted', action='write', access='stream', &
-                    status='old', position='append')
-            end if
+        if (output_append) then
+            open (newunit=funit, file=tidy(filename), &
+                form='formatted', action='write', access='stream', &
+                status='old', position='append')
         else
             open (newunit=funit, file=tidy(filename), access='stream', &
                 form='formatted', action='write', &
@@ -564,12 +572,10 @@ subroutine output_array_2d_(w, filename, transp, append, ascii, format)
     else
         ! Output binary
 
-        if (present(append)) then
-            if (append) then
-                open (newunit=funit, file=tidy(filename), &
-                    form='unformatted', action='write', access='stream', &
-                    status='old', position='append')
-            end if
+        if (output_append) then
+            open (newunit=funit, file=tidy(filename), &
+                form='unformatted', action='write', access='stream', &
+                status='old', position='append')
         else
             open (newunit=funit, file=tidy(filename), &
                 form='unformatted', action='write', access='stream', &
@@ -596,7 +602,7 @@ subroutine stdout_array_2d_(w, transp, append, ascii, format)
     logical, intent(in), optional :: transp, append, ascii
     character(len=*), optional :: format
 
-    logical :: output_ascii
+    logical :: output_ascii, output_append
     integer :: i
     character(len=12) :: output_format
 
@@ -604,6 +610,12 @@ subroutine stdout_array_2d_(w, transp, append, ascii, format)
         output_ascii = ascii
     else
         output_ascii = .false.
+    end if
+
+    if (present(append)) then
+        output_append = append
+    else
+        output_append = .false.
     end if
 
     if (present(format)) then
@@ -616,12 +628,10 @@ subroutine stdout_array_2d_(w, transp, append, ascii, format)
     if (output_ascii) then
         ! Output ASCII
 
-        if (present(append)) then
-            if (append) then
-                open (unit=output_unit, &
-                    form='formatted', action='write', access='stream', &
-                    status='old', position='append')
-            end if
+        if (output_append) then
+            open (unit=output_unit, &
+                form='formatted', action='write', access='stream', &
+                status='old', position='append')
         else
             open (unit=output_unit, &
                 form='formatted', action='write', access='stream', &
@@ -642,12 +652,10 @@ subroutine stdout_array_2d_(w, transp, append, ascii, format)
     else
         ! Output binary
 
-        if (present(append)) then
-            if (append) then
-                open (unit=output_unit, &
-                    form='unformatted', action='write', access='stream', &
-                    status='old', position='append')
-            end if
+        if (output_append) then
+            open (unit=output_unit, &
+                form='unformatted', action='write', access='stream', &
+                status='old', position='append')
         else
             open (unit=output_unit, &
                 form='unformatted', action='write', access='stream', &
@@ -673,13 +681,18 @@ subroutine output_array_3d_(w, filename, store, append)
     logical, intent(in), optional :: append
 
     integer :: funit
+    logical :: output_append
 
     if (present(append)) then
-        if (append) then
-            open (newunit=funit, file=tidy(filename), &
-                form='unformatted', action='write', access='stream', &
-                status='old', position='append')
-        end if
+        output_append = append
+    else
+        output_append = .false.
+    end if
+
+    if (output_append) then
+        open (newunit=funit, file=tidy(filename), &
+            form='unformatted', action='write', access='stream', &
+            status='old', position='append')
     else
         open (newunit=funit, file=tidy(filename), &
             form='unformatted', action='write', access='stream', &
@@ -700,13 +713,19 @@ subroutine stdout_array_3d_(w, store, append)
     integer, intent(in), optional :: store
     logical, intent(in), optional :: append
 
-    close (output_unit)
+    logical :: output_append
+
     if (present(append)) then
-        if (append) then
-            open (unit=output_unit, &
-                form='unformatted', action='write', access='stream', &
-                status='old', position='append')
-        end if
+        output_append = append
+    else
+        output_append = .false.
+    end if
+
+    close (output_unit)
+    if (output_append) then
+        open (unit=output_unit, &
+            form='unformatted', action='write', access='stream', &
+            status='old', position='append')
     else
         open (unit=output_unit, &
             form='unformatted', action='write', access='stream', &
@@ -728,13 +747,18 @@ subroutine output_array_4d_(w, filename, store, append)
     logical, intent(in), optional :: append
 
     integer :: funit
+    logical :: output_append
 
     if (present(append)) then
-        if (append) then
-            open (newunit=funit, file=tidy(filename), &
-                form='unformatted', action='write', access='stream', &
-                status='old', position='append')
-        end if
+        output_append = append
+    else
+        output_append = .false.
+    end if
+
+    if (output_append) then
+        open (newunit=funit, file=tidy(filename), &
+            form='unformatted', action='write', access='stream', &
+            status='old', position='append')
     else
         open (newunit=funit, file=tidy(filename), &
             form='unformatted', action='write', access='stream', &
@@ -755,13 +779,19 @@ subroutine stdout_array_4d_(w, store, append)
     integer, intent(in), optional :: store
     logical, intent(in), optional :: append
 
-    close (output_unit)
+    logical :: output_append
+
     if (present(append)) then
-        if (append) then
-            open (unit=output_unit, &
-                form='unformatted', action='write', access='stream', &
-                status='old', position='append')
-        end if
+        output_append = append
+    else
+        output_append = .false.
+    end if
+
+    close (output_unit)
+    if (output_append) then
+        open (unit=output_unit, &
+            form='unformatted', action='write', access='stream', &
+            status='old', position='append')
     else
         open (unit=output_unit, &
             form='unformatted', action='write', access='stream', &
